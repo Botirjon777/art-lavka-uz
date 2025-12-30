@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PrintDesign, ConfiguratorState } from "@/types";
-import Image from "next/image";
+import TShirtScene from "./TShirtScene";
 
 interface RightConfiguratorProps {
   selectedPrint: PrintDesign | null;
@@ -38,34 +38,16 @@ export default function RightConfigurator({
 
   return (
     <div className="flex items-center justify-center">
-      <div className="bg-image max-h-[886px] min-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12">
-        <div className="w-full">
+      <div className="bg-image max-h-[886px] min-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
+        <div className="w-full relative z-10">
           {/* Content Grid */}
           <div className="flex flex-col md:flex-row gap-8">
-            {/* Left - T-shirt Preview */}
+            {/* Left - T-shirt 3D Preview */}
             <div className="flex items-center justify-center">
-              <div className="relative w-full aspect-square max-w-sm">
-                {/* T-shirt base */}
-                <Image
-                  src="/t-shirt.png"
-                  alt="T-shirt"
-                  width={414}
-                  height={556}
-                  className="object-contain"
-                />
-                {/* Print overlay */}
-                {selectedPrint && (
-                  <div className="absolute top-1/2 left-28 -translate-y-1/2">
-                    <Image
-                      src="/prints/cat-big.png"
-                      alt={selectedPrint.name}
-                      width={170}
-                      height={190}
-                      className="object-contain"
-                    />
-                  </div>
-                )}
-              </div>
+              <TShirtScene
+                selectedPrint={selectedPrint}
+                selectedColor={selectedColor}
+              />
             </div>
 
             {/* Right - Configuration Options */}
