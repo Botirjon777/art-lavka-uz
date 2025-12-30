@@ -12,18 +12,43 @@ interface LeftSidebarProps {
 
 // Mock print designs
 const printDesigns: PrintDesign[] = [
-  { id: "p1", name: "Кот", image: "/prints/cat.png", category: "funny" },
+  { id: "p2", name: "Кот", image: "/prints/cat-ultra.png", category: "funny" },
   {
     id: "p4",
     name: "Гарфилд",
-    image: "/prints/garfield.png",
+    image: "/prints/garfield-ultra.png",
     category: "stylish",
   },
-  { id: "p5", name: "Кролик", image: "/prints/rabbit.png", category: "funny" },
-  { id: "p6", name: "Микки", image: "/prints/mickey.png", category: "funny" },
-  { id: "p7", name: "Губы", image: "/prints/lips.png", category: "stylish" },
-  { id: "p8", name: "Муха", image: "/prints/fly.png", category: "funny" },
-  { id: "p10", name: "Медведь", image: "/prints/bear.png", category: "funny" },
+  {
+    id: "p6",
+    name: "Кролик",
+    image: "/prints/rabbit-ultra.png",
+    category: "funny",
+  },
+  {
+    id: "p8",
+    name: "Микки",
+    image: "/prints/mickey-ultra.png",
+    category: "funny",
+  },
+  {
+    id: "p10",
+    name: "Губы",
+    image: "/prints/lips-ultra.png",
+    category: "stylish",
+  },
+  {
+    id: "p12",
+    name: "Муха",
+    image: "/prints/fly-ultra.png",
+    category: "funny",
+  },
+  {
+    id: "p14",
+    name: "Медведь",
+    image: "/prints/bear-ultra.png",
+    category: "funny",
+  },
 ];
 
 const categories = [

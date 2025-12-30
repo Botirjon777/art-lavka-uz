@@ -12,6 +12,8 @@ import {
 import * as THREE from "three";
 import { PrintDesign } from "@/types";
 import Loader from "./Loader";
+import { AiFillQuestionCircle } from "react-icons/ai";
+import { TbRotate3D } from "react-icons/tb";
 
 interface TShirtModelProps {
   selectedPrint: PrintDesign | null;
@@ -121,14 +123,14 @@ export default function TShirtScene({
             </Html>
           }
         >
-          <ambientLight intensity={0.3} />
-          <directionalLight position={[10, 10, 5]} intensity={0.6} castShadow />
-          <directionalLight position={[-10, -10, -5]} intensity={0.2} />
+          <ambientLight intensity={0.2} />
+          <directionalLight position={[10, 10, 5]} intensity={0.4} castShadow />
+          <directionalLight position={[-10, -10, -5]} intensity={0.15} />
           <spotLight
             position={[0, 5, 5]}
             angle={0.3}
             penumbra={1}
-            intensity={0.3}
+            intensity={0.2}
             castShadow
           />
 
@@ -150,8 +152,18 @@ export default function TShirtScene({
         </Suspense>
       </Canvas>
 
-      <div className="absolute top-4 left-4 text-sm text-gray-500">
-        {selectedPrint ? `Print: ${selectedPrint.name}` : "Select a print"}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
+        <TbRotate3D size={32} className="text-[#00C6F1]" />
+      </div>
+
+      <div className="absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-5">
+        <p className="text-[16px]/[20px] text-[#333333] flex items-center gap-[5px]">
+          Футболка женская оверсайз{" "}
+          <AiFillQuestionCircle size={20} className="text-white" />
+        </p>
+        <button className="text-[16px]/[20px] py-[15px] px-[35px] rounded-xl bg-white text-[#333333] hover:text-[#333333]/80">
+          Выбрать продукт
+        </button>
       </div>
     </div>
   );

@@ -4,9 +4,6 @@ import { useState } from "react";
 import MainLayout from "@/components/MainLayout";
 import LeftSidebar from "@/components/LeftSidebar";
 import RightConfigurator from "@/components/RightConfigurator";
-import MenuModal from "@/components/MenuModal";
-import CartModal from "@/components/CartModal";
-import GalleryModal from "@/components/GalleryModal";
 import {
   CartItem,
   Product,
@@ -48,27 +45,13 @@ export default function Home() {
     alert("Товар добавлен в корзину!");
   };
 
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    setCartItems(
-      cartItems.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
-  };
-
-  const handleRemoveItem = (id: string) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-  };
-
-  const handleSelectProduct = (product: Product) => {
-    setSelectedProduct(product);
-  };
-
   return (
     <MainLayout
       onMenuClick={() => setActiveModal("menu")}
       onCartClick={() => setActiveModal("cart")}
       cartItemCount={cartItems.length}
     >
-      <div className="flex flex-col md:flex-row gap-[78px]">
+      <div className="flex flex-col justify-center md:flex-row gap-[78px]">
         <LeftSidebar
           onGalleryClick={() => setActiveModal("gallery")}
           selectedPrint={selectedPrint}
@@ -80,26 +63,6 @@ export default function Home() {
           onAddToCart={handleAddToCart}
         />
       </div>
-
-      {/* Modals */}
-      <MenuModal
-        isOpen={activeModal === "menu"}
-        onClose={() => setActiveModal(null)}
-      />
-
-      <CartModal
-        isOpen={activeModal === "cart"}
-        onClose={() => setActiveModal(null)}
-        items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-      />
-
-      <GalleryModal
-        isOpen={activeModal === "gallery"}
-        onClose={() => setActiveModal(null)}
-        onSelectProduct={handleSelectProduct}
-      />
     </MainLayout>
   );
 }

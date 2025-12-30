@@ -38,12 +38,12 @@ export default function RightConfigurator({
 
   return (
     <div className="flex items-center justify-center">
-      <div className="bg-image max-h-[886px] min-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
+      <div className="bg-image max-h-[886px] max-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
         <div className="w-full relative z-10">
           {/* Content Grid */}
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left - T-shirt 3D Preview */}
-            <div className="flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               <TShirtScene
                 selectedPrint={selectedPrint}
                 selectedColor={selectedColor}
