@@ -4,13 +4,10 @@ import { useState } from "react";
 import MainLayout from "@/components/MainLayout";
 import LeftSidebar from "@/components/LeftSidebar";
 import RightConfigurator from "@/components/RightConfigurator";
-import {
-  CartItem,
-  Product,
-  ConfiguratorState,
-  ModalType,
-  PrintDesign,
-} from "@/types";
+import MenuModal from "@/components/MenuModal";
+import GalleryModal from "@/components/GalleryModal";
+import CartModal from "@/components/CartModal";
+import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 // Default product
 const defaultProduct: Product = {
@@ -22,7 +19,9 @@ const defaultProduct: Product = {
 };
 
 export default function Home() {
-  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [activeModal, setActiveModal] = useState<
+    "menu" | "cart" | "gallery" | null
+  >(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] =
     useState<Product>(defaultProduct);
@@ -30,7 +29,7 @@ export default function Home() {
 
   const handleAddToCart = (config: ConfiguratorState) => {
     const newItem: CartItem = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: Date.now().toString(),
       product: selectedProduct,
       print: config.selectedPrint,
       color: config.selectedColor,
@@ -40,9 +39,21 @@ export default function Home() {
     };
 
     setCartItems([...cartItems, newItem]);
-
-    // Show success notification
     alert("Товар добавлен в корзину!");
+  };
+
+  const handleUpdateQuantity = (id: string, quantity: number) => {
+    setCartItems(
+      cartItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+    );
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
   };
 
   return (
@@ -63,6 +74,26 @@ export default function Home() {
           onAddToCart={handleAddToCart}
         />
       </div>
+
+      {/* Modals */}
+      <MenuModal
+        isOpen={activeModal === "menu"}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <GalleryModal
+        isOpen={activeModal === "gallery"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
+      />
+
+      <CartModal
+        isOpen={activeModal === "cart"}
+        onClose={() => setActiveModal(null)}
+        items={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
+      />
     </MainLayout>
   );
 }
