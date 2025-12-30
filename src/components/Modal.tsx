@@ -33,18 +33,18 @@ export default function Modal({
   const getPositionClasses = () => {
     switch (position) {
       case "left":
-        return "left-0 top-0 h-full w-full max-w-[1600px] animate-slide-in-left";
+        return "left-0 top-1/2 -translate-y-1/2 h-auto max-h-[886px] w-full max-w-[1600px] animate-slide-in-left";
       case "right":
-        return "right-0 top-0 h-full w-full max-w-[1600px] animate-slide-in-right";
+        return "right-0 top-1/2 -translate-y-1/2 h-auto max-h-[886px] w-full max-w-[1600px] animate-slide-in-right";
       case "center":
-        return "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1600px] max-h-[90vh] animate-fade-in";
+        return "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1600px] max-h-[800px] animate-fade-in";
       default:
         return "";
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center py-6">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
@@ -53,7 +53,7 @@ export default function Modal({
 
       {/* Modal Content */}
       <div
-        className={`relative bg-white rounded-lg shadow-2xl overflow-hidden ${getPositionClasses()}`}
+        className={`relative bg-white bg-image rounded-lg shadow-2xl overflow-hidden ${getPositionClasses()}`}
       >
         {/* Close Button */}
         <button
@@ -87,7 +87,7 @@ export default function Modal({
         <div
           className={`${
             position === "center"
-              ? "overflow-y-auto max-h-[calc(90vh-80px)]"
+              ? "overflow-y-auto max-h-[calc(886px-80px)]"
               : "h-full overflow-y-auto"
           }`}
         >

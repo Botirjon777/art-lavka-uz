@@ -67,7 +67,7 @@ export default function MainLayout({
         </button>
 
         {/* Main Content */}
-        <div className="pt-20">{children}</div>
+        <div className="py-20">{children}</div>
       </div>
     </div>
   );

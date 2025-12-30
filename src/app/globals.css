@@ -81,5 +81,5 @@ body {
 .bg-image {
   background-image: url('/configurator-bg.png');
   /* background-size: cover; */
-  background-repeat: repeat-y;
+  background-repeat: repeat;
 }
