@@ -1,11 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState, useMemo } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
   useGLTF,
-  useTexture,
   Environment,
   Decal,
   Html,
@@ -21,31 +20,36 @@ interface TShirtModelProps {
 
 function TShirtModel({ selectedPrint, selectedColor }: TShirtModelProps) {
   const { scene } = useGLTF("/model/compressed/base.glb");
-  const modelRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
-  const sceneAddedRef = useRef(false);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
-  const textureUrl = selectedPrint ? selectedPrint.image : "/prints/cat.png";
-  const texture = useTexture(textureUrl);
+  // Load texture manually without triggering Suspense
+  useEffect(() => {
+    if (!selectedPrint) {
+      setTexture(null);
+      return;
+    }
 
-  // Clone scene only once using useMemo
-  const clonedScene = useMemo(() => {
-    const cloned = scene.clone();
-    cloned.traverse((child) => {
+    const loader = new THREE.TextureLoader();
+    loader.load(selectedPrint.image, (loadedTexture) => {
+      loadedTexture.flipY = false;
+      loadedTexture.colorSpace = THREE.SRGBColorSpace;
+      loadedTexture.needsUpdate = true;
+      setTexture(loadedTexture);
+    });
+  }, [selectedPrint]);
+
+  // Find and store mesh reference only once
+  useEffect(() => {
+    if (meshRef.current || !scene) return;
+
+    scene.traverse((child) => {
       if (child instanceof THREE.Mesh && !meshRef.current) {
         meshRef.current = child;
       }
     });
-    return cloned;
   }, [scene]);
-
-  // Add cloned scene to group only once
-  useEffect(() => {
-    if (!clonedScene || !modelRef.current || sceneAddedRef.current) return;
-
-    modelRef.current.add(clonedScene);
-    sceneAddedRef.current = true;
-  }, [clonedScene]);
 
   // Update material color when selection changes (without reloading model)
   useEffect(() => {
@@ -63,29 +67,20 @@ function TShirtModel({ selectedPrint, selectedColor }: TShirtModelProps) {
     });
   }, [selectedPrint, selectedColor]);
 
-  // Configure texture
-  useEffect(() => {
-    if (texture) {
-      texture.flipY = false;
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.needsUpdate = true;
-    }
-  }, [texture]);
-
   // Gentle rotation animation
   useFrame((state) => {
-    if (modelRef.current) {
-      modelRef.current.rotation.y =
+    if (groupRef.current) {
+      groupRef.current.rotation.y =
         Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
     }
   });
 
   return (
-    <group ref={modelRef} position={[0, -1, 0]} scale={1.5}>
+    <group ref={groupRef} position={[0, -1, 0]} scale={1.5}>
       <primitive object={scene} />
       {selectedPrint && meshRef.current && texture && (
         <Decal
-          position={[0, 0.9, 0.51]}
+          position={[-0.05, 0.9, 0.6]}
           rotation={[0, Math.PI, Math.PI]}
           scale={0.9}
           mesh={meshRef as React.RefObject<THREE.Mesh>}
@@ -137,7 +132,7 @@ export default function TShirtScene({
             castShadow
           />
 
-          <Environment preset="studio" />
+          <Environment files="/model/hdr/studio_small_01_1k.hdr" />
 
           <TShirtModel
             selectedPrint={selectedPrint}
