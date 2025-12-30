@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactNode } from "react";
-
 import { PiShoppingCartSimpleBold } from "react-icons/pi";
+import { Toaster } from "react-hot-toast";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -50,7 +50,7 @@ export default function MainLayout({
         >
           <PiShoppingCartSimpleBold size={24} />
           {cartItemCount > 0 && (
-            <span className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white text-sm font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -bottom-2 -left-2 w-7 h-7 bg-red-500 text-white text-sm font-bold rounded-full flex items-center justify-center">
               {cartItemCount}
             </span>
           )}
@@ -59,6 +59,28 @@ export default function MainLayout({
         {/* Main Content */}
         <div className="py-20 relative">{children}</div>
       </div>
+
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#8814B1",
+            color: "#fff",
+            padding: "16px",
+            borderRadius: "10px",
+            fontSize: "16px",
+            fontWeight: "600",
+          },
+          success: {
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#8814B1",
+            },
+          },
+        }}
+      />
     </div>
   );
 }

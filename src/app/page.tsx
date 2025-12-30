@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 import MainLayout from "@/components/MainLayout";
 import LeftSidebar from "@/components/LeftSidebar";
 import RightConfigurator from "@/components/RightConfigurator";
@@ -39,7 +40,7 @@ export default function Home() {
     };
 
     setCartItems([...cartItems, newItem]);
-    alert("Товар добавлен в корзину!");
+    toast.success("Товар добавлен в корзину!");
   };
 
   const handleUpdateQuantity = (id: string, quantity: number) => {

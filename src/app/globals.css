@@ -79,9 +79,9 @@ body {
 }
 
 .bg-image {
-  background-image: url('/configurator-bg.png');
-  background-size: cover;
-  background-position: center;
+  background-image: url("/configurator-bg.png");
+  background-repeat: repeat;
+  background-size: 50%;
 }
 
 @keyframes slide-in-top {
