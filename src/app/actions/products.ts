@@ -15,6 +15,20 @@ export async function getProducts() {
   }
 }
 
+export async function getProductById(id: string) {
+  try {
+    await dbConnect();
+    const product = await Product.findById(id).lean();
+    if (!product) {
+      return null;
+    }
+    return JSON.parse(JSON.stringify(product));
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return null;
+  }
+}
+
 export async function createProduct(formData: FormData) {
   try {
     await dbConnect();
@@ -25,6 +39,9 @@ export async function createProduct(formData: FormData) {
       price: Number(formData.get("price")),
       category: formData.get("category") as string,
       image: formData.get("image") as string,
+      model: formData.get("model") as string,
+      colors: JSON.parse((formData.get("colors") as string) || "[]"),
+      sizes: JSON.parse((formData.get("sizes") as string) || "[]"),
       stock: Number(formData.get("stock")) || 0,
       active: formData.get("active") === "true",
     };
@@ -48,6 +65,9 @@ export async function updateProduct(id: string, formData: FormData) {
       price: Number(formData.get("price")),
       category: formData.get("category") as string,
       image: formData.get("image") as string,
+      model: formData.get("model") as string,
+      colors: JSON.parse((formData.get("colors") as string) || "[]"),
+      sizes: JSON.parse((formData.get("sizes") as string) || "[]"),
       stock: Number(formData.get("stock")) || 0,
       active: formData.get("active") === "true",
     };

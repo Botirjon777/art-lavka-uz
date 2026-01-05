@@ -6,6 +6,9 @@ export interface IProduct {
   price: number;
   category: string;
   image: string;
+  model: string; // Path to 3D model file
+  colors: string[]; // Available colors
+  sizes: string[]; // Available sizes
   stock: number;
   active: boolean;
   createdAt: Date;
@@ -36,6 +39,20 @@ const ProductSchema = new Schema<IProduct>(
     image: {
       type: String,
       required: true,
+    },
+    model: {
+      type: String,
+      required: true,
+    },
+    colors: {
+      type: [String],
+      required: true,
+      default: [],
+    },
+    sizes: {
+      type: [String],
+      required: true,
+      default: [],
     },
     stock: {
       type: Number,

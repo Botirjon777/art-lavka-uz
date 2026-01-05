@@ -11,12 +11,27 @@ interface RightConfiguratorProps {
   onProductClick?: () => void;
 }
 
-const colors = [
-  { id: "red", name: "Красный", hex: "#EF4444" },
-  { id: "black", name: "Черный", hex: "#000000" },
-];
+const COLOR_MAP: Record<string, string> = {
+  white: "#FFFFFF",
+  black: "#000000",
+  red: "#EF4444",
+  blue: "#3B82F6",
+  green: "#10B981",
+  yellow: "#FBBF24",
+  gray: "#9CA3AF",
+  "off-white": "#FAF9F6",
+};
 
-const sizes = ["XS (44)", "S (50)", "L (54)", "M (56)", "M (62)"];
+const COLOR_NAMES: Record<string, string> = {
+  white: "Белый",
+  black: "Черный",
+  red: "Красный",
+  blue: "Синий",
+  green: "Зеленый",
+  yellow: "Желтый",
+  gray: "Серый",
+  "off-white": "Молочный",
+};
 
 export default function RightConfigurator({
   selectedProduct,
@@ -24,12 +39,15 @@ export default function RightConfigurator({
   onAddToCart,
   onProductClick,
 }: RightConfiguratorProps) {
-  const [selectedColor, setSelectedColor] = useState(colors[0].id);
-  const [selectedSize, setSelectedSize] = useState(sizes[0]);
+  const productColors = selectedProduct.colors || ["white"];
+  const productSizes = selectedProduct.sizes || ["XS", "S", "M", "L", "XL"];
+
+  const [selectedColor, setSelectedColor] = useState(productColors[0]);
+  const [selectedSize, setSelectedSize] = useState(productSizes[0]);
   const [quantity, setQuantity] = useState(1);
 
-  const maxStock = 10;
-  const price = 100000;
+  const maxStock = selectedProduct.stock;
+  const price = selectedProduct.price;
 
   const handleAddToCart = () => {
     onAddToCart({
@@ -51,6 +69,7 @@ export default function RightConfigurator({
               <TShirtScene
                 key={selectedProduct.id}
                 selectedProduct={selectedProduct.model}
+                productName={selectedProduct.name}
                 selectedPrint={selectedPrint}
                 selectedColor={selectedColor}
                 onProductClick={onProductClick}
@@ -62,20 +81,20 @@ export default function RightConfigurator({
               {/* Color Selection */}
               <div>
                 <h3 className="text-[16px]/[22px] text-[#333333] mb-[15px]">
-                  Цвет: Белый
+                  Цвет: {COLOR_NAMES[selectedColor] || selectedColor}
                 </h3>
                 <div className="flex gap-[15px]">
-                  {colors.map((color) => (
+                  {productColors.map((color) => (
                     <button
-                      key={color.id}
-                      onClick={() => setSelectedColor(color.id)}
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
                       className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        selectedColor === color.id
+                        selectedColor === color
                           ? "border-purple-600 ring-2 ring-purple-300 scale-110"
                           : "border-gray-300"
                       }`}
-                      style={{ backgroundColor: color.hex }}
-                      title={color.name}
+                      style={{ backgroundColor: COLOR_MAP[color] || color }}
+                      title={color}
                     />
                   ))}
                 </div>
@@ -89,7 +108,7 @@ export default function RightConfigurator({
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {sizes.map((size) => (
+                  {productSizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -176,16 +195,16 @@ export default function RightConfigurator({
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-[15px]">
+              <div className="space-y-[15px] flex flex-col">
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-3.5 bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white rounded-xl transition-colors shadow-md text-[16px]/5"
+                  className="max-w-[240px] px-[35px] py-3.5 bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white rounded-xl transition-colors shadow-md text-[16px]/5"
                 >
                   Купить в 1 клик
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-3.5 bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-all shadow-md text-[16px]/5"
+                  className="max-w-[240px] px-[35px] py-3.5 bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-all shadow-md text-[16px]/5"
                 >
                   Добавить в корзину
                 </button>

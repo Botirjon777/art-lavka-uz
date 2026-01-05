@@ -1,16 +1,47 @@
 "use client";
 
-import { useState } from "react";
-import { createProduct } from "@/app/actions/products";
+import { useState, useEffect, use } from "react";
+import { getProductById, updateProduct } from "@/app/actions/products";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
 
-export default function NewProductPage() {
+export default function EditProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
+  const { id } = use(params);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [modelUrl, setModelUrl] = useState("");
+  const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [colorInput, setColorInput] = useState("");
+  const [sizeInput, setSizeInput] = useState("");
+  const [product, setProduct] = useState<any>(null);
+  const [productLoading, setProductLoading] = useState(true);
+
+  useEffect(() => {
+    loadProduct();
+  }, []);
+
+  const loadProduct = async () => {
+    const data = await getProductById(id);
+    if (data) {
+      setProduct(data);
+      setImageUrl(data.image || "");
+      setModelUrl(data.model || "");
+      setColors(data.colors || []);
+      setSizes(data.sizes || []);
+    } else {
+      toast.error("Product not found");
+      router.push("/admin/products");
+    }
+    setProductLoading(false);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,28 +72,65 @@ export default function NewProductPage() {
     }
   };
 
+  const addColor = () => {
+    if (colorInput.trim() && !colors.includes(colorInput.trim())) {
+      setColors([...colors, colorInput.trim()]);
+      setColorInput("");
+    }
+  };
+
+  const removeColor = (color: string) => {
+    setColors(colors.filter((c) => c !== color));
+  };
+
+  const addSize = () => {
+    if (sizeInput.trim() && !sizes.includes(sizeInput.trim())) {
+      setSizes([...sizes, sizeInput.trim()]);
+      setSizeInput("");
+    }
+  };
+
+  const removeSize = (size: string) => {
+    setSizes(sizes.filter((s) => s !== size));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
     formData.set("image", imageUrl);
+    formData.set("model", modelUrl);
+    formData.set("colors", JSON.stringify(colors));
+    formData.set("sizes", JSON.stringify(sizes));
 
-    const result = await createProduct(formData);
+    const result = await updateProduct(id, formData);
 
     if (result.success) {
-      toast.success("Product created successfully");
+      toast.success("Product updated successfully");
       router.push("/admin/products");
     } else {
-      toast.error(result.error || "Failed to create product");
+      toast.error(result.error || "Failed to update product");
     }
 
     setLoading(false);
   };
 
+  if (productLoading) {
+    return (
+      <div className="max-w-3xl">
+        <p className="text-gray-600">Loading product...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return null;
+  }
+
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Add Product</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Product</h1>
 
       <form
         onSubmit={handleSubmit}
@@ -112,6 +180,7 @@ export default function NewProductPage() {
             id="name"
             name="name"
             required
+            defaultValue={product.name}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
             placeholder="Футболка овер сайз"
           />
@@ -129,9 +198,118 @@ export default function NewProductPage() {
             id="description"
             name="description"
             rows={4}
+            defaultValue={product.description || ""}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
             placeholder="Product description..."
           />
+        </div>
+
+        {/* Model Path */}
+        <div>
+          <label
+            htmlFor="model"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            3D Model Path *
+          </label>
+          <input
+            type="text"
+            id="model"
+            value={modelUrl}
+            onChange={(e) => setModelUrl(e.target.value)}
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+            placeholder="/model/compressed/base.glb"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Path to the 3D model file (.glb)
+          </p>
+        </div>
+
+        {/* Colors */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Available Colors *
+          </label>
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={colorInput}
+              onChange={(e) => setColorInput(e.target.value)}
+              onKeyPress={(e) =>
+                e.key === "Enter" && (e.preventDefault(), addColor())
+              }
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+              placeholder="Enter color (e.g., white, black)"
+            />
+            <button
+              type="button"
+              onClick={addColor}
+              className="px-4 py-2 bg-[#8814B1] text-white rounded-xl hover:bg-[#8814B1]/90"
+            >
+              Add
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((color) => (
+              <span
+                key={color}
+                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center gap-2"
+              >
+                {color}
+                <button
+                  type="button"
+                  onClick={() => removeColor(color)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Sizes */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Available Sizes *
+          </label>
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={sizeInput}
+              onChange={(e) => setSizeInput(e.target.value)}
+              onKeyPress={(e) =>
+                e.key === "Enter" && (e.preventDefault(), addSize())
+              }
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+              placeholder="Enter size (e.g., XS, S, M, L, XL)"
+            />
+            <button
+              type="button"
+              onClick={addSize}
+              className="px-4 py-2 bg-[#8814B1] text-white rounded-xl hover:bg-[#8814B1]/90"
+            >
+              Add
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((size) => (
+              <span
+                key={size}
+                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center gap-2"
+              >
+                {size}
+                <button
+                  type="button"
+                  onClick={() => removeSize(size)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Price & Stock */}
@@ -149,6 +327,7 @@ export default function NewProductPage() {
               name="price"
               required
               min="0"
+              defaultValue={product.price}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
               placeholder="100000"
             />
@@ -165,7 +344,7 @@ export default function NewProductPage() {
               id="stock"
               name="stock"
               min="0"
-              defaultValue="0"
+              defaultValue={product.stock}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
               placeholder="0"
             />
@@ -184,6 +363,7 @@ export default function NewProductPage() {
             id="category"
             name="category"
             required
+            defaultValue={product.category}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
           >
             <option value="women">Women</option>
@@ -199,7 +379,7 @@ export default function NewProductPage() {
             id="active"
             name="active"
             value="true"
-            defaultChecked
+            defaultChecked={product.active}
             className="w-4 h-4 text-[#8814B1] border-gray-300 rounded focus:ring-[#8814B1]"
           />
           <label htmlFor="active" className="text-sm font-medium text-gray-700">
@@ -211,10 +391,16 @@ export default function NewProductPage() {
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
-            disabled={loading || !imageUrl}
+            disabled={
+              loading ||
+              !imageUrl ||
+              !modelUrl ||
+              colors.length === 0 ||
+              sizes.length === 0
+            }
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Creating..." : "Create Product"}
+            {loading ? "Updating..." : "Update Product"}
           </button>
           <button
             type="button"

@@ -46,7 +46,7 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="max-w-7xl">
+    <div className="w-full">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Products</h1>
         <Link

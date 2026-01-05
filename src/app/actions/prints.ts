@@ -15,6 +15,20 @@ export async function getPrints() {
   }
 }
 
+export async function getPrintById(id: string) {
+  try {
+    await dbConnect();
+    const print = await Print.findById(id).lean();
+    if (!print) {
+      return null;
+    }
+    return JSON.parse(JSON.stringify(print));
+  } catch (error) {
+    console.error("Error fetching print:", error);
+    return null;
+  }
+}
+
 export async function createPrint(formData: FormData) {
   try {
     await dbConnect();

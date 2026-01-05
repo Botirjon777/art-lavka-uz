@@ -47,7 +47,7 @@ export default function PrintsPage() {
     filter === "all" ? prints : prints.filter((p) => p.category === filter);
 
   return (
-    <div className="max-w-7xl">
+    <div className="w-full">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Prints</h1>
         <Link

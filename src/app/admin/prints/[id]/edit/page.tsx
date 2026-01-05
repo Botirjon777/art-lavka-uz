@@ -1,16 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { createPrint } from "@/app/actions/prints";
+import { useState, useEffect, use } from "react";
+import { getPrintById, updatePrint } from "@/app/actions/prints";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
 
-export default function NewPrintPage() {
+export default function EditPrintPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
+  const { id } = use(params);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [print, setPrint] = useState<any>(null);
+  const [printLoading, setPrintLoading] = useState(true);
+
+  useEffect(() => {
+    loadPrint();
+  }, []);
+
+  const loadPrint = async () => {
+    const data = await getPrintById(id);
+    if (data) {
+      setPrint(data);
+      setImageUrl(data.image || "");
+    } else {
+      toast.error("Print not found");
+      router.push("/admin/prints");
+    }
+    setPrintLoading(false);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,21 +71,33 @@ export default function NewPrintPage() {
     const formData = new FormData(e.currentTarget);
     formData.set("image", imageUrl);
 
-    const result = await createPrint(formData);
+    const result = await updatePrint(id, formData);
 
     if (result.success) {
-      toast.success("Print created successfully");
+      toast.success("Print updated successfully");
       router.push("/admin/prints");
     } else {
-      toast.error(result.error || "Failed to create print");
+      toast.error(result.error || "Failed to update print");
     }
 
     setLoading(false);
   };
 
+  if (printLoading) {
+    return (
+      <div className="w-full">
+        <p className="text-gray-600">Loading print...</p>
+      </div>
+    );
+  }
+
+  if (!print) {
+    return null;
+  }
+
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Add Print</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Print</h1>
 
       <form
         onSubmit={handleSubmit}
@@ -112,6 +147,7 @@ export default function NewPrintPage() {
             id="name"
             name="name"
             required
+            defaultValue={print.name}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
             placeholder="Пузатый котик"
           />
@@ -129,6 +165,7 @@ export default function NewPrintPage() {
             id="category"
             name="category"
             required
+            defaultValue={print.category}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
           >
             <option value="national">National</option>
@@ -145,7 +182,7 @@ export default function NewPrintPage() {
             id="active"
             name="active"
             value="true"
-            defaultChecked
+            defaultChecked={print.active}
             className="w-4 h-4 text-[#8814B1] border-gray-300 rounded focus:ring-[#8814B1]"
           />
           <label htmlFor="active" className="text-sm font-medium text-gray-700">
@@ -160,7 +197,7 @@ export default function NewPrintPage() {
             disabled={loading || !imageUrl}
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Creating..." : "Create Print"}
+            {loading ? "Updating..." : "Update Print"}
           </button>
           <button
             type="button"
