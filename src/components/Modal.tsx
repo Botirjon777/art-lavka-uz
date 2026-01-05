@@ -23,7 +23,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute left-1/2 top-1/2 z-9999">
+    <div className="absolute left-1/2 top-1/2 z-50">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"

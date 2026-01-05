@@ -60,8 +60,9 @@ export default function Home() {
   return (
     <MainLayout
       onMenuClick={() => setActiveModal("menu")}
-      onCartClick={() => setActiveModal("cart")}
+      onCartClick={() => setActiveModal(activeModal ? null : "cart")}
       cartItemCount={cartItems.length}
+      activeModal={activeModal}
     >
       <div className="flex flex-col justify-center md:flex-row gap-[78px]">
         <LeftSidebar

@@ -9,6 +9,7 @@ interface MainLayoutProps {
   onMenuClick: () => void;
   onCartClick: () => void;
   cartItemCount: number;
+  activeModal: "menu" | "cart" | "gallery" | null;
 }
 
 export default function MainLayout({
@@ -16,6 +17,7 @@ export default function MainLayout({
   onMenuClick,
   onCartClick,
   cartItemCount,
+  activeModal,
 }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center p-6">
@@ -24,7 +26,7 @@ export default function MainLayout({
         {/* Menu Icon - Top Left of Container */}
         <button
           onClick={onMenuClick}
-          className="absolute top-20 left-0 w-14 h-14 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-50"
+          className="absolute top-20 -left-15 w-14 h-14 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-9999"
           aria-label="Open menu"
         >
           <svg
@@ -42,17 +44,35 @@ export default function MainLayout({
           </svg>
         </button>
 
-        {/* Cart Icon - Top Right of Container */}
+        {/* Cart Icon / Close Button - Top Right of Container */}
         <button
           onClick={onCartClick}
-          className="absolute top-20 right-0 w-14 h-14 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-50"
-          aria-label="Open cart"
+          className="absolute top-20 -right-15 w-14 h-14 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-9999"
+          aria-label={activeModal ? "Close modal" : "Open cart"}
         >
-          <PiShoppingCartSimpleBold size={24} />
-          {cartItemCount > 0 && (
-            <span className="absolute -bottom-2 -left-2 w-7 h-7 bg-red-500 text-white text-sm font-bold rounded-full flex items-center justify-center">
-              {cartItemCount}
-            </span>
+          {activeModal ? (
+            <svg
+              className="w-7 h-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            <>
+              <PiShoppingCartSimpleBold size={24} />
+              {cartItemCount > 0 && (
+                <span className="absolute -bottom-2 -left-2 w-7 h-7 bg-red-500 text-white text-sm font-bold rounded-full flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </>
           )}
         </button>
 
