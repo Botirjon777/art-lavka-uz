@@ -195,16 +195,16 @@ export default function RightConfigurator({
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-[15px]">
+              <div className="space-y-[15px] flex flex-col">
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-3.5 bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white rounded-xl transition-colors shadow-md text-[16px]/5"
+                  className="max-w-[240px] px-[35px] py-3.5 bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white rounded-xl transition-colors shadow-md text-[16px]/5"
                 >
                   Купить в 1 клик
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-3.5 bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-all shadow-md text-[16px]/5"
+                  className="max-w-[240px] px-[35px] py-3.5 bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-all shadow-md text-[16px]/5"
                 >
                   Добавить в корзину
                 </button>

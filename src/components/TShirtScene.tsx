@@ -74,7 +74,7 @@ function TShirtModel({
     };
 
     meshRef.current.material = new THREE.MeshStandardMaterial({
-      color: selectedPrint ? "#FFFFFF" : colorMap[selectedColor] || "#FFFFFF",
+      color: colorMap[selectedColor] || "#FFFFFF",
       roughness: 0.8,
       metalness: 0.1,
     });
