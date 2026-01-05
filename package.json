@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:products": "tsx scripts/seed-products.ts",
+    "seed:prints": "tsx scripts/seed-prints.ts",
+    "seed:gallery": "tsx scripts/seed-gallery.ts",
+    "seed:all": "npm run seed:products && npm run seed:prints && npm run seed:gallery"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -32,6 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

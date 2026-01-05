@@ -1,14 +1,19 @@
 export interface Product {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   image: string;
   category: string;
   price: number;
-  model?: string;
+  model: string;
+  colors?: string[];
+  sizes?: string[];
+  stock: number;
 }
 
 export interface PrintDesign {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   image: string;
   category: "national" | "stylish" | "funny" | "all";

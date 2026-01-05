@@ -1,55 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { PrintDesign, ConfiguratorState } from "@/types";
+import { SidebarPrintSkeleton } from "./LoadingSkeleton";
 
 interface LeftSidebarProps {
   onGalleryClick: () => void;
   selectedPrint: PrintDesign | null;
   onPrintSelect: (print: PrintDesign | null) => void;
 }
-
-// Mock print designs
-const printDesigns: PrintDesign[] = [
-  { id: "p2", name: "Кот", image: "/prints/cat-ultra.png", category: "funny" },
-  {
-    id: "p4",
-    name: "Гарфилд",
-    image: "/prints/garfield-ultra.png",
-    category: "stylish",
-  },
-  {
-    id: "p6",
-    name: "Кролик",
-    image: "/prints/rabbit-ultra.png",
-    category: "funny",
-  },
-  {
-    id: "p8",
-    name: "Микки",
-    image: "/prints/mickey-ultra.png",
-    category: "funny",
-  },
-  {
-    id: "p10",
-    name: "Губы",
-    image: "/prints/lips-ultra.png",
-    category: "stylish",
-  },
-  {
-    id: "p12",
-    name: "Муха",
-    image: "/prints/fly-ultra.png",
-    category: "funny",
-  },
-  {
-    id: "p14",
-    name: "Медведь",
-    image: "/prints/bear-ultra.png",
-    category: "funny",
-  },
-];
 
 const categories = [
   { id: "all", label: "Все" },
@@ -64,11 +24,37 @@ export default function LeftSidebar({
   onPrintSelect,
 }: LeftSidebarProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [prints, setPrints] = useState<PrintDesign[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredPrints =
-    selectedCategory === "all"
-      ? printDesigns
-      : printDesigns.filter((p) => p.category === selectedCategory);
+  useEffect(() => {
+    fetchPrints();
+  }, []);
+
+  const fetchPrints = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/prints?limit=100");
+      const data = await response.json();
+      if (data.success) {
+        setPrints(data.data.map((item: any) => ({ ...item, id: item._id })));
+      }
+    } catch (error) {
+      console.error("Error fetching prints:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredPrints = prints.filter((p) => {
+    const matchesCategory =
+      selectedCategory === "all" || p.category === selectedCategory;
+    const matchesSearch = p.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="w-full max-w-[558px] h-full px-6 flex flex-col">
@@ -117,6 +103,8 @@ export default function LeftSidebar({
           <input
             type="text"
             placeholder="Поиск принтов..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-[50px] bg-white rounded-lg px-4"
           />
         </div>
@@ -140,26 +128,31 @@ export default function LeftSidebar({
               </div>
             </button>
 
-            {filteredPrints.map((print) => (
-              <button
-                key={print.id}
-                onClick={() => onPrintSelect(print)}
-                className={`w-[134px] h-[134px] rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
-                  selectedPrint?.id === print.id
-                    ? "border-[#00C6F1]"
-                    : "border-transparent"
-                }`}
-              >
-                <div className="relative bg-white h-[110px] w-[110px] rounded-[26px] overflow-hidden shadow-lg">
-                  <Image
-                    src={print.image}
-                    alt={print.name}
-                    fill
-                    className="object-contain p-3"
-                  />
-                </div>
-              </button>
-            ))}
+            {loading ? (
+              <SidebarPrintSkeleton count={8} />
+            ) : (
+              filteredPrints.map((print) => (
+                <button
+                  key={print.id || (print as any)._id}
+                  onClick={() => onPrintSelect(print)}
+                  className={`w-[134px] h-[134px] rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
+                    selectedPrint?.id === print.id ||
+                    (selectedPrint as any)?._id === (print as any)._id
+                      ? "border-[#00C6F1]"
+                      : "border-transparent"
+                  }`}
+                >
+                  <div className="relative bg-white h-[110px] w-[110px] rounded-[26px] overflow-hidden shadow-lg">
+                    <Image
+                      src={print.image}
+                      alt={print.name}
+                      fill
+                      className="object-contain p-3"
+                    />
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>

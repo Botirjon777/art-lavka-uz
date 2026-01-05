@@ -63,8 +63,14 @@ function TShirtModel({
     if (!meshRef.current) return;
 
     const colorMap: { [key: string]: string } = {
-      black: "#000000",
       white: "#FFFFFF",
+      black: "#000000",
+      red: "#EF4444",
+      blue: "#3B82F6",
+      green: "#10B981",
+      yellow: "#FBBF24",
+      gray: "#9CA3AF",
+      "off-white": "#FAF9F6",
     };
 
     meshRef.current.material = new THREE.MeshStandardMaterial({
@@ -107,6 +113,7 @@ function TShirtModel({
 
 interface TShirtSceneProps {
   selectedProduct?: string;
+  productName?: string;
   selectedPrint: PrintDesign | null;
   selectedColor: string;
   onProductClick?: () => void;
@@ -115,6 +122,7 @@ interface TShirtSceneProps {
 
 export default function TShirtScene({
   selectedProduct,
+  productName = "Продукт",
   selectedPrint,
   selectedColor,
   onProductClick,
@@ -172,7 +180,7 @@ export default function TShirtScene({
 
           <div className="absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-5">
             <p className="text-[16px]/[20px] text-[#333333] flex items-center gap-[5px]">
-              Футболка женская оверсайз{" "}
+              {productName}{" "}
               <AiFillQuestionCircle size={20} className="text-white" />
             </p>
             <button
