@@ -129,7 +129,7 @@ export default function EditProductPage({
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="w-full">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Product</h1>
 
       <form

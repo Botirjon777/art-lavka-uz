@@ -61,7 +61,7 @@ export default function NewProductPage() {
   };
 
   return (
-    <div className="max-w-3xl">
+    <div className="w-full">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Add Product</h1>
 
       <form

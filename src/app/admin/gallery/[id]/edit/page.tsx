@@ -106,7 +106,7 @@ export default function EditGalleryPage() {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full">
       <div className="mb-8">
         <Link
           href="/admin/gallery"

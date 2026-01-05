@@ -61,7 +61,7 @@ export default function NewPrintPage() {
   };
 
   return (
-    <div className="max-w-2xl">
+    <div className="w-full">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Add Print</h1>
 
       <form

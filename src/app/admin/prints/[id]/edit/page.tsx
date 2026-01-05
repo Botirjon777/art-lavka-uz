@@ -85,7 +85,7 @@ export default function EditPrintPage({
 
   if (printLoading) {
     return (
-      <div className="max-w-2xl">
+      <div className="w-full">
         <p className="text-gray-600">Loading print...</p>
       </div>
     );
@@ -96,7 +96,7 @@ export default function EditPrintPage({
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="w-full">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Print</h1>
 
       <form
