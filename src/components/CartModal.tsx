@@ -29,11 +29,11 @@ export default function CartModal({
       <div className="w-[1500px] flex gap-6">
         {/* Left Side - Cart Items */}
         <div className="flex-1">
-          <h2 className="text-[24px] font-bold text-[#333333] mb-6">
+          <h2 className="text-[30px]/[37px] text-[#333333] mb-5">
             Корзина - {items.length}
           </h2>
 
-          <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2">
+          <div className="space-y-5 max-h-[700px] overflow-y-auto pr-2">
             {items.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <svg
@@ -55,7 +55,7 @@ export default function CartModal({
               items.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white border border-gray-200 rounded-[20px] p-4 shadow-sm flex items-center gap-4"
+                  className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4"
                 >
                   {/* Product Image */}
                   <div className="relative w-20 h-20 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
@@ -68,22 +68,25 @@ export default function CartModal({
                   </div>
 
                   {/* Product Info */}
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-[16px] text-gray-800">
+                  <div className="flex-1 space-y-2.5">
+                    <h4 className="text-[14px]/[17px] text-[#333333]">
                       {item.product.name}
                     </h4>
-                    <p className="text-[14px] text-gray-600">
+                    <p className="text-[14px]/[17px] text-[#333333]">
                       {item.size} {item.color}
                     </p>
                     {item.print && (
-                      <p className="text-[12px] text-[#00C6F1]">
-                        Принт: {item.print.name}
+                      <p className="text-[14px]/[17px] text-[#333333]">
+                        Принт:{" "}
+                        <span className="text-[#00C6F1]">
+                          {item.print.name}
+                        </span>
                       </p>
                     )}
                   </div>
 
                   {/* Quantity Controls */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center">
                     <button
                       onClick={() =>
                         onUpdateQuantity(
@@ -91,7 +94,7 @@ export default function CartModal({
                           Math.max(1, item.quantity - 1)
                         )
                       }
-                      className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
+                      className="w-[35px] h-[35px] flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
                     >
                       <svg
                         className="w-5 h-5"
@@ -107,14 +110,14 @@ export default function CartModal({
                         />
                       </svg>
                     </button>
-                    <span className="font-semibold text-[18px] text-gray-800 w-8 text-center">
+                    <span className="text-[16px] text-[#333333] w-9 text-center">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() =>
                         onUpdateQuantity(item.id, item.quantity + 1)
                       }
-                      className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
+                      className="w-[35px] h-[35px] flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
                     >
                       <svg
                         className="w-5 h-5"
@@ -133,11 +136,11 @@ export default function CartModal({
                   </div>
 
                   {/* Price */}
-                  <div className="text-right min-w-[120px]">
-                    <p className="font-bold text-[18px] text-gray-800">
+                  <div className="text-left min-w-[120px]">
+                    <p className="text-[22px] text-[#333333]">
                       {(item.price * item.quantity).toLocaleString()} сум
                     </p>
-                    <p className="text-[12px] text-gray-400 line-through">
+                    <p className="text-[16px] text-[#9F9F9F] line-through">
                       {(item.price * item.quantity * 1.2).toLocaleString()} сум
                     </p>
                   </div>
@@ -145,7 +148,7 @@ export default function CartModal({
                   {/* Remove Button */}
                   <button
                     onClick={() => onRemoveItem(item.id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors ml-2"
+                    className="text-[#444444] hover:text-[#8814B1] transition-colors ml-2"
                     aria-label="Remove item"
                   >
                     <svg
@@ -171,39 +174,33 @@ export default function CartModal({
         {/* Right Side - Payment Summary */}
         {items.length > 0 && (
           <div className="w-[320px] shrink-0">
-            <div className="bg-white rounded-[20px] p-6 shadow-sm border border-gray-200 sticky top-0">
-              <h3 className="text-[20px] font-bold text-[#333333] mb-4">
-                Оплата
-              </h3>
+            <div className="bg-white rounded-[20px] p-10 shadow-sm sticky top-0 text-[#333333]">
+              <h3 className="text-[30px]/[37px] mb-5">Оплата</h3>
 
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-[14px]">
-                  <span className="text-gray-600">
-                    Товары: {items.length} шт.
-                  </span>
-                  <span className="text-gray-400 line-through">
+              <div className="space-y-3 mb-5">
+                <div className="flex justify-between text-[16px]/[22px]">
+                  <span className="">Товары: {items.length} шт.</span>
+                  <span className="text-[#9F9F9F] line-through">
                     {(total * 1.2).toLocaleString()} сум
                   </span>
                 </div>
-                <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                  <span className="text-[16px] font-semibold text-gray-800">
-                    Итого:
-                  </span>
-                  <span className="text-[24px] font-bold text-[#8814B1]">
+                <div className="flex justify-between items-center">
+                  <span className="text-[16px]/[22px] ">Итого:</span>
+                  <span className="text-[25px]/[30px]">
                     {total.toLocaleString()} сум
                   </span>
                 </div>
               </div>
 
               {/* Checkout Button */}
-              <button className="w-full py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl mb-4">
+              <button className="w-full py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-xl mb-4">
                 Заказать
               </button>
 
               {/* Payment Info */}
-              <div className="text-center text-[12px] text-gray-500 space-y-1">
-                <p>Согласен с условиями Публичной</p>
-                <p>оферты и правилами возврата</p>
+              <div className="text-[10px]/[18px]">
+                <span className="text-[#9F9F9F]">Соглашаюсь с условиями</span>{" "}
+                Публичной оферты и правилами возврата
               </div>
             </div>
           </div>
