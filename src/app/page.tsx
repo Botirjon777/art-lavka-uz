@@ -8,6 +8,7 @@ import RightConfigurator from "@/components/RightConfigurator";
 import MenuModal from "@/components/MenuModal";
 import GalleryModal from "@/components/GalleryModal";
 import CartModal from "@/components/CartModal";
+import ProductsModal from "@/components/ProductsModal";
 import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 // Default product
@@ -17,11 +18,12 @@ const defaultProduct: Product = {
   image: "/t-shirt.png",
   category: "women",
   price: 100000,
+  model: "/model/compressed/base.glb",
 };
 
 export default function Home() {
   const [activeModal, setActiveModal] = useState<
-    "menu" | "cart" | "gallery" | null
+    "menu" | "cart" | "gallery" | "products" | null
   >(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] =
@@ -72,8 +74,10 @@ export default function Home() {
         />
 
         <RightConfigurator
+          selectedProduct={selectedProduct}
           selectedPrint={selectedPrint}
           onAddToCart={handleAddToCart}
+          onProductClick={() => setActiveModal("products")}
         />
       </div>
 
@@ -95,6 +99,12 @@ export default function Home() {
         items={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
+      />
+
+      <ProductsModal
+        isOpen={activeModal === "products"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
       />
     </MainLayout>
   );

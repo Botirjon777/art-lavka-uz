@@ -4,6 +4,7 @@ export interface Product {
   image: string;
   category: string;
   price: number;
+  model?: string;
 }
 
 export interface PrintDesign {

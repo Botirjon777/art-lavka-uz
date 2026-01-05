@@ -10,7 +10,7 @@ import {
   Html,
 } from "@react-three/drei";
 import * as THREE from "three";
-import { PrintDesign } from "@/types";
+import { PrintDesign, Product } from "@/types";
 import Loader from "./Loader";
 import { AiFillQuestionCircle } from "react-icons/ai";
 import { TbRotate3D } from "react-icons/tb";
@@ -18,10 +18,15 @@ import { TbRotate3D } from "react-icons/tb";
 interface TShirtModelProps {
   selectedPrint: PrintDesign | null;
   selectedColor: string;
+  selectedProduct?: string;
 }
 
-function TShirtModel({ selectedPrint, selectedColor }: TShirtModelProps) {
-  const { scene } = useGLTF("/model/compressed/base.glb");
+function TShirtModel({
+  selectedPrint,
+  selectedColor,
+  selectedProduct,
+}: TShirtModelProps) {
+  const { scene } = useGLTF(selectedProduct || "/model/compressed/base.glb");
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
@@ -101,13 +106,19 @@ function TShirtModel({ selectedPrint, selectedColor }: TShirtModelProps) {
 }
 
 interface TShirtSceneProps {
+  selectedProduct?: string;
   selectedPrint: PrintDesign | null;
   selectedColor: string;
+  onProductClick?: () => void;
+  showUI?: boolean;
 }
 
 export default function TShirtScene({
+  selectedProduct,
   selectedPrint,
   selectedColor,
+  onProductClick,
+  showUI = true,
 }: TShirtSceneProps) {
   return (
     <div className="w-full h-full min-h-[400px] relative">
@@ -137,6 +148,7 @@ export default function TShirtScene({
           <Environment files="/model/hdr/studio_small_01_1k.hdr" />
 
           <TShirtModel
+            selectedProduct={selectedProduct}
             selectedPrint={selectedPrint}
             selectedColor={selectedColor}
           />
@@ -152,19 +164,26 @@ export default function TShirtScene({
         </Suspense>
       </Canvas>
 
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
-        <TbRotate3D size={32} className="text-[#00C6F1]" />
-      </div>
+      {showUI && (
+        <>
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
+            <TbRotate3D size={32} className="text-[#00C6F1]" />
+          </div>
 
-      <div className="absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-5">
-        <p className="text-[16px]/[20px] text-[#333333] flex items-center gap-[5px]">
-          Футболка женская оверсайз{" "}
-          <AiFillQuestionCircle size={20} className="text-white" />
-        </p>
-        <button className="text-[16px]/[20px] py-[15px] px-[35px] rounded-xl bg-white text-[#333333] hover:text-[#333333]/80">
-          Выбрать продукт
-        </button>
-      </div>
+          <div className="absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-5">
+            <p className="text-[16px]/[20px] text-[#333333] flex items-center gap-[5px]">
+              Футболка женская оверсайз{" "}
+              <AiFillQuestionCircle size={20} className="text-white" />
+            </p>
+            <button
+              onClick={onProductClick}
+              className="text-[16px]/[20px] py-[15px] px-[35px] rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
+            >
+              Выбрать продукт
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ interface MainLayoutProps {
   onMenuClick: () => void;
   onCartClick: () => void;
   cartItemCount: number;
-  activeModal: "menu" | "cart" | "gallery" | null;
+  activeModal: "menu" | "cart" | "gallery" | "products" | null;
 }
 
 export default function MainLayout({
