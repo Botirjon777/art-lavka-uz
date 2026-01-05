@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 import MainLayout from "@/components/MainLayout";
 import LeftSidebar from "@/components/LeftSidebar";
 import RightConfigurator from "@/components/RightConfigurator";
-import {
-  CartItem,
-  Product,
-  ConfiguratorState,
-  ModalType,
-  PrintDesign,
-} from "@/types";
+import MenuModal from "@/components/MenuModal";
+import GalleryModal from "@/components/GalleryModal";
+import CartModal from "@/components/CartModal";
+import ProductsModal from "@/components/ProductsModal";
+import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 // Default product
 const defaultProduct: Product = {
@@ -19,10 +18,13 @@ const defaultProduct: Product = {
   image: "/t-shirt.png",
   category: "women",
   price: 100000,
+  model: "/model/compressed/base.glb",
 };
 
 export default function Home() {
-  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [activeModal, setActiveModal] = useState<
+    "menu" | "cart" | "gallery" | "products" | null
+  >(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] =
     useState<Product>(defaultProduct);
@@ -30,7 +32,7 @@ export default function Home() {
 
   const handleAddToCart = (config: ConfiguratorState) => {
     const newItem: CartItem = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: Date.now().toString(),
       product: selectedProduct,
       print: config.selectedPrint,
       color: config.selectedColor,
@@ -40,16 +42,29 @@ export default function Home() {
     };
 
     setCartItems([...cartItems, newItem]);
+    toast.success("Товар добавлен в корзину!");
+  };
 
-    // Show success notification
-    alert("Товар добавлен в корзину!");
+  const handleUpdateQuantity = (id: string, quantity: number) => {
+    setCartItems(
+      cartItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+    );
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
   };
 
   return (
     <MainLayout
       onMenuClick={() => setActiveModal("menu")}
-      onCartClick={() => setActiveModal("cart")}
+      onCartClick={() => setActiveModal(activeModal ? null : "cart")}
       cartItemCount={cartItems.length}
+      activeModal={activeModal}
     >
       <div className="flex flex-col justify-center md:flex-row gap-[78px]">
         <LeftSidebar
@@ -59,10 +74,38 @@ export default function Home() {
         />
 
         <RightConfigurator
+          selectedProduct={selectedProduct}
           selectedPrint={selectedPrint}
           onAddToCart={handleAddToCart}
+          onProductClick={() => setActiveModal("products")}
         />
       </div>
+
+      {/* Modals */}
+      <MenuModal
+        isOpen={activeModal === "menu"}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <GalleryModal
+        isOpen={activeModal === "gallery"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
+      />
+
+      <CartModal
+        isOpen={activeModal === "cart"}
+        onClose={() => setActiveModal(null)}
+        items={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
+      />
+
+      <ProductsModal
+        isOpen={activeModal === "products"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
+      />
     </MainLayout>
   );
 }

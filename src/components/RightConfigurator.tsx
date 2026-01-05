@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { PrintDesign, ConfiguratorState } from "@/types";
+import { PrintDesign, ConfiguratorState, Product } from "@/types";
 import TShirtScene from "./TShirtScene";
 
 interface RightConfiguratorProps {
+  selectedProduct: Product;
   selectedPrint: PrintDesign | null;
   onAddToCart: (config: ConfiguratorState) => void;
+  onProductClick?: () => void;
 }
 
 const colors = [
@@ -17,8 +19,10 @@ const colors = [
 const sizes = ["XS (44)", "S (50)", "L (54)", "M (56)", "M (62)"];
 
 export default function RightConfigurator({
+  selectedProduct,
   selectedPrint,
   onAddToCart,
+  onProductClick,
 }: RightConfiguratorProps) {
   const [selectedColor, setSelectedColor] = useState(colors[0].id);
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
@@ -45,8 +49,11 @@ export default function RightConfigurator({
             {/* Left - T-shirt 3D Preview */}
             <div className="flex flex-col items-center justify-center">
               <TShirtScene
+                key={selectedProduct.id}
+                selectedProduct={selectedProduct.model}
                 selectedPrint={selectedPrint}
                 selectedColor={selectedColor}
+                onProductClick={onProductClick}
               />
             </div>
 
