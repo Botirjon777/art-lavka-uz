@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PrintDesign, ConfiguratorState, Product } from "@/types";
 import TShirtScene from "./TShirtScene";
+import SizeTableModal from "./SizeTableModal";
 
 interface RightConfiguratorProps {
   selectedProduct: Product;
@@ -45,6 +46,7 @@ export default function RightConfigurator({
   const [selectedColor, setSelectedColor] = useState(productColors[0]);
   const [selectedSize, setSelectedSize] = useState(productSizes[0]);
   const [quantity, setQuantity] = useState(1);
+  const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
   const maxStock = selectedProduct.stock;
   const price = selectedProduct.price;
@@ -123,7 +125,10 @@ export default function RightConfigurator({
                   ))}
                 </div>
 
-                <button className="text-[16px]/[22px] text-[#333333] hover:text-[#333333]/80 underline">
+                <button
+                  onClick={() => setIsSizeModalOpen(true)}
+                  className="text-[16px]/[22px] text-[#333333] hover:text-[#333333]/80 underline mt-[15px] cursor-pointer"
+                >
                   Таблица размеров
                 </button>
               </div>
@@ -213,6 +218,10 @@ export default function RightConfigurator({
           </div>
         </div>
       </div>
+      <SizeTableModal
+        isOpen={isSizeModalOpen}
+        onClose={() => setIsSizeModalOpen(false)}
+      />
     </div>
   );
 }
