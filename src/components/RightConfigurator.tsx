@@ -90,10 +90,10 @@ export default function RightConfigurator({
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                      className={`w-10 h-10 rounded-full cursor-pointer border transition-all ${
                         selectedColor === color
-                          ? "border-purple-600 ring-2 ring-purple-300 scale-110"
-                          : "border-gray-300"
+                          ? "border-white ring ring-[#00C6F1] scale-110"
+                          : "border-white"
                       }`}
                       style={{ backgroundColor: COLOR_MAP[color] || color }}
                       title={color}
@@ -114,7 +114,7 @@ export default function RightConfigurator({
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`py-2.5 px-3 text-[14px]/[17px] rounded-xl transition-all ${
+                      className={`py-2.5 px-3 cursor-pointer text-[14px]/[17px] rounded-xl transition-all ${
                         selectedSize === size
                           ? "bg-[#00C6F1] text-white"
                           : "bg-white text-[#333333]"
@@ -141,7 +141,7 @@ export default function RightConfigurator({
                 <div className="flex items-center gap-[15px]">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-full transition-colors shadow-md"
+                    className="w-10 h-10 cursor-pointer flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-full transition-colors shadow-md"
                   >
                     <svg
                       className="w-5 h-5"
@@ -164,7 +164,7 @@ export default function RightConfigurator({
                     onClick={() =>
                       setQuantity(Math.min(maxStock, quantity + 1))
                     }
-                    className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-full transition-colors shadow-md"
+                    className="w-10 h-10 cursor-pointer flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-full transition-colors shadow-md"
                   >
                     <svg
                       className="w-5 h-5"
@@ -203,13 +203,13 @@ export default function RightConfigurator({
               <div className="space-y-[15px] flex flex-col">
                 <button
                   onClick={handleAddToCart}
-                  className="max-w-[240px] px-[35px] py-3.5 bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white rounded-xl transition-colors shadow-md text-[16px]/5"
+                  className="max-w-[240px] cursor-pointer px-[35px] py-3.5 bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white rounded-xl transition-colors shadow-md text-[16px]/5"
                 >
                   Купить в 1 клик
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  className="max-w-[240px] px-[35px] py-3.5 bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-all shadow-md text-[16px]/5"
+                  className="max-w-[240px] cursor-pointer px-[35px] py-3.5 bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-all shadow-md text-[16px]/5"
                 >
                   Добавить в корзину
                 </button>

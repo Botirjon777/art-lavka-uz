@@ -10,7 +10,8 @@ import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
 interface Print {
   _id: string;
   name: string;
-  image: string;
+  frontImage: string;
+  backImage?: string;
   category: string;
   active: boolean;
 }
@@ -100,7 +101,7 @@ export default function PrintsPage() {
             >
               <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
                 <Image
-                  src={print.image}
+                  src={print.frontImage}
                   alt={print.name}
                   fill
                   className="object-cover"

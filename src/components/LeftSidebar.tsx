@@ -59,7 +59,7 @@ export default function LeftSidebar({
   return (
     <div className="w-full max-w-[558px] h-full px-6 flex flex-col">
       {/* Logo */}
-      <div className="mb-6 flex justify-between items-center gap-6">
+      <div className="mb-4 flex justify-between items-center gap-6">
         <Image
           src="/art-lavka.png"
           alt="ART LAVKA.UZ"
@@ -69,10 +69,20 @@ export default function LeftSidebar({
         />
         <button
           onClick={onGalleryClick}
-          className="py-[15px] px-[35px] bg-[#00C6F1] hover:bg-[#00C6F1]/80 cursor-pointer text-[16px]/5 text-white font-medium rounded-lg transition-colors shadow-md"
+          className="py-[15px] px-[35px] bg-[#00C6F1] hover:bg-[#00C6F1]/80 cursor-pointer text-[16px]/5 text-white font-medium rounded-lg transition-colors shadow-md whitespace-nowrap"
         >
           Фото Галерея
         </button>
+      </div>
+
+      {/* Track Order Button */}
+      <div className="mb-6">
+        <a
+          href="/track-order"
+          className="block w-full py-3 px-6 bg-linear-to-r from-[#8814B1] to-[#a01dc4] hover:from-[#8814B1]/90 hover:to-[#a01dc4]/90 text-center text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
+        >
+          Отследить заказ
+        </a>
       </div>
 
       {/* Print Selection */}
@@ -87,7 +97,7 @@ export default function LeftSidebar({
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 text-[16px]/[22px] transition-colors ${
+              className={`px-3 py-1.5 text-[16px]/[22px] cursor-pointer hover:text-[#333333]/80 transition-colors ${
                 selectedCategory === cat.id
                   ? "underline text-[#333333]"
                   : "text-[#333333]"
@@ -115,7 +125,7 @@ export default function LeftSidebar({
             {/* No Print Option */}
             <button
               onClick={() => onPrintSelect(null)}
-              className={`w-[134px] h-[134px] rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
+              className={`w-[134px] h-[134px] cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
                 selectedPrint === null
                   ? "border-[#00C6F1]"
                   : "border-transparent"
@@ -135,7 +145,7 @@ export default function LeftSidebar({
                 <button
                   key={print.id || (print as any)._id}
                   onClick={() => onPrintSelect(print)}
-                  className={`w-[134px] h-[134px] rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
+                  className={`w-[134px] h-[134px] cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
                     selectedPrint?.id === print.id ||
                     (selectedPrint as any)?._id === (print as any)._id
                       ? "border-[#00C6F1]"
@@ -144,7 +154,7 @@ export default function LeftSidebar({
                 >
                   <div className="relative bg-white h-[110px] w-[110px] rounded-[26px] overflow-hidden shadow-lg">
                     <Image
-                      src={print.image}
+                      src={print.frontImage}
                       alt={print.name}
                       fill
                       className="object-contain p-3"

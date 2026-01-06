@@ -29,22 +29,53 @@ function TShirtModel({
   const { scene } = useGLTF(selectedProduct || "/model/compressed/base.glb");
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [frontTexture, setFrontTexture] = useState<THREE.Texture | null>(null);
+  const [backTexture, setBackTexture] = useState<THREE.Texture | null>(null);
+  const [isLoadingTextures, setIsLoadingTextures] = useState(false);
 
-  // Load texture manually without triggering Suspense
+  // Load front and back textures
   useEffect(() => {
     if (!selectedPrint) {
-      setTexture(null);
+      setFrontTexture(null);
+      setBackTexture(null);
+      setIsLoadingTextures(false);
       return;
     }
 
+    setIsLoadingTextures(true);
     const loader = new THREE.TextureLoader();
-    loader.load(selectedPrint.image, (loadedTexture) => {
+    let frontLoaded = false;
+    let backLoaded = !selectedPrint.backImage; // If no back image, consider it loaded
+
+    const checkAllLoaded = () => {
+      if (frontLoaded && backLoaded) {
+        setIsLoadingTextures(false);
+      }
+    };
+
+    // Load front image
+    loader.load(selectedPrint.frontImage, (loadedTexture) => {
       loadedTexture.flipY = false;
       loadedTexture.colorSpace = THREE.SRGBColorSpace;
       loadedTexture.needsUpdate = true;
-      setTexture(loadedTexture);
+      setFrontTexture(loadedTexture);
+      frontLoaded = true;
+      checkAllLoaded();
     });
+
+    // Load back image if it exists
+    if (selectedPrint.backImage) {
+      loader.load(selectedPrint.backImage, (loadedTexture) => {
+        loadedTexture.flipY = false;
+        loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture.needsUpdate = true;
+        setBackTexture(loadedTexture);
+        backLoaded = true;
+        checkAllLoaded();
+      });
+    } else {
+      setBackTexture(null);
+    }
   }, [selectedPrint]);
 
   // Find and store mesh reference only once
@@ -89,25 +120,75 @@ function TShirtModel({
   });
 
   return (
-    <group ref={groupRef} position={[0, -1, 0]} scale={1.5}>
-      <primitive object={scene} />
-      {selectedPrint && meshRef.current && texture && (
-        <Decal
-          position={[-0.05, 0.9, 0.6]}
-          rotation={[0, Math.PI, Math.PI]}
-          scale={0.9}
-          mesh={meshRef as React.RefObject<THREE.Mesh>}
-        >
-          <meshStandardMaterial
-            map={texture}
-            transparent
-            polygonOffset
-            polygonOffsetFactor={-1}
-            roughness={0.8}
-          />
-        </Decal>
+    <>
+      <group ref={groupRef} position={[0, -1, 0]} scale={1.5}>
+        <primitive object={scene} />
+        {selectedPrint && meshRef.current && (
+          <>
+            {/* Front print */}
+            {frontTexture && (
+              <Decal
+                position={[-0.05, 0.9, 0.6]}
+                rotation={[0, Math.PI, Math.PI]}
+                scale={0.9}
+                mesh={meshRef as React.RefObject<THREE.Mesh>}
+              >
+                <meshStandardMaterial
+                  map={frontTexture}
+                  transparent
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.8}
+                />
+              </Decal>
+            )}
+
+            {/* Back print - only render if backImage exists */}
+            {backTexture && (
+              <Decal
+                position={[-0.05, 0.9, -0.6]}
+                rotation={[0, 0, Math.PI]}
+                scale={0.9}
+                mesh={meshRef as React.RefObject<THREE.Mesh>}
+              >
+                <meshStandardMaterial
+                  map={backTexture}
+                  transparent
+                  polygonOffset
+                  polygonOffsetFactor={-1}
+                  roughness={0.8}
+                />
+              </Decal>
+            )}
+          </>
+        )}
+      </group>
+
+      {/* Loading overlay */}
+      {isLoadingTextures && (
+        <Html center>
+          <div className="flex flex-col items-center gap-2 bg-white/90 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-2 h-2 bg-[#00C6F1] rounded-full animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-[#00C6F1] rounded-full animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-[#00C6F1] rounded-full animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              ></div>
+            </div>
+            <p className="text-sm font-medium text-[#333333]">
+              Implementing print...
+            </p>
+          </div>
+        </Html>
       )}
-    </group>
+    </>
   );
 }
 
@@ -185,7 +266,7 @@ export default function TShirtScene({
             </p>
             <button
               onClick={onProductClick}
-              className="text-[16px]/[20px] py-[15px] px-[35px] rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
+              className="text-[16px]/[20px] py-[15px] px-[35px] cursor-pointer rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
             >
               Выбрать продукт
             </button>
