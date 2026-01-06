@@ -22,7 +22,7 @@ export function SidebarPrintSkeleton({ count = 8 }: { count?: number }) {
     <>
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="animate-pulse">
-          <div className="w-[134px] h-[134px] bg-gray-200 rounded-[26px]"></div>
+          <div className="aspect-square w-full bg-gray-200 rounded-[26px]"></div>
         </div>
       ))}
     </>

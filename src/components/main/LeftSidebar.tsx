@@ -59,9 +59,9 @@ export default function LeftSidebar({
   });
 
   return (
-    <div className="w-full max-w-[558px] h-full px-6 flex flex-col">
+    <div className="w-full max-w-[558px] h-[calc(100vh-160px)] max-h-[886px] px-6 flex flex-col shrink-0">
       {/* Logo */}
-      <div className="mb-4 flex justify-between items-center gap-6">
+      <div className="mb-4 flex justify-between items-center gap-6 shrink-0">
         <Image
           src="/art-lavka.png"
           alt="ART LAVKA.UZ"
@@ -78,7 +78,7 @@ export default function LeftSidebar({
       </div>
 
       {/* Track Order Button */}
-      <div className="mb-6">
+      <div className="mb-6 shrink-0">
         <a
           href="/track-order"
           className="block w-full py-3 px-6 bg-linear-to-r from-[#8814B1] to-[#a01dc4] hover:from-[#8814B1]/90 hover:to-[#a01dc4]/90 text-center text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
@@ -89,19 +89,19 @@ export default function LeftSidebar({
 
       {/* Print Selection */}
       <div className="flex-1 flex flex-col">
-        <h3 className="text-[30px]/[37px] text-[#333333] mb-7.5">
+        <h3 className="text-[30px]/[37px] text-[#333333] mb-7.5 shrink-0">
           Выберите принт
         </h3>
 
         {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 shrink-0">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 text-[16px]/[22px] cursor-pointer hover:text-[#333333]/80 transition-colors ${
+              className={`text-[16px]/[22px] cursor-pointer hover:text-[#8814B1] transition-colors ${
                 selectedCategory === cat.id
-                  ? "underline text-[#333333]"
+                  ? "border-b-2 border-[#8814B1] text-[#8814B1] font-bold"
                   : "text-[#333333]"
               }`}
             >
@@ -111,30 +111,36 @@ export default function LeftSidebar({
         </div>
 
         {/* Search Input */}
-        <div className="mb-12">
+        <div className="mb-8 shrink-0">
           <input
             type="text"
             placeholder="Поиск принтов..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-[50px] bg-white rounded-lg px-4"
+            className="w-full h-[50px] bg-white rounded-lg px-4 border border-gray-100 focus:border-[#8814B1] outline-none transition-all shadow-sm"
           />
         </div>
 
-        {/* Print Grid - Scrollable */}
-        <div className="w-full">
-          <div className="grid grid-cols-4 gap-3 pb-4">
+        {/* Print Grid - Scrollable Container */}
+        <div
+          className="flex-1 overflow-y-auto pr-2 -mr-2 min-h-0 [scrollbar-gutter:stable]"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "#8814B1 transparent",
+          }}
+        >
+          <div className="grid grid-cols-3 xl:grid-cols-4 gap-4 pb-10">
             {/* No Print Option */}
             <button
               onClick={() => onPrintSelect(null)}
-              className={`w-[134px] h-[134px] cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
+              className={`aspect-square cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
                 selectedPrint === null
                   ? "border-[#00C6F1]"
                   : "border-transparent"
               }`}
             >
-              <div className="bg-white h-[110px] w-[110px] rounded-[26px] shadow-lg flex items-center justify-center">
-                <span className="text-xs text-gray-500 text-center">
+              <div className="bg-white h-[90%] w-[90%] rounded-[26px] shadow-lg flex items-center justify-center">
+                <span className="text-xs text-gray-500 text-center font-medium">
                   Без принта
                 </span>
               </div>
@@ -147,14 +153,14 @@ export default function LeftSidebar({
                 <button
                   key={print.id || (print as any)._id}
                   onClick={() => onPrintSelect(print)}
-                  className={`w-[134px] h-[134px] cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
+                  className={`aspect-square cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
                     selectedPrint?.id === print.id ||
                     (selectedPrint as any)?._id === (print as any)._id
                       ? "border-[#00C6F1]"
                       : "border-transparent"
                   }`}
                 >
-                  <div className="relative bg-white h-[110px] w-[110px] rounded-[26px] overflow-hidden shadow-lg">
+                  <div className="relative bg-white h-[90%] w-[90%] rounded-[26px] overflow-hidden shadow-lg">
                     <Image
                       src={print.frontImage}
                       alt={print.name}
