@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 
+// Cache for 1 hour
+export const revalidate = 3600;
+
 export async function GET() {
   try {
     await dbConnect();

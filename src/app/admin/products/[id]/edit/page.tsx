@@ -37,7 +37,7 @@ export default function EditProductPage({
       setColors(data.colors || []);
       setSizes(data.sizes || []);
     } else {
-      toast.error("Product not found");
+      toast.error("Товар не найден");
       router.push("/admin/products");
     }
     setProductLoading(false);
@@ -61,12 +61,12 @@ export default function EditProductPage({
 
       if (data.success) {
         setImageUrl(data.url);
-        toast.success("Image uploaded successfully");
+        toast.success("Изображение успешно загружено");
       } else {
-        toast.error(data.error || "Failed to upload image");
+        toast.error(data.error || "Не удалось загрузить изображение");
       }
     } catch (error) {
-      toast.error("Failed to upload image");
+      toast.error("Не удалось загрузить изображение");
     } finally {
       setUploading(false);
     }
@@ -107,10 +107,10 @@ export default function EditProductPage({
     const result = await updateProduct(id, formData);
 
     if (result.success) {
-      toast.success("Product updated successfully");
+      toast.success("Продукт успешно обновлен");
       router.push("/admin/products");
     } else {
-      toast.error(result.error || "Failed to update product");
+      toast.error(result.error || "Не удалось обновить продукт");
     }
 
     setLoading(false);
@@ -119,7 +119,7 @@ export default function EditProductPage({
   if (productLoading) {
     return (
       <div className="max-w-3xl">
-        <p className="text-gray-600">Loading product...</p>
+        <p className="text-gray-600">Загрузка товара...</p>
       </div>
     );
   }
@@ -130,7 +130,9 @@ export default function EditProductPage({
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Product</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">
+        Редактировать продукт
+      </h1>
 
       <form
         onSubmit={handleSubmit}
@@ -139,7 +141,7 @@ export default function EditProductPage({
         {/* Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Product Image *
+            Изображение товара *
           </label>
           <div className="flex items-start gap-4">
             {imageUrl && (
@@ -161,7 +163,7 @@ export default function EditProductPage({
                 disabled={uploading}
               />
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, WebP up to 5MB
+                PNG, JPG, WebP до 5МБ
               </p>
             </div>
           </div>
@@ -173,7 +175,7 @@ export default function EditProductPage({
             htmlFor="name"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Product Name *
+            Название товара *
           </label>
           <input
             type="text"
@@ -192,7 +194,7 @@ export default function EditProductPage({
             htmlFor="description"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Description
+            Описание
           </label>
           <textarea
             id="description"
@@ -200,7 +202,7 @@ export default function EditProductPage({
             rows={4}
             defaultValue={product.description || ""}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-            placeholder="Product description..."
+            placeholder="Описание товара..."
           />
         </div>
 
@@ -210,7 +212,7 @@ export default function EditProductPage({
             htmlFor="model"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            3D Model Path *
+            Путь к 3D модели *
           </label>
           <input
             type="text"
@@ -222,14 +224,14 @@ export default function EditProductPage({
             placeholder="/model/compressed/base.glb"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Path to the 3D model file (.glb)
+            Путь к файлу 3D модели (.glb)
           </p>
         </div>
 
         {/* Colors */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Available Colors *
+            Доступные цвета *
           </label>
           <div className="flex gap-2 mb-2">
             <input
@@ -240,14 +242,14 @@ export default function EditProductPage({
                 e.key === "Enter" && (e.preventDefault(), addColor())
               }
               className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="Enter color (e.g., white, black)"
+              placeholder="Введите цвет (напр: белый, черный)"
             />
             <button
               type="button"
               onClick={addColor}
               className="px-4 py-2 bg-[#8814B1] text-white rounded-xl hover:bg-[#8814B1]/90"
             >
-              Add
+              Добавить
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -272,7 +274,7 @@ export default function EditProductPage({
         {/* Sizes */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Available Sizes *
+            Доступные размеры *
           </label>
           <div className="flex gap-2 mb-2">
             <input
@@ -283,14 +285,14 @@ export default function EditProductPage({
                 e.key === "Enter" && (e.preventDefault(), addSize())
               }
               className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="Enter size (e.g., XS, S, M, L, XL)"
+              placeholder="Введите размер (напр: XS, S, M, L, XL)"
             />
             <button
               type="button"
               onClick={addSize}
               className="px-4 py-2 bg-[#8814B1] text-white rounded-xl hover:bg-[#8814B1]/90"
             >
-              Add
+              Добавить
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -319,7 +321,7 @@ export default function EditProductPage({
               htmlFor="price"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Price (сум) *
+              Цена (сум) *
             </label>
             <input
               type="number"
@@ -337,7 +339,7 @@ export default function EditProductPage({
               htmlFor="stock"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Stock
+              Склад
             </label>
             <input
               type="number"
@@ -357,7 +359,7 @@ export default function EditProductPage({
             htmlFor="category"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Category *
+            Категория *
           </label>
           <select
             id="category"
@@ -366,9 +368,9 @@ export default function EditProductPage({
             defaultValue={product.category}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
           >
-            <option value="women">Women</option>
-            <option value="men">Men</option>
-            <option value="kids">Kids</option>
+            <option value="women">Женское</option>
+            <option value="men">Мужское</option>
+            <option value="kids">Детское</option>
           </select>
         </div>
 
@@ -383,7 +385,7 @@ export default function EditProductPage({
             className="w-4 h-4 text-[#8814B1] border-gray-300 rounded focus:ring-[#8814B1]"
           />
           <label htmlFor="active" className="text-sm font-medium text-gray-700">
-            Active (visible to customers)
+            Активен (видим для клиентов)
           </label>
         </div>
 
@@ -400,14 +402,14 @@ export default function EditProductPage({
             }
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Updating..." : "Update Product"}
+            {loading ? "Обновление..." : "Обновить продукт"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
             className="px-6 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-xl transition-all"
           >
-            Cancel
+            Отмена
           </button>
         </div>
       </form>

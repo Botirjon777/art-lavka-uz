@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { PrintDesign, ConfiguratorState } from "@/types";
-import { SidebarPrintSkeleton } from "./LoadingSkeleton";
+import { SidebarPrintSkeleton } from "../LoadingSkeleton";
 
 interface LeftSidebarProps {
   onGalleryClick: () => void;
@@ -35,7 +35,9 @@ export default function LeftSidebar({
   const fetchPrints = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/prints?limit=100");
+      const response = await fetch("/api/prints?limit=100", {
+        next: { revalidate: 3600 }, // Cache for 1 hour
+      });
       const data = await response.json();
       if (data.success) {
         setPrints(data.data.map((item: any) => ({ ...item, id: item._id })));

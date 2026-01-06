@@ -33,14 +33,14 @@ export default function PrintsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this print?")) return;
+    if (!confirm("Вы уверены, что хотите удалить этот принт?")) return;
 
     const result = await deletePrint(id);
     if (result.success) {
-      toast.success("Print deleted successfully");
+      toast.success("Принт успешно удален");
       loadPrints();
     } else {
-      toast.error("Failed to delete print");
+      toast.error("Не удалось удалить принт");
     }
   };
 
@@ -50,46 +50,51 @@ export default function PrintsPage() {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Prints</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Принты</h1>
         <Link
           href="/admin/prints/new"
           className="flex items-center gap-2 px-6 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all shadow-lg"
         >
           <FiPlus className="w-5 h-5" />
-          Add Print
+          Добавить принт
         </Link>
       </div>
 
       {/* Category Filter */}
       <div className="flex gap-2 mb-6">
-        {["all", "national", "stylish", "funny"].map((cat) => (
+        {[
+          { value: "all", label: "Все" },
+          { value: "national", label: "Национальные" },
+          { value: "stylish", label: "Стильные" },
+          { value: "funny", label: "Прикольные" },
+        ].map((cat) => (
           <button
-            key={cat}
-            onClick={() => setFilter(cat)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all capitalize ${
-              filter === cat
+            key={cat.value}
+            onClick={() => setFilter(cat.value)}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              filter === cat.value
                 ? "bg-[#8814B1] text-white"
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
           >
-            {cat}
+            {cat.label}
           </button>
         ))}
       </div>
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading prints...</p>
+          <p className="text-gray-600">Загрузка принтов...</p>
         </div>
       ) : filteredPrints.length === 0 ? (
         <div className="bg-white rounded-[20px] p-12 text-center shadow-sm">
-          <p className="text-gray-600 mb-4">No prints found</p>
+          <p className="text-gray-600 mb-4">Принты не найдены</p>
           <Link
             href="/admin/prints/new"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all"
           >
             <FiPlus className="w-5 h-5" />
-            Add Your First Print
+            Добавить первый принт
           </Link>
         </div>
       ) : (
@@ -136,7 +141,7 @@ export default function PrintsPage() {
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {print.active ? "Active" : "Inactive"}
+                    {print.active ? "Активный" : "Неактивный"}
                   </span>
                 </div>
               </div>

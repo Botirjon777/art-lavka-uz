@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import MainLayout from "@/components/MainLayout";
-import LeftSidebar from "@/components/LeftSidebar";
-import RightConfigurator from "@/components/RightConfigurator";
-import MenuModal from "@/components/MenuModal";
-import GalleryModal from "@/components/GalleryModal";
-import CartModal from "@/components/CartModal";
-import ProductsModal from "@/components/ProductsModal";
-import CheckoutModal from "@/components/CheckoutModal";
-import OrderSuccessModal from "@/components/OrderSuccessModal";
+import MainLayout from "@/components/main/MainLayout";
+import LeftSidebar from "@/components/main/LeftSidebar";
+import RightConfigurator from "@/components/main/RightConfigurator";
+import MenuModal from "@/components/main/MenuModal";
+import GalleryModal from "@/components/main/GalleryModal";
+import CartModal from "@/components/main/CartModal";
+import ProductsModal from "@/components/main/ProductsModal";
+import CheckoutModal from "@/components/main/CheckoutModal";
+import OrderSuccessModal from "@/components/main/OrderSuccessModal";
 import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 export default function Home() {
@@ -32,7 +32,9 @@ export default function Home() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("/api/products");
+      const response = await fetch("/api/products", {
+        next: { revalidate: 3600 }, // Cache for 1 hour
+      });
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {

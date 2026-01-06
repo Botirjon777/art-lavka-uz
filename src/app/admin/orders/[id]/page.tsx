@@ -36,10 +36,10 @@ export default function OrderDetailPage() {
     const result = await updateOrderStatus(order._id!, status);
 
     if (result.success) {
-      toast.success("Order status updated");
+      toast.success("Статус заказа обновлен");
       setOrder(result.order);
     } else {
-      toast.error(result.error || "Failed to update status");
+      toast.error(result.error || "Не удалось обновить статус");
     }
     setUpdating(false);
   };
@@ -55,10 +55,10 @@ export default function OrderDetailPage() {
     );
 
     if (result.success) {
-      toast.success("Payment status updated");
+      toast.success("Статус оплаты обновлен");
       setOrder(result.order);
     } else {
-      toast.error(result.error || "Failed to update payment status");
+      toast.error(result.error || "Не удалось обновить статус оплаты");
     }
     setUpdating(false);
   };
@@ -67,7 +67,7 @@ export default function OrderDetailPage() {
     return (
       <div className="text-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading order...</p>
+        <p className="text-gray-600">Загрузка заказа...</p>
       </div>
     );
   }
@@ -75,12 +75,12 @@ export default function OrderDetailPage() {
   if (!order) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 mb-4">Order not found</p>
+        <p className="text-gray-600 mb-4">Заказ не найден</p>
         <Link
           href="/admin/orders"
           className="text-[#8814B1] hover:text-[#8814B1]/80"
         >
-          Back to Orders
+          Вернуться к заказам
         </Link>
       </div>
     );
@@ -97,7 +97,7 @@ export default function OrderDetailPage() {
           <FiArrowLeft className="w-6 h-6" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Order Details</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Детали заказа</h1>
           <p className="text-gray-600">{order.orderNumber}</p>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function OrderDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Order Items */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-xl font-bold mb-4">Order Items</h2>
+            <h2 className="text-xl font-bold mb-4">Товары в заказе</h2>
             <div className="space-y-4">
               {order.items.map((item, index) => (
                 <div
@@ -131,14 +131,14 @@ export default function OrderDetailPage() {
                     </p>
                     {item.print && (
                       <p className="text-sm text-gray-600">
-                        Print:{" "}
+                        Принт:{" "}
                         <span className="text-[#00C6F1]">
                           {item.print.name}
                         </span>
                       </p>
                     )}
                     <p className="text-sm text-gray-600">
-                      Quantity: {item.quantity}
+                      Количество: {item.quantity}
                     </p>
                   </div>
                   <div className="text-right">
@@ -151,7 +151,7 @@ export default function OrderDetailPage() {
             </div>
             <div className="mt-4 pt-4 border-t border-gray-200">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold">Total</span>
+                <span className="text-lg font-bold">Итого</span>
                 <span className="text-2xl font-bold text-[#8814B1]">
                   {order.totalAmount.toLocaleString()} UZS
                 </span>
@@ -161,25 +161,23 @@ export default function OrderDetailPage() {
 
           {/* Customer Information */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-xl font-bold mb-4">Customer Information</h2>
+            <h2 className="text-xl font-bold mb-4">Информация о клиенте</h2>
             <div className="space-y-3">
               <div>
-                <label className="text-sm text-gray-600">Name</label>
+                <label className="text-sm text-gray-600">Имя</label>
                 <p className="font-medium">{order.customerName}</p>
               </div>
               <div>
-                <label className="text-sm text-gray-600">Phone</label>
+                <label className="text-sm text-gray-600">Телефон</label>
                 <p className="font-medium">{order.customerPhone}</p>
               </div>
               <div>
-                <label className="text-sm text-gray-600">
-                  Delivery Address
-                </label>
+                <label className="text-sm text-gray-600">Адрес доставки</label>
                 <p className="font-medium">{order.customerAddress}</p>
               </div>
               {order.notes && (
                 <div>
-                  <label className="text-sm text-gray-600">Notes</label>
+                  <label className="text-sm text-gray-600">Заметки</label>
                   <p className="font-medium">{order.notes}</p>
                 </div>
               )}
@@ -191,7 +189,7 @@ export default function OrderDetailPage() {
         <div className="space-y-6">
           {/* Order Status */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold mb-4">Order Status</h2>
+            <h2 className="text-lg font-bold mb-4">Статус заказа</h2>
             <select
               value={order.status}
               onChange={(e) =>
@@ -200,18 +198,18 @@ export default function OrderDetailPage() {
               disabled={updating}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] disabled:opacity-50"
             >
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="pending">Ожидает</option>
+              <option value="confirmed">Подтвержден</option>
+              <option value="processing">В обработке</option>
+              <option value="shipped">Отправлен</option>
+              <option value="delivered">Доставлен</option>
+              <option value="cancelled">Отменен</option>
             </select>
           </div>
 
           {/* Payment Status */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold mb-4">Payment Status</h2>
+            <h2 className="text-lg font-bold mb-4">Статус оплаты</h2>
             <select
               value={order.paymentStatus}
               onChange={(e) =>
@@ -220,24 +218,24 @@ export default function OrderDetailPage() {
               disabled={updating}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] disabled:opacity-50"
             >
-              <option value="pending">Pending</option>
-              <option value="paid">Paid</option>
-              <option value="failed">Failed</option>
+              <option value="pending">Ожидает</option>
+              <option value="paid">Оплачено</option>
+              <option value="failed">Ошибка</option>
             </select>
           </div>
 
           {/* Order Info */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold mb-4">Order Information</h2>
+            <h2 className="text-lg font-bold mb-4">Информация о заказе</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Created</span>
+                <span className="text-gray-600">Создан</span>
                 <span className="font-medium">
                   {new Date(order.createdAt).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Updated</span>
+                <span className="text-gray-600">Обновлен</span>
                 <span className="font-medium">
                   {new Date(order.updatedAt).toLocaleString()}
                 </span>

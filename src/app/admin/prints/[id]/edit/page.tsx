@@ -32,7 +32,7 @@ export default function EditPrintPage({
       setFrontImageUrl(data.frontImage || "");
       setBackImageUrl(data.backImage || "");
     } else {
-      toast.error("Print not found");
+      toast.error("Принт не найден");
       router.push("/admin/prints");
     }
     setPrintLoading(false);
@@ -58,12 +58,12 @@ export default function EditPrintPage({
 
       if (data.success) {
         setFrontImageUrl(data.url);
-        toast.success("Front image uploaded successfully");
+        toast.success("Переднее изображение загружено");
       } else {
-        toast.error(data.error || "Failed to upload front image");
+        toast.error(data.error || "Не удалось загрузить переднее изображение");
       }
     } catch (error) {
-      toast.error("Failed to upload front image");
+      toast.error("Не удалось загрузить переднее изображение");
     } finally {
       setUploadingFront(false);
     }
@@ -89,12 +89,12 @@ export default function EditPrintPage({
 
       if (data.success) {
         setBackImageUrl(data.url);
-        toast.success("Back image uploaded successfully");
+        toast.success("Заднее изображение загружено");
       } else {
-        toast.error(data.error || "Failed to upload back image");
+        toast.error(data.error || "Не удалось загрузить заднее изображение");
       }
     } catch (error) {
-      toast.error("Failed to upload back image");
+      toast.error("Не удалось загрузить заднее изображение");
     } finally {
       setUploadingBack(false);
     }
@@ -113,10 +113,10 @@ export default function EditPrintPage({
     const result = await updatePrint(id, formData);
 
     if (result.success) {
-      toast.success("Print updated successfully");
+      toast.success("Принт успешно обновлен");
       router.push("/admin/prints");
     } else {
-      toast.error(result.error || "Failed to update print");
+      toast.error(result.error || "Не удалось обновить принт");
     }
 
     setLoading(false);
@@ -125,7 +125,7 @@ export default function EditPrintPage({
   if (printLoading) {
     return (
       <div className="w-full">
-        <p className="text-gray-600">Loading print...</p>
+        <p className="text-gray-600">Загрузка принта...</p>
       </div>
     );
   }
@@ -136,7 +136,9 @@ export default function EditPrintPage({
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Print</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">
+        Редактировать принт
+      </h1>
 
       <form
         onSubmit={handleSubmit}
@@ -145,7 +147,7 @@ export default function EditPrintPage({
         {/* Front Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Front Image *
+            Переднее изображение *
           </label>
           <div className="flex items-start gap-4">
             {frontImageUrl && (
@@ -167,7 +169,7 @@ export default function EditPrintPage({
                 disabled={uploadingFront}
               />
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, WebP up to 5MB
+                PNG, JPG, WebP до 5МБ
               </p>
             </div>
           </div>
@@ -176,7 +178,7 @@ export default function EditPrintPage({
         {/* Back Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Back Image (Optional)
+            Заднее изображение (необязательно)
           </label>
           <div className="flex items-start gap-4">
             {backImageUrl && (
@@ -198,7 +200,8 @@ export default function EditPrintPage({
                 disabled={uploadingBack}
               />
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, WebP up to 5MB (leave empty for front-only print)
+                PNG, JPG, WebP до 5МБ (оставьте пустым для одностороннего
+                принта)
               </p>
             </div>
           </div>
@@ -210,7 +213,7 @@ export default function EditPrintPage({
             htmlFor="name"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Print Name *
+            Название принта *
           </label>
           <input
             type="text"
@@ -229,7 +232,7 @@ export default function EditPrintPage({
             htmlFor="category"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Category *
+            Категория *
           </label>
           <select
             id="category"
@@ -238,10 +241,10 @@ export default function EditPrintPage({
             defaultValue={print.category}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
           >
-            <option value="national">National</option>
-            <option value="stylish">Stylish</option>
-            <option value="funny">Funny</option>
-            <option value="all">All</option>
+            <option value="national">Национальные</option>
+            <option value="stylish">Стильные</option>
+            <option value="funny">Прикольные</option>
+            <option value="all">Все</option>
           </select>
         </div>
 
@@ -256,7 +259,7 @@ export default function EditPrintPage({
             className="w-4 h-4 text-[#8814B1] border-gray-300 rounded focus:ring-[#8814B1]"
           />
           <label htmlFor="active" className="text-sm font-medium text-gray-700">
-            Active (visible to customers)
+            Активен (видим для клиентов)
           </label>
         </div>
 
@@ -267,14 +270,14 @@ export default function EditPrintPage({
             disabled={loading || !frontImageUrl}
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Updating..." : "Update Print"}
+            {loading ? "Обновление..." : "Обновить принт"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
             className="px-6 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-xl transition-all"
           >
-            Cancel
+            Отмена
           </button>
         </div>
       </form>

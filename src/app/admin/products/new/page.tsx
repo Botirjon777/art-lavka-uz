@@ -30,12 +30,12 @@ export default function NewProductPage() {
 
       if (data.success) {
         setImageUrl(data.url);
-        toast.success("Image uploaded successfully");
+        toast.success("Изображение успешно загружено");
       } else {
-        toast.error(data.error || "Failed to upload image");
+        toast.error(data.error || "Не удалось загрузить изображение");
       }
     } catch (error) {
-      toast.error("Failed to upload image");
+      toast.error("Не удалось загрузить изображение");
     } finally {
       setUploading(false);
     }
@@ -51,10 +51,10 @@ export default function NewProductPage() {
     const result = await createProduct(formData);
 
     if (result.success) {
-      toast.success("Product created successfully");
+      toast.success("Продукт успешно создан");
       router.push("/admin/products");
     } else {
-      toast.error(result.error || "Failed to create product");
+      toast.error(result.error || "Не удалось создать продукт");
     }
 
     setLoading(false);
@@ -62,7 +62,9 @@ export default function NewProductPage() {
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Add Product</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">
+        Добавить продукт
+      </h1>
 
       <form
         onSubmit={handleSubmit}
@@ -71,7 +73,7 @@ export default function NewProductPage() {
         {/* Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Product Image *
+            Изображение продукта *
           </label>
           <div className="flex items-start gap-4">
             {imageUrl && (
@@ -93,7 +95,7 @@ export default function NewProductPage() {
                 disabled={uploading}
               />
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, WebP up to 5MB
+                PNG, JPG, WebP до 5МБ
               </p>
             </div>
           </div>
@@ -105,7 +107,7 @@ export default function NewProductPage() {
             htmlFor="name"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Product Name *
+            Название товара *
           </label>
           <input
             type="text"
@@ -123,14 +125,14 @@ export default function NewProductPage() {
             htmlFor="description"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Description
+            Описание
           </label>
           <textarea
             id="description"
             name="description"
             rows={4}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-            placeholder="Product description..."
+            placeholder="Описание товара..."
           />
         </div>
 
@@ -141,7 +143,7 @@ export default function NewProductPage() {
               htmlFor="price"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Price (сум) *
+              Цена (сум) *
             </label>
             <input
               type="number"
@@ -158,7 +160,7 @@ export default function NewProductPage() {
               htmlFor="stock"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Stock
+              Склад
             </label>
             <input
               type="number"
@@ -178,7 +180,7 @@ export default function NewProductPage() {
             htmlFor="category"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Category *
+            Категория *
           </label>
           <select
             id="category"
@@ -186,9 +188,9 @@ export default function NewProductPage() {
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
           >
-            <option value="women">Women</option>
-            <option value="men">Men</option>
-            <option value="kids">Kids</option>
+            <option value="women">Женское</option>
+            <option value="men">Мужское</option>
+            <option value="kids">Детское</option>
           </select>
         </div>
 
@@ -203,7 +205,7 @@ export default function NewProductPage() {
             className="w-4 h-4 text-[#8814B1] border-gray-300 rounded focus:ring-[#8814B1]"
           />
           <label htmlFor="active" className="text-sm font-medium text-gray-700">
-            Active (visible to customers)
+            Активен (видим для клиентов)
           </label>
         </div>
 
@@ -214,14 +216,14 @@ export default function NewProductPage() {
             disabled={loading || !imageUrl}
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Creating..." : "Create Product"}
+            {loading ? "Создание..." : "Создать продукт"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
             className="px-6 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-xl transition-all"
           >
-            Cancel
+            Отмена
           </button>
         </div>
       </form>

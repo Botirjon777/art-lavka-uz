@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PrintDesign, ConfiguratorState, Product } from "@/types";
 import TShirtScene from "./TShirtScene";
-import SizeTableModal from "./SizeTableModal";
+import SizeTableModal from "../SizeTableModal";
 
 interface RightConfiguratorProps {
   selectedProduct: Product;

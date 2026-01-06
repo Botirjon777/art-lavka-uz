@@ -22,11 +22,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
 
   const navigation = [
-    { name: "Dashboard", href: "/admin", icon: FiHome },
-    { name: "Products", href: "/admin/products", icon: FiShoppingBag },
-    { name: "Orders", href: "/admin/orders", icon: FiShoppingCart },
-    { name: "Prints", href: "/admin/prints", icon: FiImage },
-    { name: "Gallery", href: "/admin/gallery", icon: FiGrid },
+    { name: "Панель управления", href: "/admin", icon: FiHome },
+    { name: "Продукты", href: "/admin/products", icon: FiShoppingBag },
+    { name: "Заказы", href: "/admin/orders", icon: FiShoppingCart },
+    { name: "Принты", href: "/admin/prints", icon: FiImage },
+    { name: "Галерея", href: "/admin/gallery", icon: FiGrid },
   ];
 
   const isActive = (href: string) => {
@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <aside className="w-64 bg-white shadow-lg">
           <div className="p-6 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-[#8814B1]">Art Lavka</h1>
-            <p className="text-sm text-gray-600 mt-1">Admin Panel</p>
+            <p className="text-sm text-gray-600 mt-1">Админ панель</p>
           </div>
 
           <nav className="p-4 space-y-2">
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 rounded-xl transition-all"
             >
               <FiLogOut className="w-5 h-5" />
-              <span className="font-medium">Logout</span>
+              <span className="font-medium">Выйти</span>
             </button>
           </div>
         </aside>
