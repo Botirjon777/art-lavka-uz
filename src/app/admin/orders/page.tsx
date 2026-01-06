@@ -57,7 +57,7 @@ export default function OrdersPage() {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Orders</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Заказы</h1>
       </div>
 
       {/* Filters */}
@@ -67,7 +67,7 @@ export default function OrdersPage() {
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Search by order number, customer name, or phone..."
+              placeholder="Поиск по номеру заказа, имени клиента или телефону..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1]"
@@ -77,24 +77,24 @@ export default function OrdersPage() {
           {/* Status Filter */}
           <div className="flex gap-2 flex-wrap">
             {[
-              "all",
-              "pending",
-              "confirmed",
-              "processing",
-              "shipped",
-              "delivered",
-              "cancelled",
+              { value: "all", label: "Все" },
+              { value: "pending", label: "Ожидает" },
+              { value: "confirmed", label: "Подтвержден" },
+              { value: "processing", label: "В обработке" },
+              { value: "shipped", label: "Отправлен" },
+              { value: "delivered", label: "Доставлен" },
+              { value: "cancelled", label: "Отменен" },
             ].map((status) => (
               <button
-                key={status}
-                onClick={() => setFilter(status as OrderStatus | "all")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all capitalize ${
-                  filter === status
+                key={status.value}
+                onClick={() => setFilter(status.value as OrderStatus | "all")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  filter === status.value
                     ? "bg-[#8814B1] text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                {status}
+                {status.label}
               </button>
             ))}
           </div>
@@ -104,11 +104,11 @@ export default function OrdersPage() {
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading orders...</p>
+          <p className="text-gray-600">Загрузка заказов...</p>
         </div>
       ) : filteredOrders.length === 0 ? (
         <div className="bg-white rounded-[20px] p-12 text-center shadow-sm">
-          <p className="text-gray-600 mb-4">No orders found</p>
+          <p className="text-gray-600 mb-4">Заказы не найдены</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -117,28 +117,28 @@ export default function OrdersPage() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order #
+                    № Заказа
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
+                    Клиент
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Items
+                    Товары
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
+                    Сумма
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Статус
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment
+                    Оплата
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    Дата
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    Действия
                   </th>
                 </tr>
               </thead>
@@ -160,7 +160,7 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {order.items.length} items
+                        {order.items.length} тов.
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -195,7 +195,7 @@ export default function OrdersPage() {
                         className="inline-flex items-center gap-1 text-[#8814B1] hover:text-[#8814B1]/80"
                       >
                         <FiEye className="w-4 h-4" />
-                        View
+                        Просмотр
                       </Link>
                     </td>
                   </tr>

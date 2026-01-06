@@ -23,14 +23,14 @@ export default function AdminLoginPage() {
       });
 
       if (result?.error) {
-        toast.error(result.error);
+        toast.error("Неверный email или пароль");
       } else {
-        toast.success("Login successful!");
+        toast.success("Вход выполнен!");
         router.push("/admin");
         router.refresh();
       }
     } catch (error) {
-      toast.error("An error occurred. Please try again.");
+      toast.error("Произошла ошибка. Попробуйте еще раз.");
     } finally {
       setIsLoading(false);
     }
@@ -41,9 +41,9 @@ export default function AdminLoginPage() {
       <div className="bg-white rounded-[30px] shadow-2xl w-full max-w-md p-8 bg-image">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#8814B1] mb-2">
-            Admin Panel
+            Панель управления
           </h1>
-          <p className="text-gray-600">Sign in to manage your store</p>
+          <p className="text-gray-600">Войдите для управления магазином</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -70,7 +70,7 @@ export default function AdminLoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Password
+              Пароль
             </label>
             <input
               id="password"
@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
             disabled={isLoading}
             className="w-full py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 cursor-pointer text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Signing in..." : "Sign In"}
+            {isLoading ? "Вход..." : "Войти"}
           </button>
         </form>
       </div>

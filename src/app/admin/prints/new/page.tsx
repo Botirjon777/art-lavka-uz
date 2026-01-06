@@ -34,12 +34,12 @@ export default function NewPrintPage() {
 
       if (data.success) {
         setFrontImageUrl(data.url);
-        toast.success("Front image uploaded successfully");
+        toast.success("Переднее изображение загружено");
       } else {
-        toast.error(data.error || "Failed to upload front image");
+        toast.error(data.error || "Не удалось загрузить переднее изображение");
       }
     } catch (error) {
-      toast.error("Failed to upload front image");
+      toast.error("Не удалось загрузить переднее изображение");
     } finally {
       setUploadingFront(false);
     }
@@ -65,12 +65,12 @@ export default function NewPrintPage() {
 
       if (data.success) {
         setBackImageUrl(data.url);
-        toast.success("Back image uploaded successfully");
+        toast.success("Заднее изображение загружено");
       } else {
-        toast.error(data.error || "Failed to upload back image");
+        toast.error(data.error || "Не удалось загрузить заднее изображение");
       }
     } catch (error) {
-      toast.error("Failed to upload back image");
+      toast.error("Не удалось загрузить заднее изображение");
     } finally {
       setUploadingBack(false);
     }
@@ -89,10 +89,10 @@ export default function NewPrintPage() {
     const result = await createPrint(formData);
 
     if (result.success) {
-      toast.success("Print created successfully");
+      toast.success("Принт успешно создан");
       router.push("/admin/prints");
     } else {
-      toast.error(result.error || "Failed to create print");
+      toast.error(result.error || "Не удалось создать принт");
     }
 
     setLoading(false);
@@ -100,7 +100,7 @@ export default function NewPrintPage() {
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Add Print</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Добавить принт</h1>
 
       <form
         onSubmit={handleSubmit}
@@ -109,7 +109,7 @@ export default function NewPrintPage() {
         {/* Front Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Front Image *
+            Переднее изображение *
           </label>
           <div className="flex items-start gap-4">
             {frontImageUrl && (
@@ -131,7 +131,7 @@ export default function NewPrintPage() {
                 disabled={uploadingFront}
               />
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, WebP up to 5MB
+                PNG, JPG, WebP до 5МБ
               </p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function NewPrintPage() {
         {/* Back Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Back Image (Optional)
+            Заднее изображение (необязательно)
           </label>
           <div className="flex items-start gap-4">
             {backImageUrl && (
@@ -162,7 +162,8 @@ export default function NewPrintPage() {
                 disabled={uploadingBack}
               />
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, WebP up to 5MB (leave empty for front-only print)
+                PNG, JPG, WebP до 5МБ (оставьте пустым для одностороннего
+                принта)
               </p>
             </div>
           </div>
@@ -174,7 +175,7 @@ export default function NewPrintPage() {
             htmlFor="name"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Print Name *
+            Название принта *
           </label>
           <input
             type="text"
@@ -192,7 +193,7 @@ export default function NewPrintPage() {
             htmlFor="category"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Category *
+            Категория *
           </label>
           <select
             id="category"
@@ -200,10 +201,10 @@ export default function NewPrintPage() {
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
           >
-            <option value="national">National</option>
-            <option value="stylish">Stylish</option>
-            <option value="funny">Funny</option>
-            <option value="all">All</option>
+            <option value="national">Национальные</option>
+            <option value="stylish">Стильные</option>
+            <option value="funny">Прикольные</option>
+            <option value="all">Все</option>
           </select>
         </div>
 
@@ -218,7 +219,7 @@ export default function NewPrintPage() {
             className="w-4 h-4 text-[#8814B1] border-gray-300 rounded focus:ring-[#8814B1]"
           />
           <label htmlFor="active" className="text-sm font-medium text-gray-700">
-            Active (visible to customers)
+            Активен (видим для клиентов)
           </label>
         </div>
 
@@ -229,14 +230,14 @@ export default function NewPrintPage() {
             disabled={loading || !frontImageUrl}
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Creating..." : "Create Print"}
+            {loading ? "Создание..." : "Создать принт"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
             className="px-6 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-xl transition-all"
           >
-            Cancel
+            Отмена
           </button>
         </div>
       </form>

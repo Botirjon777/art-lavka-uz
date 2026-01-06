@@ -1,6 +1,6 @@
 "use client";
 
-import Modal from "./Modal";
+import Modal from "../Modal";
 import { CartItem } from "@/types";
 import Image from "next/image";
 

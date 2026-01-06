@@ -34,43 +34,43 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (!confirm("Вы уверены, что хотите удалить этот продукт?")) return;
 
     const result = await deleteProduct(id);
     if (result.success) {
-      toast.success("Product deleted successfully");
+      toast.success("Продукт успешно удален");
       loadProducts();
     } else {
-      toast.error("Failed to delete product");
+      toast.error("Не удалось удалить продукт");
     }
   };
 
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Products</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Продукты</h1>
         <Link
           href="/admin/products/new"
           className="flex items-center gap-2 px-6 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all shadow-lg"
         >
           <FiPlus className="w-5 h-5" />
-          Add Product
+          Добавить продукт
         </Link>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-gray-600">Loading products...</p>
+          <p className="text-gray-600">Загрузка продуктов...</p>
         </div>
       ) : products.length === 0 ? (
         <div className="bg-white rounded-[20px] p-12 text-center shadow-sm">
-          <p className="text-gray-600 mb-4">No products found</p>
+          <p className="text-gray-600 mb-4">Продукты не найдены</p>
           <Link
             href="/admin/products/new"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all"
           >
             <FiPlus className="w-5 h-5" />
-            Add Your First Product
+            Добавить первый продукт
           </Link>
         </div>
       ) : (
@@ -79,22 +79,22 @@ export default function ProductsPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Product
+                  Продукт
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Category
+                  Категория
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Price
+                  Цена
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Stock
+                  Склад
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Status
+                  Статус
                 </th>
                 <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">
-                  Actions
+                  Действия
                 </th>
               </tr>
             </thead>
@@ -140,7 +140,7 @@ export default function ProductsPage() {
                           : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {product.active ? "Active" : "Inactive"}
+                      {product.active ? "Активный" : "Неактивный"}
                     </span>
                   </td>
                   <td className="px-6 py-4">

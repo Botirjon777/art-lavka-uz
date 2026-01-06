@@ -26,21 +26,21 @@ export default function AdminDashboard() {
 
   const stats = [
     {
-      name: "Products",
+      name: "Продукты",
       value: counts.products.toString(),
       icon: FiShoppingBag,
       href: "/admin/products",
       color: "bg-blue-500",
     },
     {
-      name: "Prints",
+      name: "Принты",
       value: counts.prints.toString(),
       icon: FiImage,
       href: "/admin/prints",
       color: "bg-purple-500",
     },
     {
-      name: "Gallery Items",
+      name: "Галерея",
       value: counts.gallery.toString(),
       icon: FiGrid,
       href: "/admin/gallery",
@@ -49,14 +49,16 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { name: "Add Product", href: "/admin/products/new", icon: FiPlus },
-    { name: "Add Print", href: "/admin/prints/new", icon: FiPlus },
-    { name: "Manage Gallery", href: "/admin/gallery", icon: FiGrid },
+    { name: "Добавить продукт", href: "/admin/products/new", icon: FiPlus },
+    { name: "Добавить принт", href: "/admin/prints/new", icon: FiPlus },
+    { name: "Управление галереей", href: "/admin/gallery", icon: FiGrid },
   ];
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">
+        Панель управления
+      </h1>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -101,7 +103,9 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-[20px] p-6 shadow-sm">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">
+          Быстрые действия
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {quickActions.map((action) => {
             const Icon = action.icon;

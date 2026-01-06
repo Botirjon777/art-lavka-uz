@@ -11,7 +11,7 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { PrintDesign, Product } from "@/types";
-import Loader from "./Loader";
+import Loader from "../Loader";
 import { AiFillQuestionCircle } from "react-icons/ai";
 import { TbRotate3D } from "react-icons/tb";
 
@@ -183,7 +183,7 @@ function TShirtModel({
               ></div>
             </div>
             <p className="text-sm font-medium text-[#333333]">
-              Implementing print...
+              Наносим принт...
             </p>
           </div>
         </Html>
