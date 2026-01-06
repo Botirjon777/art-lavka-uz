@@ -15,7 +15,8 @@ export interface PrintDesign {
   id?: string;
   _id?: string;
   name: string;
-  image: string;
+  frontImage: string;
+  backImage?: string;
   category: "national" | "stylish" | "funny" | "all";
 }
 

@@ -14,8 +14,10 @@ export default function EditPrintPage({
   const router = useRouter();
   const { id } = use(params);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
+  const [uploadingFront, setUploadingFront] = useState(false);
+  const [uploadingBack, setUploadingBack] = useState(false);
+  const [frontImageUrl, setFrontImageUrl] = useState("");
+  const [backImageUrl, setBackImageUrl] = useState("");
   const [print, setPrint] = useState<any>(null);
   const [printLoading, setPrintLoading] = useState(true);
 
@@ -27,7 +29,8 @@ export default function EditPrintPage({
     const data = await getPrintById(id);
     if (data) {
       setPrint(data);
-      setImageUrl(data.image || "");
+      setFrontImageUrl(data.frontImage || "");
+      setBackImageUrl(data.backImage || "");
     } else {
       toast.error("Print not found");
       router.push("/admin/prints");
@@ -35,11 +38,13 @@ export default function EditPrintPage({
     setPrintLoading(false);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFrontImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    setUploadingFront(true);
     const formData = new FormData();
     formData.append("file", file);
 
@@ -52,15 +57,46 @@ export default function EditPrintPage({
       const data = await response.json();
 
       if (data.success) {
-        setImageUrl(data.url);
-        toast.success("Image uploaded successfully");
+        setFrontImageUrl(data.url);
+        toast.success("Front image uploaded successfully");
       } else {
-        toast.error(data.error || "Failed to upload image");
+        toast.error(data.error || "Failed to upload front image");
       }
     } catch (error) {
-      toast.error("Failed to upload image");
+      toast.error("Failed to upload front image");
     } finally {
-      setUploading(false);
+      setUploadingFront(false);
+    }
+  };
+
+  const handleBackImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingBack(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setBackImageUrl(data.url);
+        toast.success("Back image uploaded successfully");
+      } else {
+        toast.error(data.error || "Failed to upload back image");
+      }
+    } catch (error) {
+      toast.error("Failed to upload back image");
+    } finally {
+      setUploadingBack(false);
     }
   };
 
@@ -69,7 +105,10 @@ export default function EditPrintPage({
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    formData.set("image", imageUrl);
+    formData.set("frontImage", frontImageUrl);
+    if (backImageUrl) {
+      formData.set("backImage", backImageUrl);
+    }
 
     const result = await updatePrint(id, formData);
 
@@ -103,17 +142,17 @@ export default function EditPrintPage({
         onSubmit={handleSubmit}
         className="bg-white rounded-[20px] p-8 shadow-sm space-y-6"
       >
-        {/* Image Upload */}
+        {/* Front Image Upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Print Image *
+            Front Image *
           </label>
           <div className="flex items-start gap-4">
-            {imageUrl && (
+            {frontImageUrl && (
               <div className="relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
                 <Image
-                  src={imageUrl}
-                  alt="Preview"
+                  src={frontImageUrl}
+                  alt="Front Preview"
                   fill
                   className="object-cover"
                 />
@@ -123,12 +162,43 @@ export default function EditPrintPage({
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleImageUpload}
+                onChange={handleFrontImageUpload}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#8814B1] file:text-white hover:file:bg-[#8814B1]/90"
-                disabled={uploading}
+                disabled={uploadingFront}
               />
               <p className="text-xs text-gray-500 mt-1">
                 PNG, JPG, WebP up to 5MB
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Back Image Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Back Image (Optional)
+          </label>
+          <div className="flex items-start gap-4">
+            {backImageUrl && (
+              <div className="relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
+                <Image
+                  src={backImageUrl}
+                  alt="Back Preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div className="flex-1">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleBackImageUpload}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#8814B1] file:text-white hover:file:bg-[#8814B1]/90"
+                disabled={uploadingBack}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                PNG, JPG, WebP up to 5MB (leave empty for front-only print)
               </p>
             </div>
           </div>
@@ -194,7 +264,7 @@ export default function EditPrintPage({
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
-            disabled={loading || !imageUrl}
+            disabled={loading || !frontImageUrl}
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Updating..." : "Update Print"}

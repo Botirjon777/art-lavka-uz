@@ -33,12 +33,18 @@ export async function createPrint(formData: FormData) {
   try {
     await dbConnect();
 
-    const printData = {
+    const printData: any = {
       name: formData.get("name") as string,
-      image: formData.get("image") as string,
+      frontImage: formData.get("frontImage") as string,
       category: formData.get("category") as string,
       active: formData.get("active") === "true",
     };
+
+    // Only add backImage if it's provided
+    const backImage = formData.get("backImage") as string | null;
+    if (backImage) {
+      printData.backImage = backImage;
+    }
 
     const print = await Print.create(printData);
     revalidatePath("/admin/prints");
@@ -53,12 +59,18 @@ export async function updatePrint(id: string, formData: FormData) {
   try {
     await dbConnect();
 
-    const printData = {
+    const printData: any = {
       name: formData.get("name") as string,
-      image: formData.get("image") as string,
+      frontImage: formData.get("frontImage") as string,
       category: formData.get("category") as string,
       active: formData.get("active") === "true",
     };
+
+    // Handle backImage - only include if provided
+    const backImage = formData.get("backImage") as string | null;
+    if (backImage) {
+      printData.backImage = backImage;
+    }
 
     const print = await Print.findByIdAndUpdate(id, printData, { new: true });
 
