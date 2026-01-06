@@ -9,6 +9,8 @@ import MenuModal from "@/components/MenuModal";
 import GalleryModal from "@/components/GalleryModal";
 import CartModal from "@/components/CartModal";
 import ProductsModal from "@/components/ProductsModal";
+import CheckoutModal from "@/components/CheckoutModal";
+import OrderSuccessModal from "@/components/OrderSuccessModal";
 import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 export default function Home() {
@@ -19,6 +21,9 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPrint, setSelectedPrint] = useState<PrintDesign | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showOrderSuccess, setShowOrderSuccess] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
 
   // Fetch products on mount
   useEffect(() => {
@@ -76,6 +81,28 @@ export default function Home() {
   const handleSelectProduct = (product: Product) => {
     setSelectedProduct(product);
   };
+
+  const handleCheckout = () => {
+    setActiveModal(null);
+    setShowCheckout(true);
+  };
+
+  const handleOrderSuccess = (orderNum: string) => {
+    setOrderNumber(orderNum);
+    setShowCheckout(false);
+    setShowOrderSuccess(true);
+    setCartItems([]); // Clear cart
+  };
+
+  const handleCloseOrderSuccess = () => {
+    setShowOrderSuccess(false);
+    setOrderNumber("");
+  };
+
+  const totalAmount = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   return (
     <MainLayout
@@ -138,12 +165,27 @@ export default function Home() {
         items={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
+        onCheckout={handleCheckout}
       />
 
       <ProductsModal
         isOpen={activeModal === "products"}
         onClose={() => setActiveModal(null)}
         onSelectProduct={handleSelectProduct}
+      />
+
+      <CheckoutModal
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        items={cartItems}
+        totalAmount={totalAmount}
+        onSuccess={handleOrderSuccess}
+      />
+
+      <OrderSuccessModal
+        isOpen={showOrderSuccess}
+        onClose={handleCloseOrderSuccess}
+        orderNumber={orderNumber}
       />
     </MainLayout>
   );

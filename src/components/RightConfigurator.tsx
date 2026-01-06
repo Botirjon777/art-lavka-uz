@@ -90,10 +90,10 @@ export default function RightConfigurator({
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full cursor-pointer border-2 transition-all ${
+                      className={`w-10 h-10 rounded-full cursor-pointer border transition-all ${
                         selectedColor === color
-                          ? "border-purple-600 ring-2 ring-purple-300 scale-110"
-                          : "border-gray-300"
+                          ? "border-white ring ring-[#00C6F1] scale-110"
+                          : "border-white"
                       }`}
                       style={{ backgroundColor: COLOR_MAP[color] || color }}
                       title={color}

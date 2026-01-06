@@ -10,6 +10,7 @@ interface CartModalProps {
   items: CartItem[];
   onUpdateQuantity: (id: string, quantity: number) => void;
   onRemoveItem: (id: string) => void;
+  onCheckout: () => void;
 }
 
 export default function CartModal({
@@ -18,6 +19,7 @@ export default function CartModal({
   items,
   onUpdateQuantity,
   onRemoveItem,
+  onCheckout,
 }: CartModalProps) {
   const total = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -193,7 +195,10 @@ export default function CartModal({
               </div>
 
               {/* Checkout Button */}
-              <button className="w-full py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-xl mb-4">
+              <button
+                onClick={onCheckout}
+                className="w-full py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-xl mb-4"
+              >
                 Заказать
               </button>
 

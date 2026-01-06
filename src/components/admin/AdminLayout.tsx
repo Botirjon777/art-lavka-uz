@@ -10,6 +10,7 @@ import {
   FiImage,
   FiGrid,
   FiLogOut,
+  FiShoppingCart,
 } from "react-icons/fi";
 
 interface AdminLayoutProps {
@@ -23,6 +24,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: FiHome },
     { name: "Products", href: "/admin/products", icon: FiShoppingBag },
+    { name: "Orders", href: "/admin/orders", icon: FiShoppingCart },
     { name: "Prints", href: "/admin/prints", icon: FiImage },
     { name: "Gallery", href: "/admin/gallery", icon: FiGrid },
   ];

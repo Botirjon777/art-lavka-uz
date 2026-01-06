@@ -59,7 +59,7 @@ export default function LeftSidebar({
   return (
     <div className="w-full max-w-[558px] h-full px-6 flex flex-col">
       {/* Logo */}
-      <div className="mb-6 flex justify-between items-center gap-6">
+      <div className="mb-4 flex justify-between items-center gap-6">
         <Image
           src="/art-lavka.png"
           alt="ART LAVKA.UZ"
@@ -69,10 +69,20 @@ export default function LeftSidebar({
         />
         <button
           onClick={onGalleryClick}
-          className="py-[15px] px-[35px] bg-[#00C6F1] hover:bg-[#00C6F1]/80 cursor-pointer text-[16px]/5 text-white font-medium rounded-lg transition-colors shadow-md"
+          className="py-[15px] px-[35px] bg-[#00C6F1] hover:bg-[#00C6F1]/80 cursor-pointer text-[16px]/5 text-white font-medium rounded-lg transition-colors shadow-md whitespace-nowrap"
         >
           Фото Галерея
         </button>
+      </div>
+
+      {/* Track Order Button */}
+      <div className="mb-6">
+        <a
+          href="/track-order"
+          className="block w-full py-3 px-6 bg-linear-to-r from-[#8814B1] to-[#a01dc4] hover:from-[#8814B1]/90 hover:to-[#a01dc4]/90 text-center text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
+        >
+          Отследить заказ
+        </a>
       </div>
 
       {/* Print Selection */}
