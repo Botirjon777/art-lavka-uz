@@ -5,6 +5,14 @@ import { trackOrder } from "@/app/actions/trackOrder";
 import { Order } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  MdPending,
+  MdCheckCircle,
+  MdSettings,
+  MdLocalShipping,
+  MdCancel,
+} from "react-icons/md";
+import { IconType } from "react-icons";
 
 export default function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
@@ -34,14 +42,35 @@ export default function TrackOrderPage() {
     setLoading(false);
   };
 
-  const getStatusInfo = (status: string) => {
-    const statusInfo = {
-      pending: { label: "Pending", color: "bg-yellow-500", icon: "⏳" },
-      confirmed: { label: "Confirmed", color: "bg-blue-500", icon: "✓" },
-      processing: { label: "Processing", color: "bg-purple-500", icon: "⚙️" },
-      shipped: { label: "Shipped", color: "bg-indigo-500", icon: "🚚" },
-      delivered: { label: "Delivered", color: "bg-green-500", icon: "✓" },
-      cancelled: { label: "Cancelled", color: "bg-red-500", icon: "✗" },
+  const getStatusInfo = (
+    status: string
+  ): { label: string; color: string; icon: IconType } => {
+    const statusInfo: Record<
+      string,
+      { label: string; color: string; icon: IconType }
+    > = {
+      pending: { label: "Pending", color: "bg-yellow-500", icon: MdPending },
+      confirmed: {
+        label: "Confirmed",
+        color: "bg-blue-500",
+        icon: MdCheckCircle,
+      },
+      processing: {
+        label: "Processing",
+        color: "bg-purple-500",
+        icon: MdSettings,
+      },
+      shipped: {
+        label: "Shipped",
+        color: "bg-indigo-500",
+        icon: MdLocalShipping,
+      },
+      delivered: {
+        label: "Delivered",
+        color: "bg-green-500",
+        icon: MdCheckCircle,
+      },
+      cancelled: { label: "Cancelled", color: "bg-red-500", icon: MdCancel },
     };
     return statusInfo[status as keyof typeof statusInfo] || statusInfo.pending;
   };
@@ -150,7 +179,7 @@ export default function TrackOrderPage() {
               {order.status === "cancelled" ? (
                 <div className="text-center py-8">
                   <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-4xl">✗</span>
+                    <MdCancel size={48} className="text-red-600" />
                   </div>
                   <p className="text-xl font-bold text-red-600 mb-2">
                     Order Cancelled
@@ -177,28 +206,31 @@ export default function TrackOrderPage() {
 
                   {/* Status Steps */}
                   <div className="relative flex justify-between">
-                    {getStatusSteps(order.status).map((step, index) => (
-                      <div key={index} className="flex flex-col items-center">
-                        <div
-                          className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl mb-2 transition-all ${
-                            step.active
-                              ? `${step.color} text-white scale-110 shadow-lg`
-                              : step.completed
-                              ? "bg-[#00C6F1] text-white"
-                              : "bg-gray-200 text-gray-400"
-                          }`}
-                        >
-                          {step.icon}
+                    {getStatusSteps(order.status).map((step, index) => {
+                      const IconComponent = step.icon;
+                      return (
+                        <div key={index} className="flex flex-col items-center">
+                          <div
+                            className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl mb-2 transition-all ${
+                              step.active
+                                ? `${step.color} text-white scale-110 shadow-lg`
+                                : step.completed
+                                ? "bg-[#00C6F1] text-white"
+                                : "bg-gray-200 text-gray-400"
+                            }`}
+                          >
+                            <IconComponent size={32} />
+                          </div>
+                          <p
+                            className={`text-sm font-medium ${
+                              step.active ? "text-[#00C6F1]" : "text-gray-600"
+                            }`}
+                          >
+                            {step.label}
+                          </p>
                         </div>
-                        <p
-                          className={`text-sm font-medium ${
-                            step.active ? "text-[#00C6F1]" : "text-gray-600"
-                          }`}
-                        >
-                          {step.label}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
