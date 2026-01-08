@@ -129,6 +129,44 @@ export default function NewProductPage() {
           />
         </div>
 
+        {/* Description */}
+        <div>
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Описание
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            rows={3}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none resize-none"
+            placeholder="Описание продукта..."
+          />
+        </div>
+
+        {/* Model Path */}
+        <div>
+          <label
+            htmlFor="model"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Путь к 3D модели *
+          </label>
+          <input
+            type="text"
+            id="model"
+            name="model"
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+            placeholder="/models/tshirt.glb"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Путь к файлу 3D модели (например: /models/tshirt.glb)
+          </p>
+        </div>
+
         {/* Price */}
         <div>
           <label

@@ -68,24 +68,7 @@ export default function GalleryModal({
               </div>
             ) : (
               gallery.map((item) => (
-                <div
-                  key={item._id}
-                  className="group text-center cursor-pointer"
-                  onClick={() => {
-                    if (onSelectProduct) {
-                      onSelectProduct({
-                        id: item._id,
-                        name: item.name,
-                        image: item.image,
-                        category: "women",
-                        price: 100000,
-                        model: "/model/compressed/base.glb",
-                        stock: 100,
-                      });
-                      onClose();
-                    }
-                  }}
-                >
+                <div key={item._id} className="group text-center">
                   <div className="relative">
                     <Image
                       src={item.image}

@@ -11,6 +11,7 @@ export interface IOrder {
       name: string;
       image: string;
       model: string;
+      category?: string;
     };
     print: {
       _id: string;
@@ -66,6 +67,7 @@ const OrderSchema = new Schema<IOrder>(
           name: { type: String, required: true },
           image: { type: String, required: true },
           model: { type: String, required: true },
+          category: { type: String },
         },
         print: {
           _id: { type: String },

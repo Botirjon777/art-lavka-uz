@@ -74,6 +74,7 @@ export interface OrderItem {
     name: string;
     image: string;
     model: string;
+    category?: string;
   };
   print: {
     _id: string;

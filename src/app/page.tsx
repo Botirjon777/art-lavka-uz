@@ -25,15 +25,23 @@ export default function Home() {
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
 
-  // Fetch products on mount
+  // Fetch products on mount and set up auto-refresh
   useEffect(() => {
     fetchProducts();
+
+    // Auto-refresh every 60 seconds (1 minute)
+    const interval = setInterval(() => {
+      fetchProducts();
+    }, 60000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const fetchProducts = async () => {
     try {
       const response = await fetch("/api/products", {
-        next: { revalidate: 3600 }, // Cache for 1 hour
+        cache: "no-store", // Don't cache, always fetch fresh data
       });
       const data = await response.json();
 
@@ -43,11 +51,27 @@ export default function Home() {
           ...item,
           id: item._id,
         }));
-        setSelectedProduct(normalizedProducts[0]);
+
+        // If no product selected yet, set the first one
+        if (!selectedProduct) {
+          setSelectedProduct(normalizedProducts[0]);
+        } else {
+          // Update the selected product with fresh data if it exists
+          const updatedProduct = normalizedProducts.find(
+            (p: Product) =>
+              p.id === selectedProduct.id || p._id === selectedProduct._id
+          );
+          if (updatedProduct) {
+            setSelectedProduct(updatedProduct);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching products:", error);
-      toast.error("Failed to load products");
+      // Don't show toast on auto-refresh errors to avoid spam
+      if (!selectedProduct) {
+        toast.error("Failed to load products");
+      }
     } finally {
       setLoading(false);
     }
