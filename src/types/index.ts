@@ -19,6 +19,7 @@ export interface Product {
   sizes?: string[];
   stock: number; // Total stock
   inventory: ProductInventory; // Stock per size
+  description?: string;
   isNew?: boolean;
 }
 

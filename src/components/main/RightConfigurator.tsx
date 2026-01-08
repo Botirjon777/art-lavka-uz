@@ -103,6 +103,7 @@ export default function RightConfigurator({
                 key={selectedProduct.id}
                 selectedProduct={selectedProduct.model}
                 productName={selectedProduct.name}
+                productDescription={selectedProduct.description}
                 selectedPrint={selectedPrint}
                 selectedColor={selectedColor}
                 onProductClick={onProductClick}
@@ -178,55 +179,73 @@ export default function RightConfigurator({
 
               {/* Quantity */}
               <div>
-                <p className="text-[16px]/[22px] text-[#333333] mb-[15px]">
-                  Количество: {quantity}шт{" "}
-                  {!isOutOfStock && `(доступно: ${sizeStock})`}
-                </p>
                 <div className="flex items-center gap-[15px]">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 cursor-pointer flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-full transition-colors shadow-md"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  <div className="flex items-center gap-[15px]">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
+                      className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20 12H4"
-                      />
-                    </svg>
-                  </button>
-                  <span className="text-[20px]/[24px] text-[#333333] w-12 text-center">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setQuantity(Math.min(maxStock, quantity + 1))
-                    }
-                    className="w-10 h-10 cursor-pointer flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-full transition-colors shadow-md"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M20 12H4"
+                        />
+                      </svg>
+                    </button>
+
+                    <input
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (isNaN(val)) {
+                          setQuantity(1);
+                        } else {
+                          setQuantity(Math.min(Math.max(1, val), sizeStock));
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) setQuantity(1);
+                      }}
+                      className="w-12 text-center text-[20px] font-medium text-[#333333] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+
+                    <button
+                      onClick={() =>
+                        setQuantity(Math.min(sizeStock, quantity + 1))
+                      }
+                      disabled={quantity >= sizeStock}
+                      className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                  </button>
-                  <p className="text-[14px]/[17px] text-[#333333]">
-                    в наличии {maxStock}
-                  </p>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {!isOutOfStock && (
+                    <span className="text-[14px]/[17px] text-[#333333]">
+                      доступно: {sizeStock} шт
+                    </span>
+                  )}
                 </div>
               </div>
 
