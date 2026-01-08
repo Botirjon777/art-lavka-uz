@@ -11,12 +11,21 @@ interface ModalProps {
 export default function Modal({ isOpen, onClose, children }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
+      // Get scrollbar width before hiding overflow
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
+
+      // Set overflow hidden and add padding to prevent layout shift
       document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
+      // Reset styles
       document.body.style.overflow = "unset";
+      document.body.style.paddingRight = "0px";
     }
     return () => {
       document.body.style.overflow = "unset";
+      document.body.style.paddingRight = "0px";
     };
   }, [isOpen]);
 

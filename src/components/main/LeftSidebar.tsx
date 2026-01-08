@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { PrintDesign, ConfiguratorState } from "@/types";
 import { SidebarPrintSkeleton } from "../LoadingSkeleton";
+import { Button } from "@/components/ui";
 
 interface LeftSidebarProps {
   onGalleryClick: () => void;
@@ -69,12 +70,14 @@ export default function LeftSidebar({
           height={99}
           className="object-contain"
         />
-        <button
+        <Button
+          variant="primary"
+          size="lg"
           onClick={onGalleryClick}
-          className="py-[15px] px-[35px] bg-[#00C6F1] hover:bg-[#00C6F1]/80 cursor-pointer text-[16px]/5 text-white font-medium rounded-lg transition-colors shadow-md whitespace-nowrap"
+          className="whitespace-nowrap"
         >
           Фото Галерея
-        </button>
+        </Button>
       </div>
 
       {/* Track Order Button */}
@@ -101,7 +104,7 @@ export default function LeftSidebar({
               onClick={() => setSelectedCategory(cat.id)}
               className={`text-[16px]/[22px] cursor-pointer hover:text-[#8814B1] transition-colors ${
                 selectedCategory === cat.id
-                  ? "border-b-2 border-[#8814B1] text-[#8814B1] font-bold"
+                  ? "border-b border-[#8814B1]"
                   : "text-[#333333]"
               }`}
             >
@@ -123,7 +126,7 @@ export default function LeftSidebar({
 
         {/* Print Grid - Scrollable Container */}
         <div
-          className="flex-1 overflow-y-auto pr-2 -mr-2 min-h-0 [scrollbar-gutter:stable]"
+          className="flex-1"
           style={{
             scrollbarWidth: "thin",
             scrollbarColor: "#8814B1 transparent",
@@ -133,7 +136,7 @@ export default function LeftSidebar({
             {/* No Print Option */}
             <button
               onClick={() => onPrintSelect(null)}
-              className={`aspect-square cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
+              className={`aspect-square cursor-pointer rounded-[26px] border transition-all hover:scale-105 flex items-center justify-center ${
                 selectedPrint === null
                   ? "border-[#00C6F1]"
                   : "border-transparent"
@@ -153,7 +156,7 @@ export default function LeftSidebar({
                 <button
                   key={print.id || (print as any)._id}
                   onClick={() => onPrintSelect(print)}
-                  className={`aspect-square cursor-pointer rounded-[26px] border-2 transition-all hover:scale-105 flex items-center justify-center ${
+                  className={`aspect-square cursor-pointer rounded-[26px] border transition-all hover:scale-105 flex items-center justify-center ${
                     selectedPrint?.id === print.id ||
                     (selectedPrint as any)?._id === (print as any)._id
                       ? "border-[#00C6F1]"
