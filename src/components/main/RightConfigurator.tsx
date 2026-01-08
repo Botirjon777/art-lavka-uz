@@ -184,7 +184,7 @@ export default function RightConfigurator({
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
-                      className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
+                      className="w-10 h-10 flex items-center cursor-pointer justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
                     >
                       <svg
                         className="w-5 h-5"
@@ -223,7 +223,7 @@ export default function RightConfigurator({
                         setQuantity(Math.min(sizeStock, quantity + 1))
                       }
                       disabled={quantity >= sizeStock}
-                      className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
+                      className="w-10 h-10 cursor-pointer flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
                     >
                       <svg
                         className="w-5 h-5"

@@ -32,22 +32,22 @@ export default function Tooltip({
   };
 
   return (
-    <div
+    <span
       className={`relative inline-block ${className}`}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
       {isVisible && content && (
-        <div className={`absolute z-99999 ${positionClasses[position]}`}>
-          <div className="bg-white text-[#333333] text-sm py-3 px-4 rounded-xl shadow-2xl border border-gray-100 min-w-[200px] max-w-[300px] relative animate-in fade-in zoom-in duration-200">
+        <span className={`absolute z-99999 ${positionClasses[position]}`}>
+          <span className="bg-white text-[#333333] text-sm py-3 px-4 rounded-xl shadow-2xl border border-gray-100 min-w-[200px] max-w-[300px] relative animate-in fade-in zoom-in duration-200 block">
             {content}
-            <div
+            <span
               className={`absolute w-0 h-0 border-[6px] border-transparent ${arrowClasses[position]}`}
             />
-          </div>
-        </div>
+          </span>
+        </span>
       )}
-    </div>
+    </span>
   );
 }
