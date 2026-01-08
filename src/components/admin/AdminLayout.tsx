@@ -41,16 +41,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const showSidebar = session && !isLoginPage;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] flex">
+    <div className="h-screen bg-[#F5F5F5] flex overflow-hidden">
       {/* Sidebar - only show when authenticated and not on login page */}
       {showSidebar && (
-        <aside className="w-64 bg-white shadow-lg">
-          <div className="p-6 border-b border-gray-200">
+        <aside className="w-64 bg-white shadow-lg flex flex-col shrink-0 h-full">
+          <div className="p-6 border-b border-gray-200 shrink-0">
             <h1 className="text-2xl font-bold text-[#8814B1]">Art Lavka</h1>
             <p className="text-sm text-gray-600 mt-1">Админ панель</p>
           </div>
 
-          <nav className="p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -70,12 +70,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             })}
           </nav>
 
-          <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 shrink-0">
             <div className="mb-3 px-4">
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-gray-700 truncate">
                 {session?.user?.name}
               </p>
-              <p className="text-xs text-gray-500">{session?.user?.email}</p>
+              <p className="text-xs text-gray-500 truncate">
+                {session?.user?.email}
+              </p>
             </div>
             <button
               onClick={() => signOut({ callbackUrl: "/admin/login" })}
@@ -89,10 +91,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* Main Content */}
-      <main
-        className={`flex-1 p-8 overflow-y-auto ${!showSidebar ? "w-full" : ""}`}
-      >
-        {children}
+      <main className="flex-1 h-full overflow-y-auto">
+        <div className="p-8">{children}</div>
       </main>
     </div>
   );
