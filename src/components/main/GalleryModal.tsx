@@ -49,58 +49,44 @@ export default function GalleryModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="w-[1500px]">
-        <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">Галерея</h2>
-
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
-          {loading ? (
-            // Loading skeletons
-            Array.from({ length: 10 }).map((_, index) => (
-              <div key={index} className="animate-pulse text-center">
-                <div className="w-[210px] h-[200px] bg-gray-200 rounded-lg mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
-              </div>
-            ))
-          ) : gallery.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-600">No gallery images available</p>
-            </div>
-          ) : (
-            gallery.map((item) => (
-              <div
-                key={item._id}
-                className="group text-center cursor-pointer"
-                onClick={() => {
-                  if (onSelectProduct) {
-                    onSelectProduct({
-                      id: item._id,
-                      name: item.name,
-                      image: item.image,
-                      category: "women",
-                      price: 100000,
-                      model: "/model/compressed/base.glb",
-                      stock: 100,
-                    });
-                    onClose();
-                  }
-                }}
-              >
-                <div className="relative">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={210}
-                    height={200}
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <p className="text-[16px]/[22px] text-[#333333]">{item.name}</p>
-              </div>
-            ))
-          )}
+      {loading ? (
+        <div className="w-[1500px] flex items-center justify-center h-[600px]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin"></div>
+            <p className="text-[#666666] text-sm">Загрузка галереи...</p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="w-[1500px]">
+          <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">Галерея</h2>
+
+          {/* Gallery Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+            {gallery.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-600">No gallery images available</p>
+              </div>
+            ) : (
+              gallery.map((item) => (
+                <div key={item._id} className="group text-center">
+                  <div className="relative">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={210}
+                      height={200}
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <p className="text-[16px]/[22px] text-[#333333]">
+                    {item.name}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </Modal>
   );
 }

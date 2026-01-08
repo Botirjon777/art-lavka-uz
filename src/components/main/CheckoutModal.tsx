@@ -46,6 +46,7 @@ export default function CheckoutModal({
           name: item.product.name,
           image: item.product.image,
           model: item.product.model,
+          category: item.product.category,
         },
         print: item.print
           ? {
@@ -79,7 +80,14 @@ export default function CheckoutModal({
         setCustomerAddress("");
         setNotes("");
       } else {
-        toast.error(result.error || "Failed to create order");
+        // Handle stock validation errors
+        if (result.errors && Array.isArray(result.errors)) {
+          result.errors.forEach((error: string) => {
+            toast.error(error, { duration: 5000 });
+          });
+        } else {
+          toast.error(result.error || "Failed to create order");
+        }
       }
     } catch (error) {
       console.error("Error creating order:", error);

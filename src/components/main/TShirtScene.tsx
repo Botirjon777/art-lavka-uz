@@ -14,6 +14,7 @@ import { PrintDesign, Product } from "@/types";
 import Loader from "../Loader";
 import { AiFillQuestionCircle } from "react-icons/ai";
 import { TbRotate3D } from "react-icons/tb";
+import { Tooltip } from "../ui";
 
 interface TShirtModelProps {
   selectedPrint: PrintDesign | null;
@@ -195,6 +196,7 @@ function TShirtModel({
 interface TShirtSceneProps {
   selectedProduct?: string;
   productName?: string;
+  productDescription?: string;
   selectedPrint: PrintDesign | null;
   selectedColor: string;
   onProductClick?: () => void;
@@ -204,6 +206,7 @@ interface TShirtSceneProps {
 export default function TShirtScene({
   selectedProduct,
   productName = "Продукт",
+  productDescription = "",
   selectedPrint,
   selectedColor,
   onProductClick,
@@ -262,7 +265,12 @@ export default function TShirtScene({
           <div className="absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-5">
             <p className="text-[16px]/[20px] text-[#333333] flex items-center gap-[5px]">
               {productName}{" "}
-              <AiFillQuestionCircle size={20} className="text-white" />
+              <Tooltip content={productDescription} position="top">
+                <AiFillQuestionCircle
+                  size={20}
+                  className="text-white cursor-help"
+                />
+              </Tooltip>
             </p>
             <button
               onClick={onProductClick}

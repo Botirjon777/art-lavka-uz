@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
+import { validateStock, decrementStock } from "./validateStock";
 
 // Generate unique order number
 function generateOrderNumber(): string {
@@ -22,6 +23,24 @@ export async function createOrder(orderData: {
   try {
     await dbConnect();
 
+    // Step 1: Validate stock availability for all items
+    const itemsToValidate = orderData.items.map((item) => ({
+      productId: item.product._id,
+      size: item.size,
+      quantity: item.quantity,
+    }));
+
+    const validation = await validateStock(itemsToValidate);
+
+    if (!validation.success) {
+      return {
+        success: false,
+        error: "Some items are out of stock",
+        errors: validation.errors,
+      };
+    }
+
+    // Step 2: Create the order
     const orderNumber = generateOrderNumber();
 
     const order = await Order.create({
@@ -30,6 +49,15 @@ export async function createOrder(orderData: {
       status: "pending",
       paymentStatus: "pending",
     });
+
+    // Step 3: Decrement stock for all items
+    const stockUpdate = await decrementStock(itemsToValidate);
+
+    if (!stockUpdate.success) {
+      // If stock update fails, we should ideally rollback the order
+      // For now, log the error
+      console.error("Failed to update stock after order creation");
+    }
 
     revalidatePath("/admin/orders");
     return { success: true, order: JSON.parse(JSON.stringify(order)) };

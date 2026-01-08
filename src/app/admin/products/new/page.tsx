@@ -5,12 +5,21 @@ import { createProduct } from "@/app/actions/products";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { ProductInventory } from "@/types";
 
 export default function NewProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [inventory, setInventory] = useState<ProductInventory>({
+    XS: 0,
+    S: 0,
+    M: 0,
+    L: 0,
+    XL: 0,
+    XXL: 0,
+  });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,6 +56,7 @@ export default function NewProductPage() {
 
     const formData = new FormData(e.currentTarget);
     formData.set("image", imageUrl);
+    formData.set("inventory", JSON.stringify(inventory));
 
     const result = await createProduct(formData);
 
@@ -130,48 +140,92 @@ export default function NewProductPage() {
           <textarea
             id="description"
             name="description"
-            rows={4}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-            placeholder="Описание товара..."
+            rows={3}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none resize-none"
+            placeholder="Описание продукта..."
           />
         </div>
 
-        {/* Price & Stock */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="price"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Цена (сум) *
-            </label>
-            <input
-              type="number"
-              id="price"
-              name="price"
-              required
-              min="0"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="100000"
-            />
+        {/* Model Path */}
+        <div>
+          <label
+            htmlFor="model"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Путь к 3D модели *
+          </label>
+          <input
+            type="text"
+            id="model"
+            name="model"
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+            placeholder="/models/tshirt.glb"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Путь к файлу 3D модели (например: /models/tshirt.glb)
+          </p>
+        </div>
+
+        {/* Price */}
+        <div>
+          <label
+            htmlFor="price"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Цена (сум) *
+          </label>
+          <input
+            type="number"
+            id="price"
+            name="price"
+            required
+            min="0"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+            placeholder="100000"
+          />
+        </div>
+
+        {/* Inventory by Size */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Склад по размерам
+          </label>
+          <div className="grid grid-cols-3 gap-4">
+            {(["XS", "S", "M", "L", "XL", "XXL"] as const).map((size) => (
+              <div key={size}>
+                <label
+                  htmlFor={`inventory-${size}`}
+                  className="block text-xs font-medium text-gray-600 mb-1"
+                >
+                  {size}
+                </label>
+                <input
+                  type="number"
+                  id={`inventory-${size}`}
+                  min="0"
+                  value={inventory[size]}
+                  onChange={(e) =>
+                    setInventory({
+                      ...inventory,
+                      [size]: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+                  placeholder="0"
+                />
+              </div>
+            ))}
           </div>
-          <div>
-            <label
-              htmlFor="stock"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Склад
-            </label>
-            <input
-              type="number"
-              id="stock"
-              name="stock"
-              min="0"
-              defaultValue="0"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="0"
-            />
-          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Всего на складе:{" "}
+            <span className="font-semibold">
+              {Object.values(inventory).reduce((sum, count) => {
+                const num = Number(count);
+                return sum + (isNaN(num) ? 0 : num);
+              }, 0)}
+            </span>
+          </p>
         </div>
 
         {/* Category */}

@@ -30,3 +30,32 @@ export async function trackOrder(orderNumber: string, phone: string) {
     };
   }
 }
+
+export async function getOrdersByPhone(phone: string) {
+  try {
+    await dbConnect();
+
+    // Find all orders for the given phone number
+    const orders = await Order.find({
+      customerPhone: phone,
+    })
+      .select("orderNumber status totalAmount createdAt customerName")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (!orders || orders.length === 0) {
+      return {
+        success: false,
+        error: "No orders found for this phone number.",
+      };
+    }
+
+    return { success: true, orders: JSON.parse(JSON.stringify(orders)) };
+  } catch (error: any) {
+    console.error("Error fetching orders by phone:", error);
+    return {
+      success: false,
+      error: "An error occurred while fetching your orders.",
+    };
+  }
+}

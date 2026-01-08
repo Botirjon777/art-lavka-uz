@@ -5,6 +5,7 @@ import { getProductById, updateProduct } from "@/app/actions/products";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { ProductInventory } from "@/types";
 
 export default function EditProductPage({
   params,
@@ -18,11 +19,17 @@ export default function EditProductPage({
   const [imageUrl, setImageUrl] = useState("");
   const [modelUrl, setModelUrl] = useState("");
   const [colors, setColors] = useState<string[]>([]);
-  const [sizes, setSizes] = useState<string[]>([]);
   const [colorInput, setColorInput] = useState("");
-  const [sizeInput, setSizeInput] = useState("");
   const [product, setProduct] = useState<any>(null);
   const [productLoading, setProductLoading] = useState(true);
+  const [inventory, setInventory] = useState<ProductInventory>({
+    XS: 0,
+    S: 0,
+    M: 0,
+    L: 0,
+    XL: 0,
+    XXL: 0,
+  });
 
   useEffect(() => {
     loadProduct();
@@ -35,7 +42,18 @@ export default function EditProductPage({
       setImageUrl(data.image || "");
       setModelUrl(data.model || "");
       setColors(data.colors || []);
-      setSizes(data.sizes || []);
+      setColors(data.colors || []);
+      // Load existing inventory or set defaults
+      setInventory(
+        data.inventory || {
+          XS: 0,
+          S: 0,
+          M: 0,
+          L: 0,
+          XL: 0,
+          XXL: 0,
+        }
+      );
     } else {
       toast.error("Товар не найден");
       router.push("/admin/products");
@@ -83,17 +101,6 @@ export default function EditProductPage({
     setColors(colors.filter((c) => c !== color));
   };
 
-  const addSize = () => {
-    if (sizeInput.trim() && !sizes.includes(sizeInput.trim())) {
-      setSizes([...sizes, sizeInput.trim()]);
-      setSizeInput("");
-    }
-  };
-
-  const removeSize = (size: string) => {
-    setSizes(sizes.filter((s) => s !== size));
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -102,7 +109,7 @@ export default function EditProductPage({
     formData.set("image", imageUrl);
     formData.set("model", modelUrl);
     formData.set("colors", JSON.stringify(colors));
-    formData.set("sizes", JSON.stringify(sizes));
+    formData.set("inventory", JSON.stringify(inventory));
 
     const result = await updateProduct(id, formData);
 
@@ -271,86 +278,66 @@ export default function EditProductPage({
           </div>
         </div>
 
-        {/* Sizes */}
+        {/* Price */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Доступные размеры *
+          <label
+            htmlFor="price"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Цена (сум) *
           </label>
-          <div className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={sizeInput}
-              onChange={(e) => setSizeInput(e.target.value)}
-              onKeyPress={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addSize())
-              }
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="Введите размер (напр: XS, S, M, L, XL)"
-            />
-            <button
-              type="button"
-              onClick={addSize}
-              className="px-4 py-2 bg-[#8814B1] text-white rounded-xl hover:bg-[#8814B1]/90"
-            >
-              Добавить
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {sizes.map((size) => (
-              <span
-                key={size}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center gap-2"
-              >
-                {size}
-                <button
-                  type="button"
-                  onClick={() => removeSize(size)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
+          <input
+            type="number"
+            id="price"
+            name="price"
+            required
+            min="0"
+            defaultValue={product.price}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+            placeholder="100000"
+          />
         </div>
 
-        {/* Price & Stock */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="price"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Цена (сум) *
-            </label>
-            <input
-              type="number"
-              id="price"
-              name="price"
-              required
-              min="0"
-              defaultValue={product.price}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="100000"
-            />
+        {/* Inventory by Size */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Склад по размерам
+          </label>
+          <div className="grid grid-cols-3 gap-4">
+            {(["XS", "S", "M", "L", "XL", "XXL"] as const).map((size) => (
+              <div key={size}>
+                <label
+                  htmlFor={`inventory-${size}`}
+                  className="block text-xs font-medium text-gray-600 mb-1"
+                >
+                  {size}
+                </label>
+                <input
+                  type="number"
+                  id={`inventory-${size}`}
+                  min="0"
+                  value={inventory[size]}
+                  onChange={(e) =>
+                    setInventory({
+                      ...inventory,
+                      [size]: parseInt(e.target.value) || 0,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
+                  placeholder="0"
+                />
+              </div>
+            ))}
           </div>
-          <div>
-            <label
-              htmlFor="stock"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Склад
-            </label>
-            <input
-              type="number"
-              id="stock"
-              name="stock"
-              min="0"
-              defaultValue={product.stock}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="0"
-            />
-          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Всего на складе:{" "}
+            <span className="font-semibold">
+              {Object.values(inventory).reduce((sum, count) => {
+                const num = Number(count);
+                return sum + (isNaN(num) ? 0 : num);
+              }, 0)}
+            </span>
+          </p>
         </div>
 
         {/* Category */}
@@ -393,13 +380,7 @@ export default function EditProductPage({
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
-            disabled={
-              loading ||
-              !imageUrl ||
-              !modelUrl ||
-              colors.length === 0 ||
-              sizes.length === 0
-            }
+            disabled={loading || !imageUrl || !modelUrl || colors.length === 0}
             className="flex-1 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Обновление..." : "Обновить продукт"}
