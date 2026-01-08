@@ -1,3 +1,12 @@
+export interface ProductInventory {
+  XS: number;
+  S: number;
+  M: number;
+  L: number;
+  XL: number;
+  XXL: number;
+}
+
 export interface Product {
   id?: string;
   _id?: string;
@@ -8,7 +17,9 @@ export interface Product {
   model: string;
   colors?: string[];
   sizes?: string[];
-  stock: number;
+  stock: number; // Total stock
+  inventory: ProductInventory; // Stock per size
+  isNew?: boolean;
 }
 
 export interface PrintDesign {

@@ -48,7 +48,38 @@ export default function RightConfigurator({
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
-  const maxStock = selectedProduct.stock;
+  // Get size-specific stock
+  const inventory = selectedProduct.inventory || {
+    XS: 0,
+    S: 0,
+    M: 0,
+    L: 0,
+    XL: 0,
+    XXL: 0,
+  };
+
+  const getInventoryStock = (sizeToFind: string) => {
+    if (!sizeToFind) return 0;
+    const s = sizeToFind.trim().toUpperCase();
+
+    // 1. Try exact match
+    if (inventory[s as keyof typeof inventory] !== undefined) {
+      return Number(inventory[s as keyof typeof inventory]);
+    }
+
+    // 2. Try prefix match for sizes like "XS (48)"
+    const sizeKeys = ["XXL", "XL", "XS", "S", "M", "L"];
+    for (const key of sizeKeys) {
+      if (s.startsWith(key)) {
+        return Number(inventory[key as keyof typeof inventory]);
+      }
+    }
+    return 0;
+  };
+
+  const sizeStock = getInventoryStock(selectedSize);
+  const isOutOfStock = sizeStock === 0;
+  const maxStock = Math.min(sizeStock, 10); // Limit to 10 or available stock
   const price = selectedProduct.price;
 
   const handleAddToCart = () => {
@@ -110,20 +141,32 @@ export default function RightConfigurator({
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {productSizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`py-2.5 px-3 cursor-pointer text-[14px]/[17px] rounded-xl transition-all ${
-                        selectedSize === size
-                          ? "bg-[#00C6F1] text-white"
-                          : "bg-white text-[#333333]"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {productSizes.map((size) => {
+                    const stock = getInventoryStock(size);
+                    if (stock === 0) return null;
+
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`py-2.5 px-3 text-[14px]/[17px] rounded-xl transition-all ${
+                          selectedSize === size
+                            ? "bg-[#00C6F1] text-white"
+                            : "bg-white text-[#333333] cursor-pointer"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {/* Stock Info */}
+                {!isOutOfStock && sizeStock < 5 && (
+                  <p className="text-orange-600 text-xs mt-2">
+                    Осталось всего {sizeStock} шт. размера {selectedSize}
+                  </p>
+                )}
 
                 <button
                   onClick={() => setIsSizeModalOpen(true)}
@@ -136,7 +179,8 @@ export default function RightConfigurator({
               {/* Quantity */}
               <div>
                 <p className="text-[16px]/[22px] text-[#333333] mb-[15px]">
-                  Количество: {quantity}шт
+                  Количество: {quantity}шт{" "}
+                  {!isOutOfStock && `(доступно: ${sizeStock})`}
                 </p>
                 <div className="flex items-center gap-[15px]">
                   <button
@@ -203,15 +247,25 @@ export default function RightConfigurator({
               <div className="space-y-[15px] flex flex-col">
                 <button
                   onClick={handleAddToCart}
-                  className="max-w-[240px] cursor-pointer px-[35px] py-3.5 bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white rounded-xl transition-colors shadow-md text-[16px]/5"
+                  disabled={isOutOfStock}
+                  className={`max-w-[240px] px-[35px] py-3.5 rounded-xl transition-colors shadow-md text-[16px]/5 ${
+                    isOutOfStock
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white cursor-pointer"
+                  }`}
                 >
-                  Купить в 1 клик
+                  {isOutOfStock ? "Нет в наличии" : "Купить в 1 клик"}
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  className="max-w-[240px] cursor-pointer px-[35px] py-3.5 bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-all shadow-md text-[16px]/5"
+                  disabled={isOutOfStock}
+                  className={`max-w-[240px] px-[35px] py-3.5 rounded-xl transition-all shadow-md text-[16px]/5 ${
+                    isOutOfStock
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-[#8814B1] hover:bg-[#8814B1]/80 text-white cursor-pointer"
+                  }`}
                 >
-                  Добавить в корзину
+                  {isOutOfStock ? "Нет в наличии" : "Добавить в корзину"}
                 </button>
               </div>
             </div>

@@ -136,10 +136,10 @@ export default function LeftSidebar({
             {/* No Print Option */}
             <button
               onClick={() => onPrintSelect(null)}
-              className={`aspect-square cursor-pointer rounded-[26px] border transition-all hover:scale-105 flex items-center justify-center ${
+              className={`aspect-square cursor-pointer rounded-[26px] border-2 transition-all hover:shadow-xl flex items-center justify-center ${
                 selectedPrint === null
-                  ? "border-[#00C6F1]"
-                  : "border-transparent"
+                  ? "border-[#00C6F1] shadow-lg"
+                  : "border-gray-200 hover:border-[#00C6F1]/30"
               }`}
             >
               <div className="bg-white h-[90%] w-[90%] rounded-[26px] shadow-lg flex items-center justify-center">
@@ -156,11 +156,11 @@ export default function LeftSidebar({
                 <button
                   key={print.id || (print as any)._id}
                   onClick={() => onPrintSelect(print)}
-                  className={`aspect-square cursor-pointer rounded-[26px] border transition-all hover:scale-105 flex items-center justify-center ${
+                  className={`aspect-square cursor-pointer rounded-[26px] border-2 transition-all hover:shadow-xl flex items-center justify-center ${
                     selectedPrint?.id === print.id ||
                     (selectedPrint as any)?._id === (print as any)._id
-                      ? "border-[#00C6F1]"
-                      : "border-transparent"
+                      ? "border-[#00C6F1] shadow-lg"
+                      : "border-gray-200 hover:border-[#00C6F1]/30"
                   }`}
                 >
                   <div className="relative bg-white h-[90%] w-[90%] rounded-[26px] overflow-hidden shadow-lg">
