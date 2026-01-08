@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { trackOrder } from "@/app/actions/trackOrder";
+import { trackOrder, getOrdersByPhone } from "@/app/actions/trackOrder";
 import { Order } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,28 +18,51 @@ export default function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
+  const [ordersList, setOrdersList] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [searchMode, setSearchMode] = useState<"order-number" | "phone-only">(
+    "order-number"
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setOrder(null);
+    setOrdersList([]);
 
-    if (!orderNumber || !phone) {
-      setError("Please enter both order number and phone number");
-      return;
-    }
+    if (searchMode === "order-number") {
+      if (!orderNumber || !phone) {
+        setError("Please enter both order number and phone number");
+        return;
+      }
 
-    setLoading(true);
-    const result = await trackOrder(orderNumber, phone);
+      setLoading(true);
+      const result = await trackOrder(orderNumber, phone);
 
-    if (result.success && result.order) {
-      setOrder(result.order);
+      if (result.success && result.order) {
+        setOrder(result.order);
+      } else {
+        setError(result.error || "Order not found");
+      }
+      setLoading(false);
     } else {
-      setError(result.error || "Order not found");
+      // Phone-only mode
+      if (!phone) {
+        setError("Please enter your phone number");
+        return;
+      }
+
+      setLoading(true);
+      const result = await getOrdersByPhone(phone);
+
+      if (result.success && result.orders) {
+        setOrdersList(result.orders);
+      } else {
+        setError(result.error || "No orders found");
+      }
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const getStatusInfo = (
@@ -100,6 +123,21 @@ export default function TrackOrderPage() {
     }));
   };
 
+  const handleSelectOrder = async (orderItem: Order) => {
+    // Fetch full order details including items
+    setLoading(true);
+    setError("");
+    const result = await trackOrder(orderItem.orderNumber, phone);
+
+    if (result.success && result.order) {
+      setOrder(result.order);
+      setOrdersList([]); // Clear the list to show only the selected order
+    } else {
+      setError("Failed to load order details");
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F5F5] py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -125,18 +163,45 @@ export default function TrackOrderPage() {
         {/* Search Form */}
         <div className="bg-white rounded-[30px] p-8 shadow-lg mb-8">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Order Number
-              </label>
+            {/* Search Mode Toggle */}
+            <div className="flex items-center gap-2 mb-4">
               <input
-                type="text"
-                value={orderNumber}
-                onChange={(e) => setOrderNumber(e.target.value.toUpperCase())}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] uppercase"
-                placeholder="ORD-XXXXXXXXX"
+                type="checkbox"
+                id="phoneOnly"
+                checked={searchMode === "phone-only"}
+                onChange={(e) => {
+                  setSearchMode(
+                    e.target.checked ? "phone-only" : "order-number"
+                  );
+                  setError("");
+                  setOrder(null);
+                  setOrdersList([]);
+                }}
+                className="w-4 h-4 text-[#00C6F1] border-gray-300 rounded focus:ring-[#00C6F1]"
               />
+              <label
+                htmlFor="phoneOnly"
+                className="text-sm text-gray-700 cursor-pointer"
+              >
+                Don't know order number?
+              </label>
             </div>
+
+            {/* Order Number Field - Only show in order-number mode */}
+            {searchMode === "order-number" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Order Number
+                </label>
+                <input
+                  type="text"
+                  value={orderNumber}
+                  onChange={(e) => setOrderNumber(e.target.value.toUpperCase())}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] uppercase"
+                  placeholder="ORD-XXXXXXXXX"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -162,10 +227,65 @@ export default function TrackOrderPage() {
               disabled={loading}
               className="w-full py-3 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Tracking..." : "Track Order"}
+              {loading
+                ? "Searching..."
+                : searchMode === "phone-only"
+                ? "Find My Orders"
+                : "Track Order"}
             </button>
           </form>
         </div>
+
+        {/* Orders List - Show when phone-only mode returns multiple orders */}
+        {ordersList.length > 0 && (
+          <div className="bg-white rounded-[30px] p-8 shadow-lg mb-8">
+            <h2 className="text-2xl font-bold text-[#333333] mb-6">
+              Your Orders ({ordersList.length})
+            </h2>
+            <div className="space-y-4">
+              {ordersList.map((orderItem) => {
+                const statusInfo = getStatusInfo(orderItem.status);
+                const StatusIcon = statusInfo.icon;
+                return (
+                  <button
+                    key={orderItem._id}
+                    onClick={() => handleSelectOrder(orderItem)}
+                    className="w-full p-6 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-left border-2 border-transparent hover:border-[#00C6F1]"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-bold text-[#00C6F1] text-lg">
+                          {orderItem.orderNumber}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {new Date(orderItem.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`${statusInfo.color} text-white px-3 py-1 rounded-full flex items-center gap-2`}
+                        >
+                          <StatusIcon size={16} />
+                          <span className="text-sm font-medium">
+                            {statusInfo.label}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        {orderItem.customerName}
+                      </p>
+                      <p className="font-bold text-lg">
+                        {orderItem.totalAmount.toLocaleString()} UZS
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Order Details */}
         {order && (
