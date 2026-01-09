@@ -80,7 +80,7 @@ export default function RightConfigurator({
           {/* Content Grid */}
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left - T-shirt 3D Preview */}
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] min-w-[300px] md:min-w-[450px]">
               <TShirtScene
                 key={selectedProduct.id}
                 selectedProduct={selectedProduct.model}
