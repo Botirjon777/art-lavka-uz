@@ -34,6 +34,22 @@ export async function sendOrderNotification(order: any) {
       }
     }
 
+    // Send notification to the specific order group if configured
+    const groupId = process.env.TELEGRAM_ORDER_GROUP_ID;
+    if (groupId) {
+      try {
+        await bot.sendMessage(groupId, message, {
+          parse_mode: "Markdown",
+        });
+        console.log(`Order notification sent to group ${groupId}`);
+      } catch (error) {
+        console.error(
+          `Failed to send notification to group ${groupId}:`,
+          error
+        );
+      }
+    }
+
     console.log(`Order notification sent to ${sessions.length} admin(s)`);
   } catch (error) {
     console.error("Error sending order notification:", error);

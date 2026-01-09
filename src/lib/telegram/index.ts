@@ -14,15 +14,15 @@ import { handleGalleryList } from "./handlers/gallery";
 
 // Initialize bot handlers
 export function initializeTelegramBot() {
-  const globalForHandlers = global as unknown as {
-    telegramHandlersInitialized: boolean;
-  };
+  const globalKey = "__telegram_bot_initialized__";
+  const globalForHandlers = global as any;
 
-  if (globalForHandlers.telegramHandlersInitialized) {
+  if (globalForHandlers[globalKey]) {
+    console.log("🤖 [Telegram] Handlers already registered, skipping...");
     return;
   }
 
-  console.log("🤖 [Telegram] Initializing bot handlers...");
+  console.log("🤖 [Telegram] Registering handlers...");
 
   try {
     // Single message handler for all text inputs including commands
@@ -35,9 +35,16 @@ export function initializeTelegramBot() {
       // Log incoming messages for debugging
       console.log(`🤖 [Telegram] Message from ${chatId}: ${text}`);
 
-      // Handle the /start command explicitly
+      // Handle commands
       if (text === "/start") {
         await handleStart(bot, chatId);
+        return;
+      }
+
+      if (text === "/getid") {
+        await bot.sendMessage(chatId, `🆔 ID этого чата: \`${chatId}\``, {
+          parse_mode: "Markdown",
+        });
         return;
       }
 
@@ -123,7 +130,7 @@ export function initializeTelegramBot() {
     });
 
     console.log("✅ [Telegram] Bot initialized successfully!");
-    globalForHandlers.telegramHandlersInitialized = true;
+    globalForHandlers[globalKey] = true;
   } catch (error) {
     console.error("❌ [Telegram] Error during initialization:", error);
   }

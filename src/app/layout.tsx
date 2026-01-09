@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import "@/lib/telegram/init";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
