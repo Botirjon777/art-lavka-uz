@@ -20,12 +20,16 @@ interface TShirtModelProps {
   selectedPrint: PrintDesign | null;
   selectedColor: string;
   selectedProduct?: string;
+  modelScale?: number;
+  modelPosition?: [number, number, number];
 }
 
 function TShirtModel({
   selectedPrint,
   selectedColor,
   selectedProduct,
+  modelScale = 1.5,
+  modelPosition = [0, -1, 0],
 }: TShirtModelProps) {
   const { scene } = useGLTF(selectedProduct || "/model/compressed/base.glb");
   const groupRef = useRef<THREE.Group>(null);
@@ -112,7 +116,7 @@ function TShirtModel({
 
   return (
     <>
-      <group ref={groupRef} position={[0, -1, 0]} scale={1.5}>
+      <group ref={groupRef} position={modelPosition} scale={modelScale}>
         <primitive object={scene} />
         {selectedPrint && meshRef.current && (
           <>
@@ -191,6 +195,9 @@ interface TShirtSceneProps {
   selectedColor: string;
   onProductClick?: () => void;
   showUI?: boolean;
+  modelScale?: number;
+  modelPosition?: [number, number, number];
+  cameraPosition?: [number, number, number];
 }
 
 export default function TShirtScene({
@@ -201,13 +208,24 @@ export default function TShirtScene({
   selectedColor,
   onProductClick,
   showUI = true,
+  modelScale = 1.5,
+  modelPosition = [0, -1, 0],
+  cameraPosition = [0, 0, 5],
 }: TShirtSceneProps) {
   return (
-    <div className="w-full h-full min-h-[400px] relative">
+    <div className="w-full h-full min-h-[400px] relative overflow-hidden">
       <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
+        camera={{ position: cameraPosition, fov: 50 }}
         gl={{ antialias: true, alpha: true }}
         dpr={[1, 2]}
+        className="absolute inset-0 w-full h-full"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+        }}
       >
         <Suspense
           fallback={
@@ -233,6 +251,8 @@ export default function TShirtScene({
             selectedProduct={selectedProduct}
             selectedPrint={selectedPrint}
             selectedColor={selectedColor}
+            modelScale={modelScale}
+            modelPosition={modelPosition}
           />
 
           <OrbitControls

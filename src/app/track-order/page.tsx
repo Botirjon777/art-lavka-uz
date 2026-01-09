@@ -13,6 +13,7 @@ import {
   MdCancel,
 } from "react-icons/md";
 import { IconType } from "react-icons";
+import { RiTelegram2Fill } from "react-icons/ri";
 
 export default function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("");
@@ -72,28 +73,36 @@ export default function TrackOrderPage() {
       string,
       { label: string; color: string; icon: IconType }
     > = {
-      pending: { label: "Pending", color: "bg-yellow-500", icon: MdPending },
+      pending: {
+        label: "Ожидает",
+        color: "bg-yellow-500",
+        icon: MdPending,
+      },
       confirmed: {
-        label: "Confirmed",
+        label: "Подтвержден",
         color: "bg-blue-500",
         icon: MdCheckCircle,
       },
       processing: {
-        label: "Processing",
+        label: "В обработке",
         color: "bg-purple-500",
         icon: MdSettings,
       },
       shipped: {
-        label: "Shipped",
+        label: "Отправлен",
         color: "bg-indigo-500",
         icon: MdLocalShipping,
       },
       delivered: {
-        label: "Delivered",
+        label: "Доставлен",
         color: "bg-green-500",
         icon: MdCheckCircle,
       },
-      cancelled: { label: "Cancelled", color: "bg-red-500", icon: MdCancel },
+      cancelled: {
+        label: "Отменен",
+        color: "bg-red-500",
+        icon: MdCancel,
+      },
     };
     return statusInfo[status as keyof typeof statusInfo] || statusInfo.pending;
   };
@@ -153,11 +162,22 @@ export default function TrackOrderPage() {
             />
           </Link>
           <h1 className="text-3xl font-bold text-[#333333] mb-2">
-            Track Your Order
+            Отследитe ваш заказ
           </h1>
-          <p className="text-gray-600">
-            Enter your order details to check the status
+          <p className="text-gray-600 mb-4">
+            Введите детали заказа, чтобы проверить статус
           </p>
+          <div className="flex justify-center">
+            <a
+              href="https://t.me/artlavkauzbot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0088cc]/10 text-[#0088cc] rounded-full text-sm font-medium hover:bg-[#0088cc]/20 transition-colors"
+            >
+              <RiTelegram2Fill size={18} />
+              Или используйте наш Telegram-бот
+            </a>
+          </div>
         </div>
 
         {/* Search Form */}
@@ -183,7 +203,7 @@ export default function TrackOrderPage() {
                 htmlFor="phoneOnly"
                 className="text-sm text-gray-700 cursor-pointer"
               >
-                Don't know order number?
+                Не знаете номер заказа?
               </label>
             </div>
 
@@ -191,7 +211,7 @@ export default function TrackOrderPage() {
             {searchMode === "order-number" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Order Number
+                  Номер заказа
                 </label>
                 <input
                   type="text"
@@ -205,7 +225,7 @@ export default function TrackOrderPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
+                Номер телефона
               </label>
               <input
                 type="tel"
@@ -228,10 +248,10 @@ export default function TrackOrderPage() {
               className="w-full py-3 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading
-                ? "Searching..."
+                ? "Поиск..."
                 : searchMode === "phone-only"
-                ? "Find My Orders"
-                : "Track Order"}
+                ? "Найти мои заказы"
+                : "Отследить заказ"}
             </button>
           </form>
         </div>
@@ -240,7 +260,7 @@ export default function TrackOrderPage() {
         {ordersList.length > 0 && (
           <div className="bg-white rounded-[30px] p-8 shadow-lg mb-8">
             <h2 className="text-2xl font-bold text-[#333333] mb-6">
-              Your Orders ({ordersList.length})
+              Ваши заказы ({ordersList.length})
             </h2>
             <div className="space-y-4">
               {ordersList.map((orderItem) => {
@@ -293,7 +313,7 @@ export default function TrackOrderPage() {
             {/* Status Timeline */}
             <div className="bg-white rounded-[30px] p-8 shadow-lg">
               <h2 className="text-2xl font-bold text-[#333333] mb-6">
-                Order Status
+                Статус заказа
               </h2>
 
               {order.status === "cancelled" ? (
@@ -302,9 +322,9 @@ export default function TrackOrderPage() {
                     <MdCancel size={48} className="text-red-600" />
                   </div>
                   <p className="text-xl font-bold text-red-600 mb-2">
-                    Order Cancelled
+                    Заказ отменен
                   </p>
-                  <p className="text-gray-600">This order has been cancelled</p>
+                  <p className="text-gray-600">Этот заказ был отменен</p>
                 </div>
               ) : (
                 <div className="relative">
@@ -359,28 +379,28 @@ export default function TrackOrderPage() {
             {/* Order Information */}
             <div className="bg-white rounded-[30px] p-8 shadow-lg">
               <h2 className="text-2xl font-bold text-[#333333] mb-6">
-                Order Information
+                Информация о заказе
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Order Number</p>
+                  <p className="text-sm text-gray-600 mb-1">Номер заказа</p>
                   <p className="font-bold text-[#00C6F1]">
                     {order.orderNumber}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Order Date</p>
+                  <p className="text-sm text-gray-600 mb-1">Дата заказа</p>
                   <p className="font-medium">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Customer Name</p>
+                  <p className="text-sm text-gray-600 mb-1">Имя клиента</p>
                   <p className="font-medium">{order.customerName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Amount</p>
+                  <p className="text-sm text-gray-600 mb-1">Общая сумма</p>
                   <p className="font-bold text-lg">
                     {order.totalAmount.toLocaleString()} UZS
                   </p>
@@ -389,7 +409,7 @@ export default function TrackOrderPage() {
 
               {/* Order Items */}
               <div>
-                <h3 className="font-bold text-lg mb-4">Order Items</h3>
+                <h3 className="font-bold text-lg mb-4">Товары в заказе</h3>
                 <div className="space-y-3">
                   {order.items.map((item, index) => (
                     <div
@@ -429,16 +449,16 @@ export default function TrackOrderPage() {
             {/* Delivery Information */}
             <div className="bg-white rounded-[30px] p-8 shadow-lg">
               <h2 className="text-2xl font-bold text-[#333333] mb-4">
-                Delivery Information
+                Информация о доставке
               </h2>
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Delivery Address</p>
+                  <p className="text-sm text-gray-600 mb-1">Адрес доставки</p>
                   <p className="font-medium">{order.customerAddress}</p>
                 </div>
                 {order.notes && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Notes</p>
+                    <p className="text-sm text-gray-600 mb-1">Примечания</p>
                     <p className="font-medium">{order.notes}</p>
                   </div>
                 )}
@@ -453,7 +473,7 @@ export default function TrackOrderPage() {
             href="/"
             className="inline-block px-6 py-3 bg-white text-[#333333] rounded-lg hover:bg-gray-50 transition-colors font-medium shadow-md"
           >
-            Back to Home
+            Назад на главную
           </Link>
         </div>
       </div>

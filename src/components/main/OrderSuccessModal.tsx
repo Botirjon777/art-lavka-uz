@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { RiTelegram2Fill } from "react-icons/ri";
+import { TbSitemap } from "react-icons/tb";
+
 interface OrderSuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -14,11 +18,22 @@ export default function OrderSuccessModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[30px] w-full max-w-md p-8">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-pointer"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="bg-white rounded-[30px] w-full max-w-md p-8 shadow-2xl overflow-hidden relative cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Decorative background element */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#00C6F1]/5 rounded-bl-full -z-10" />
+
         {/* Success Icon */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center shadow-inner">
             <svg
               className="w-10 h-10 text-green-500"
               fill="none"
@@ -28,7 +43,7 @@ export default function OrderSuccessModal({
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={3}
                 d="M5 13l4 4L19 7"
               />
             </svg>
@@ -36,26 +51,95 @@ export default function OrderSuccessModal({
         </div>
 
         {/* Success Message */}
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-[#333333] mb-2">
-            Order Placed Successfully!
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-black text-[#333333] mb-3 tracking-tight">
+            Заказ успешно оформлен!
           </h2>
-          <p className="text-gray-600 mb-4">
-            Thank you for your order. We'll contact you soon to confirm the
-            details.
+          <p className="text-gray-500 text-sm leading-relaxed mb-6 px-4">
+            Спасибо, что выбрали нас! Мы скоро свяжемся с вами для подтверждения
+            заказа.
           </p>
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Your Order Number</p>
-            <p className="text-xl font-bold text-[#00C6F1]">{orderNumber}</p>
+
+          <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex flex-col items-center justify-center">
+            <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">
+              Номер заказа
+            </p>
+            <p className="text-2xl font-black text-[#00C6F1]">{orderNumber}</p>
+          </div>
+        </div>
+
+        {/* Tracking Options */}
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-px bg-gray-100 flex-1" />
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Отслеживание
+            </p>
+            <div className="h-px bg-gray-100 flex-1" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-2">
+            <Link
+              href="/track-order"
+              className="group flex items-center justify-between px-5 py-4 bg-white border border-gray-100 rounded-xl hover:border-[#00C6F1] transition-all hover:shadow-md"
+            >
+              <div className="flex items-center gap-3">
+                <TbSitemap size={18} />
+                <span className="text-sm font-bold text-gray-700">
+                  На сайте
+                </span>
+              </div>
+              <svg
+                className="w-4 h-4 text-gray-300 group-hover:text-[#00C6F1] transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Link>
+
+            <a
+              href="https://t.me/artlavkauzbot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center justify-between px-5 py-4 bg-[#0088cc]/5 border border-transparent rounded-xl hover:bg-[#0088cc]/10 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <RiTelegram2Fill size={18} className="text-[#0088cc]" />
+
+                <span className="text-sm font-bold text-[#0088cc]">
+                  Через Telegram
+                </span>
+              </div>
+              <svg
+                className="w-4 h-4 text-[#0088cc]/30 group-hover:text-[#0088cc] transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </a>
           </div>
         </div>
 
         {/* Action Button */}
         <button
           onClick={onClose}
-          className="w-full px-6 py-3 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium"
+          className="w-full cursor-pointer px-6 py-4 bg-[#00C6F1] text-white rounded-2xl hover:bg-[#00C6F1]/90 transition-all font-black text-sm uppercase tracking-widest shadow-lg shadow-[#00C6F1]/30 active:scale-[0.98]"
         >
-          Continue Shopping
+          Продолжить покупки
         </button>
       </div>
     </div>

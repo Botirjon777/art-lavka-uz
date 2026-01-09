@@ -11,11 +11,24 @@ export interface Color {
 interface ColorPickerProps {
   colors: Color[];
   onChange: (colors: Color[]) => void;
+  previewColor?: string;
+  onPreview?: (hex: string) => void;
 }
 
-export default function ColorPicker({ colors, onChange }: ColorPickerProps) {
+export default function ColorPicker({
+  colors,
+  onChange,
+  previewColor,
+  onPreview,
+}: ColorPickerProps) {
   const [colorName, setColorName] = useState("");
   const [colorHex, setColorHex] = useState("#000000");
+
+  // Sync internal hex to parent for live preview
+  const handleHexChange = (hex: string) => {
+    setColorHex(hex);
+    if (onPreview) onPreview(hex);
+  };
 
   const addColor = () => {
     if (!colorName.trim()) {
@@ -67,13 +80,13 @@ export default function ColorPicker({ colors, onChange }: ColorPickerProps) {
               <input
                 type="color"
                 value={colorHex}
-                onChange={(e) => setColorHex(e.target.value)}
+                onChange={(e) => handleHexChange(e.target.value)}
                 className="w-12 h-10 rounded-lg border border-gray-300 cursor-pointer"
               />
               <input
                 type="text"
                 value={colorHex}
-                onChange={(e) => setColorHex(e.target.value)}
+                onChange={(e) => handleHexChange(e.target.value)}
                 placeholder="#000000"
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none font-mono"
               />
@@ -100,18 +113,30 @@ export default function ColorPicker({ colors, onChange }: ColorPickerProps) {
             {colors.map((color, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg"
+                className={`flex items-center gap-3 p-3 border rounded-lg transition-all ${
+                  previewColor?.toLowerCase() === color.hex.toLowerCase()
+                    ? "border-[#8814B1] bg-[#8814B1]/5 ring-2 ring-[#8814B1]/20"
+                    : "border-gray-200"
+                }`}
               >
-                {/* Color Preview */}
-                <div
-                  className="w-10 h-10 rounded-lg border-2 border-gray-300"
+                {/* Color Preview Box */}
+                <button
+                  type="button"
+                  onClick={() => onPreview && onPreview(color.hex)}
+                  className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:scale-105 transition-transform shrink-0"
                   style={{ backgroundColor: color.hex }}
+                  title="Предпросмотр этого цвета"
                 />
 
                 {/* Color Info */}
-                <div className="flex-1">
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => onPreview && onPreview(color.hex)}
+                >
                   <p className="font-medium text-gray-800">{color.name}</p>
-                  <p className="text-sm text-gray-500 font-mono">{color.hex}</p>
+                  <p className="text-sm text-gray-500 font-mono uppercase">
+                    {color.hex}
+                  </p>
                 </div>
 
                 {/* Remove Button */}
