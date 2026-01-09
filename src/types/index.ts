@@ -7,6 +7,11 @@ export interface ProductInventory {
   XXL: number;
 }
 
+export interface ProductColor {
+  name: string;
+  hex: string;
+}
+
 export interface Product {
   id?: string;
   _id?: string;
@@ -15,7 +20,7 @@ export interface Product {
   category: string;
   price: number;
   model: string;
-  colors?: string[];
+  colors?: ProductColor[];
   sizes?: string[];
   stock: number; // Total stock
   inventory: ProductInventory; // Stock per size

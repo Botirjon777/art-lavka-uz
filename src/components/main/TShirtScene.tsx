@@ -94,19 +94,9 @@ function TShirtModel({
   useEffect(() => {
     if (!meshRef.current) return;
 
-    const colorMap: { [key: string]: string } = {
-      white: "#FFFFFF",
-      black: "#000000",
-      red: "#EF4444",
-      blue: "#3B82F6",
-      green: "#10B981",
-      yellow: "#FBBF24",
-      gray: "#9CA3AF",
-      "off-white": "#FAF9F6",
-    };
-
+    // selectedColor is now a hex code, use it directly
     meshRef.current.material = new THREE.MeshStandardMaterial({
-      color: colorMap[selectedColor] || "#FFFFFF",
+      color: selectedColor || "#FFFFFF",
       roughness: 0.8,
       metalness: 0.1,
     });

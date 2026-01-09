@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { ProductInventory } from "@/types";
+import ColorPicker, { Color } from "@/components/admin/ColorPicker";
 
 export default function EditProductPage({
   params,
@@ -18,8 +19,7 @@ export default function EditProductPage({
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [modelUrl, setModelUrl] = useState("");
-  const [colors, setColors] = useState<string[]>([]);
-  const [colorInput, setColorInput] = useState("");
+  const [colors, setColors] = useState<Color[]>([]);
   const [product, setProduct] = useState<any>(null);
   const [productLoading, setProductLoading] = useState(true);
   const [inventory, setInventory] = useState<ProductInventory>({
@@ -41,7 +41,6 @@ export default function EditProductPage({
       setProduct(data);
       setImageUrl(data.image || "");
       setModelUrl(data.model || "");
-      setColors(data.colors || []);
       setColors(data.colors || []);
       // Load existing inventory or set defaults
       setInventory(
@@ -88,17 +87,6 @@ export default function EditProductPage({
     } finally {
       setUploading(false);
     }
-  };
-
-  const addColor = () => {
-    if (colorInput.trim() && !colors.includes(colorInput.trim())) {
-      setColors([...colors, colorInput.trim()]);
-      setColorInput("");
-    }
-  };
-
-  const removeColor = (color: string) => {
-    setColors(colors.filter((c) => c !== color));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -237,45 +225,10 @@ export default function EditProductPage({
 
         {/* Colors */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Доступные цвета *
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Цвета товара
           </label>
-          <div className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={colorInput}
-              onChange={(e) => setColorInput(e.target.value)}
-              onKeyPress={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addColor())
-              }
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              placeholder="Введите цвет (напр: белый, черный)"
-            />
-            <button
-              type="button"
-              onClick={addColor}
-              className="px-4 py-2 bg-[#8814B1] text-white rounded-xl hover:bg-[#8814B1]/90"
-            >
-              Добавить
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {colors.map((color) => (
-              <span
-                key={color}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center gap-2"
-              >
-                {color}
-                <button
-                  type="button"
-                  onClick={() => removeColor(color)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
+          <ColorPicker colors={colors} onChange={setColors} />
         </div>
 
         {/* Price */}
