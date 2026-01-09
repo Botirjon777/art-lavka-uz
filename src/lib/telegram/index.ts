@@ -15,8 +15,113 @@ import { handleGalleryList } from "./handlers/gallery";
 const INITIALIZED_KEY = "__telegram_bot_initialized__";
 
 /**
+ * Handles an incoming message update.
+ * Exported so it can be awaited in the webhook handler.
+ */
+export async function handleIncomingMessage(msg: any) {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+
+  if (!text) return;
+
+  console.log(`🤖 [Telegram] Message from ${chatId}: ${text}`);
+
+  // Handle commands
+  if (text === "/start") {
+    await handleStart(bot, chatId);
+    return;
+  }
+
+  if (text === "/getid") {
+    await bot.sendMessage(chatId, `🆔 ID этого чата: \`${chatId}\``, {
+      parse_mode: "Markdown",
+    });
+    return;
+  }
+
+  if (text.startsWith("/")) return;
+
+  await dbConnect();
+
+  // Check if user is in authentication flow
+  const session = await TelegramSession.findOne({ chatId });
+
+  if (session && !session.isAuthenticated) {
+    if (session.authState === "awaiting_email") {
+      await handleEmailInput(bot, chatId, text);
+      return;
+    } else if (session.authState === "awaiting_password") {
+      await handlePasswordInput(bot, chatId, text);
+      return;
+    }
+  }
+
+  // Handle menu buttons
+  switch (text) {
+    case "📦 Товары":
+      await handleProductsList(bot, chatId, 1);
+      break;
+    case "🛍️ Заказы":
+      await handleOrdersList(bot, chatId, 1);
+      break;
+    case "🎨 Принты":
+      await handlePrintsList(bot, chatId, 1);
+      break;
+    case "🖼️ Галерея":
+      await handleGalleryList(bot, chatId, 1);
+      break;
+    case "⬅️ Назад в меню":
+      await handleMainMenu(bot, chatId);
+      break;
+    default:
+      if (session && session.isAuthenticated) {
+        await bot.sendMessage(
+          chatId,
+          "❓ Неизвестная команда. Пожалуйста, используйте кнопки меню."
+        );
+      }
+      break;
+  }
+}
+
+/**
+ * Handles an incoming callback query update.
+ * Exported so it can be awaited in the webhook handler.
+ */
+export async function handleIncomingCallbackQuery(query: any) {
+  const chatId = query.message?.chat.id;
+  const data = query.data;
+
+  if (!chatId || !data) return;
+
+  await bot.answerCallbackQuery(query.id);
+
+  if (data === "noop") return;
+
+  const [type, action, pageStr] = data.split("_");
+  const page = parseInt(pageStr);
+
+  if (action === "page" && !isNaN(page)) {
+    switch (type) {
+      case "products":
+        await handleProductsList(bot, chatId, page);
+        break;
+      case "orders":
+        await handleOrdersList(bot, chatId, page);
+        break;
+      case "prints":
+        await handlePrintsList(bot, chatId, page);
+        break;
+      case "gallery":
+        await handleGalleryList(bot, chatId, page);
+        break;
+    }
+  }
+}
+
+/**
  * Registers all message and callback handlers for the bot.
- * This should be called once on server start or in the webhook handler.
+ * This should be called once on server start (polling mode).
  */
 export function initializeTelegramBot() {
   const globalObj = global as any;
@@ -28,102 +133,19 @@ export function initializeTelegramBot() {
   console.log("🤖 [Telegram] Registering handlers...");
 
   try {
-    // Single message handler for all text inputs including commands
     bot.on("message", async (msg) => {
-      const chatId = msg.chat.id;
-      const text = msg.text;
-
-      if (!text) return;
-
-      console.log(`🤖 [Telegram] Message from ${chatId}: ${text}`);
-
-      // Handle commands
-      if (text === "/start") {
-        await handleStart(bot, chatId);
-        return;
-      }
-
-      if (text === "/getid") {
-        await bot.sendMessage(chatId, `🆔 ID этого чата: \`${chatId}\``, {
-          parse_mode: "Markdown",
-        });
-        return;
-      }
-
-      if (text.startsWith("/")) return;
-
-      await dbConnect();
-
-      // Check if user is in authentication flow
-      const session = await TelegramSession.findOne({ chatId });
-
-      if (session && !session.isAuthenticated) {
-        if (session.authState === "awaiting_email") {
-          await handleEmailInput(bot, chatId, text);
-          return;
-        } else if (session.authState === "awaiting_password") {
-          await handlePasswordInput(bot, chatId, text);
-          return;
-        }
-      }
-
-      // Handle menu buttons
-      switch (text) {
-        case "📦 Товары":
-          await handleProductsList(bot, chatId, 1);
-          break;
-        case "🛍️ Заказы":
-          await handleOrdersList(bot, chatId, 1);
-          break;
-        case "🎨 Принты":
-          await handlePrintsList(bot, chatId, 1);
-          break;
-        case "🖼️ Галерея":
-          await handleGalleryList(bot, chatId, 1);
-          break;
-        case "⬅️ Назад в меню":
-          await handleMainMenu(bot, chatId);
-          break;
-        default:
-          if (session && session.isAuthenticated) {
-            await bot.sendMessage(
-              chatId,
-              "❓ Неизвестная команда. Пожалуйста, используйте кнопки меню."
-            );
-          }
-          break;
+      try {
+        await handleIncomingMessage(msg);
+      } catch (error) {
+        console.error("❌ [Telegram] Error handling message:", error);
       }
     });
 
-    // Handle callback queries (pagination)
     bot.on("callback_query", async (query) => {
-      const chatId = query.message?.chat.id;
-      const data = query.data;
-
-      if (!chatId || !data) return;
-
-      await bot.answerCallbackQuery(query.id);
-
-      if (data === "noop") return;
-
-      const [type, action, pageStr] = data.split("_");
-      const page = parseInt(pageStr);
-
-      if (action === "page" && !isNaN(page)) {
-        switch (type) {
-          case "products":
-            await handleProductsList(bot, chatId, page);
-            break;
-          case "orders":
-            await handleOrdersList(bot, chatId, page);
-            break;
-          case "prints":
-            await handlePrintsList(bot, chatId, page);
-            break;
-          case "gallery":
-            await handleGalleryList(bot, chatId, page);
-            break;
-        }
+      try {
+        await handleIncomingCallbackQuery(query);
+      } catch (error) {
+        console.error("❌ [Telegram] Error handling callback query:", error);
       }
     });
 
@@ -136,7 +158,6 @@ export function initializeTelegramBot() {
 
 /**
  * Registers the webhook with Telegram.
- * Should be called in production.
  */
 export async function setupWebhook() {
   if (process.env.NODE_ENV !== "production") return;
