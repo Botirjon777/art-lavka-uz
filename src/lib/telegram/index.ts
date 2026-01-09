@@ -129,8 +129,26 @@ export function initializeTelegramBot() {
       }
     });
 
-    console.log("✅ [Telegram] Bot initialized successfully!");
+    console.log("✅ [Telegram] Bot handlers registered successfully!");
     globalForHandlers[globalKey] = true;
+
+    // Set up webhook in production
+    if (process.env.NODE_ENV === "production") {
+      const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
+      if (webhookUrl) {
+        console.log(`🤖 [Telegram] Setting up webhook: ${webhookUrl}`);
+        bot
+          .setWebHook(webhookUrl)
+          .then(() => console.log("✅ [Telegram] Webhook set successfully"))
+          .catch((err) =>
+            console.error("❌ [Telegram] Error setting webhook:", err)
+          );
+      } else {
+        console.warn(
+          "⚠️ [Telegram] TELEGRAM_WEBHOOK_URL is not defined, webhook not set"
+        );
+      }
+    }
   } catch (error) {
     console.error("❌ [Telegram] Error during initialization:", error);
   }
