@@ -14,7 +14,7 @@ export async function handleStart(bot: TelegramBot, chatId: number) {
   if (existingSession && existingSession.isAuthenticated) {
     await bot.sendMessage(
       chatId,
-      "✅ You are already authenticated!\n\nUse the menu below to navigate:",
+      "✅ Вы уже авторизованы!\n\nИспользуйте меню ниже для навигации:",
       { reply_markup: mainMenuKeyboard }
     );
     return;
@@ -34,7 +34,7 @@ export async function handleStart(bot: TelegramBot, chatId: number) {
 
   await bot.sendMessage(
     chatId,
-    "👋 Welcome to ART LAVKA Admin Bot!\n\n🔐 Please enter your admin email address:",
+    "👋 Добро пожаловать в админ-бот ART LAVKA!\n\n🔐 Пожалуйста, введите ваш email адрес:",
     { reply_markup: { remove_keyboard: true } }
   );
 }
@@ -51,7 +51,7 @@ export async function handleEmailInput(
   if (!emailRegex.test(email)) {
     await bot.sendMessage(
       chatId,
-      "❌ Invalid email format. Please enter a valid email address:"
+      "❌ Неверный формат email. Пожалуйста, введите корректный адрес:"
     );
     return;
   }
@@ -61,7 +61,7 @@ export async function handleEmailInput(
   if (!admin) {
     await bot.sendMessage(
       chatId,
-      "❌ No admin account found with this email.\n\nPlease try again or contact the system administrator."
+      "❌ Аккаунт администратора с таким email не найден.\n Пожалуйста, попробуйте еще раз или свяжитесь с системным администратором."
     );
     await handleStart(bot, chatId);
     return;
@@ -77,7 +77,7 @@ export async function handleEmailInput(
     }
   );
 
-  await bot.sendMessage(chatId, "🔑 Please enter your password:");
+  await bot.sendMessage(chatId, "🔑 Пожалуйста, введите ваш пароль:");
 }
 
 export async function handlePasswordInput(
@@ -91,7 +91,7 @@ export async function handlePasswordInput(
   if (!session || !session.tempEmail) {
     await bot.sendMessage(
       chatId,
-      "❌ Session expired. Please start again with /start"
+      "❌ Сессия истекла. Пожалуйста, начните заново с команды /start"
     );
     return;
   }
@@ -101,7 +101,7 @@ export async function handlePasswordInput(
   if (!admin) {
     await bot.sendMessage(
       chatId,
-      "❌ Admin not found. Please start again with /start"
+      "❌ Администратор не найден. Пожалуйста, начните заново с команды /start"
     );
     return;
   }
@@ -109,7 +109,10 @@ export async function handlePasswordInput(
   const isPasswordValid = await bcrypt.compare(password, admin.password);
 
   if (!isPasswordValid) {
-    await bot.sendMessage(chatId, "❌ Incorrect password. Please try again:");
+    await bot.sendMessage(
+      chatId,
+      "❌ Неверный пароль. Пожалуйста, попробуйте еще раз:"
+    );
     return;
   }
 
@@ -128,7 +131,7 @@ export async function handlePasswordInput(
 
   await bot.sendMessage(
     chatId,
-    `✅ Authentication successful!\n\nWelcome, ${admin.name}!\n\nUse the menu below to navigate:`,
+    `✅ Авторизация прошла успешно!\n\nДобро пожаловать, ${admin.name}!\n\nИспользуйте меню ниже для навигации:`,
     { reply_markup: mainMenuKeyboard }
   );
 }
@@ -160,7 +163,7 @@ export async function requireAuth(
   if (!isAuthenticated) {
     await bot.sendMessage(
       chatId,
-      "🔒 You need to authenticate first. Please use /start to login."
+      "🔒 Вам необходимо авторизоваться. Пожалуйста, используйте /start для входа."
     );
     return false;
   }

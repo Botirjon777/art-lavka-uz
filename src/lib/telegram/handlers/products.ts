@@ -27,24 +27,24 @@ export async function handleProductsList(
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
 
   if (products.length === 0) {
-    await bot.sendMessage(chatId, "📦 No products found.", {
+    await bot.sendMessage(chatId, "📦 Товары не найдены.", {
       reply_markup: backKeyboard,
     });
     return;
   }
 
-  let message = `📦 *Products* (Page ${page}/${totalPages})\n\n`;
+  let message = `📦 *Товары* (Страница ${page}/${totalPages})\n\n`;
 
   products.forEach((product: any, index: number) => {
     const num = skip + index + 1;
     message += `${num}. *${product.name}*\n`;
-    message += `   Category: ${product.category}\n`;
-    message += `   Price: ${product.price.toLocaleString()} UZS\n`;
-    message += `   Stock: ${product.stock}\n`;
-    message += `   Colors: ${
-      product.colors?.map((c: any) => c.name).join(", ") || "N/A"
+    message += `   Категория: ${product.category}\n`;
+    message += `   Цена: ${product.price.toLocaleString()} UZS\n`;
+    message += `   В наличии: ${product.stock}\n`;
+    message += `   Цвета: ${
+      product.colors?.map((c: any) => c.name).join(", ") || "Нет"
     }\n`;
-    message += `   Sizes: ${product.sizes?.join(", ") || "N/A"}\n\n`;
+    message += `   Размеры: ${product.sizes?.join(", ") || "Нет"}\n\n`;
   });
 
   const keyboard =

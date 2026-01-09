@@ -27,13 +27,13 @@ export async function handleOrdersList(
   const totalPages = Math.ceil(totalOrders / ITEMS_PER_PAGE);
 
   if (orders.length === 0) {
-    await bot.sendMessage(chatId, "🛍️ No orders found.", {
+    await bot.sendMessage(chatId, "🛍️ Заказы не найдены.", {
       reply_markup: backKeyboard,
     });
     return;
   }
 
-  let message = `🛍️ *Orders* (Page ${page}/${totalPages})\n\n`;
+  let message = `🛍️ *Заказы* (Страница ${page}/${totalPages})\n\n`;
 
   orders.forEach((order: any, index: number) => {
     const num = skip + index + 1;
@@ -41,14 +41,18 @@ export async function handleOrdersList(
     const paymentEmoji = getPaymentEmoji(order.paymentStatus);
 
     message += `${num}. *${order.orderNumber}*\n`;
-    message += `   Customer: ${order.customerName}\n`;
-    message += `   Phone: ${order.customerPhone}\n`;
-    message += `   Region: ${order.region}\n`;
-    message += `   Status: ${statusEmoji} ${order.status}\n`;
-    message += `   Payment: ${paymentEmoji} ${order.paymentStatus}\n`;
-    message += `   Total: ${order.totalAmount.toLocaleString()} UZS\n`;
-    message += `   Items: ${order.items.length}\n`;
-    message += `   Date: ${new Date(order.createdAt).toLocaleDateString()}\n\n`;
+    message += `   Клиент: ${order.customerName}\n`;
+    message += `   Телефон: ${order.customerPhone}\n`;
+    message += `   Регион: ${order.region}\n`;
+    message += `   Статус: ${statusEmoji} ${translateStatus(order.status)}\n`;
+    message += `   Оплата: ${paymentEmoji} ${translatePaymentStatus(
+      order.paymentStatus
+    )}\n`;
+    message += `   Сумма: ${order.totalAmount.toLocaleString()} UZS\n`;
+    message += `   Товаров: ${order.items.length}\n`;
+    message += `   Дата: ${new Date(order.createdAt).toLocaleDateString(
+      "ru-RU"
+    )}\n\n`;
   });
 
   const keyboard =
@@ -58,6 +62,27 @@ export async function handleOrdersList(
     parse_mode: "Markdown",
     reply_markup: keyboard || backKeyboard,
   });
+}
+
+function translateStatus(status: string): string {
+  const statusMap: Record<string, string> = {
+    pending: "Ожидает",
+    confirmed: "Подтвержден",
+    processing: "В обработке",
+    shipped: "Отправлен",
+    delivered: "Доставлен",
+    cancelled: "Отменен",
+  };
+  return statusMap[status] || status;
+}
+
+function translatePaymentStatus(status: string): string {
+  const paymentMap: Record<string, string> = {
+    pending: "Ожидает",
+    paid: "Оплачено",
+    failed: "Ошибка",
+  };
+  return paymentMap[status] || status;
 }
 
 function getStatusEmoji(status: string): string {

@@ -44,33 +44,54 @@ function formatOrderNotification(order: any): string {
   const statusEmoji = getStatusEmoji(order.status);
   const paymentEmoji = getPaymentEmoji(order.paymentStatus);
 
-  let message = `🔔 *New Order Received!*\n\n`;
-  message += `*Order #:* ${order.orderNumber}\n`;
-  message += `*Status:* ${statusEmoji} ${order.status}\n`;
-  message += `*Payment:* ${paymentEmoji} ${order.paymentStatus}\n\n`;
+  const statusMap: Record<string, string> = {
+    pending: "Ожидает",
+    confirmed: "Подтвержден",
+    processing: "В обработке",
+    shipped: "Отправлен",
+    delivered: "Доставлен",
+    cancelled: "Отменен",
+  };
 
-  message += `👤 *Customer:*\n`;
-  message += `Name: ${order.customerName}\n`;
-  message += `Phone: ${order.customerPhone}\n`;
-  message += `Region: ${order.region}\n`;
-  message += `Address: ${order.customerAddress}\n\n`;
+  const paymentMap: Record<string, string> = {
+    pending: "Ожидает",
+    paid: "Оплачено",
+    failed: "Ошибка",
+  };
 
-  message += `🛍️ *Items:*\n`;
+  let message = `🔔 *Получен новый заказ!*\n\n`;
+  message += `*Заказ #:* ${order.orderNumber}\n`;
+  message += `*Статус:* ${statusEmoji} ${
+    statusMap[order.status] || order.status
+  }\n`;
+  message += `*Оплата:* ${paymentEmoji} ${
+    paymentMap[order.paymentStatus] || order.paymentStatus
+  }\n\n`;
+
+  message += `👤 *Клиент:*\n`;
+  message += `Имя: ${order.customerName}\n`;
+  message += `Телефон: ${order.customerPhone}\n`;
+  message += `Регион: ${order.region}\n`;
+  message += `Адрес: ${order.customerAddress}\n\n`;
+
+  message += `🛍️ *Товары:*\n`;
   order.items.forEach((item: any, index: number) => {
     message += `${index + 1}. ${item.product.name}\n`;
-    message += `   Size: ${item.size} | Color: ${item.color}\n`;
+    message += `   Размер: ${item.size} | Цвет: ${item.color}\n`;
     if (item.print) {
-      message += `   Print: ${item.print.name}\n`;
+      message += `   Принт: ${item.print.name}\n`;
     }
-    message += `   Qty: ${item.quantity} × ${item.price.toLocaleString()} = ${(
+    message += `   Кол-во: ${
+      item.quantity
+    } × ${item.price.toLocaleString()} = ${(
       item.quantity * item.price
     ).toLocaleString()} UZS\n\n`;
   });
 
-  message += `💰 *Total:* ${order.totalAmount.toLocaleString()} UZS\n`;
+  message += `💰 *Итого:* ${order.totalAmount.toLocaleString()} UZS\n`;
 
   if (order.notes) {
-    message += `\n📝 *Notes:* ${order.notes}`;
+    message += `\n📝 *Заметки:* ${order.notes}`;
   }
 
   return message;

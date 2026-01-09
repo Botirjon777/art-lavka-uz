@@ -6,7 +6,7 @@ export async function handleMainMenu(bot: TelegramBot, chatId: number) {
   const isAuth = await requireAuth(bot, chatId);
   if (!isAuth) return;
 
-  await bot.sendMessage(chatId, "📋 Main Menu\n\nSelect an option:", {
+  await bot.sendMessage(chatId, "📋 Главное меню\n\nВыберите категорию:", {
     reply_markup: mainMenuKeyboard,
   });
 }

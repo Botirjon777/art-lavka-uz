@@ -22,24 +22,26 @@ export function initializeTelegramBot() {
     return;
   }
 
-  console.log("🤖 [Telegram] Starting initialization...");
+  console.log("🤖 [Telegram] Initializing bot handlers...");
 
   try {
-    // Handle /start command
-    bot.onText(/\/start/, async (msg) => {
-      const chatId = msg.chat.id;
-      console.log(`🤖 [Telegram] Received /start from ${chatId}`);
-      await handleStart(bot, chatId);
-    });
-
-    // Handle text messages
+    // Single message handler for all text inputs including commands
     bot.on("message", async (msg) => {
       const chatId = msg.chat.id;
       const text = msg.text;
 
       if (!text) return;
 
-      // Skip if it's a command
+      // Log incoming messages for debugging
+      console.log(`🤖 [Telegram] Message from ${chatId}: ${text}`);
+
+      // Handle the /start command explicitly
+      if (text === "/start") {
+        await handleStart(bot, chatId);
+        return;
+      }
+
+      // Skip other commands if they are ever added
       if (text.startsWith("/")) return;
 
       await dbConnect();
@@ -59,19 +61,19 @@ export function initializeTelegramBot() {
 
       // Handle menu buttons
       switch (text) {
-        case "📦 Products":
+        case "📦 Товары":
           await handleProductsList(bot, chatId, 1);
           break;
-        case "🛍️ Orders":
+        case "🛍️ Заказы":
           await handleOrdersList(bot, chatId, 1);
           break;
-        case "🎨 Prints":
+        case "🎨 Принты":
           await handlePrintsList(bot, chatId, 1);
           break;
-        case "🖼️ Gallery":
+        case "🖼️ Галерея":
           await handleGalleryList(bot, chatId, 1);
           break;
-        case "⬅️ Back to Menu":
+        case "⬅️ Назад в меню":
           await handleMainMenu(bot, chatId);
           break;
         default:
@@ -79,7 +81,7 @@ export function initializeTelegramBot() {
           if (session && session.isAuthenticated) {
             await bot.sendMessage(
               chatId,
-              "❓ Unknown command. Please use the menu buttons."
+              "❓ Неизвестная команда. Пожалуйста, используйте кнопки меню."
             );
           }
           break;

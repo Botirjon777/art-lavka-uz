@@ -27,20 +27,20 @@ export async function handleGalleryList(
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
   if (galleryItems.length === 0) {
-    await bot.sendMessage(chatId, "🖼️ No gallery items found.", {
+    await bot.sendMessage(chatId, "🖼️ Элементы галереи не найдены.", {
       reply_markup: backKeyboard,
     });
     return;
   }
 
-  let message = `🖼️ *Gallery* (Page ${page}/${totalPages})\n\n`;
+  let message = `🖼️ *Галерея* (Страница ${page}/${totalPages})\n\n`;
 
   galleryItems.forEach((item: any, index: number) => {
     const num = skip + index + 1;
-    message += `${num}. *${item.title || "Untitled"}*\n`;
-    message += `   Image: ${item.image ? "✅" : "❌"}\n`;
+    message += `${num}. *${item.title || "Без названия"}*\n`;
+    message += `   Изображение: ${item.image ? "✅" : "❌"}\n`;
     if (item.description) {
-      message += `   Description: ${item.description.substring(0, 50)}${
+      message += `   Описание: ${item.description.substring(0, 50)}${
         item.description.length > 50 ? "..." : ""
       }\n`;
     }

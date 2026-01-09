@@ -27,20 +27,20 @@ export async function handlePrintsList(
   const totalPages = Math.ceil(totalPrints / ITEMS_PER_PAGE);
 
   if (prints.length === 0) {
-    await bot.sendMessage(chatId, "🎨 No prints found.", {
+    await bot.sendMessage(chatId, "🎨 Принты не найдены.", {
       reply_markup: backKeyboard,
     });
     return;
   }
 
-  let message = `🎨 *Prints* (Page ${page}/${totalPages})\n\n`;
+  let message = `🎨 *Принты* (Страница ${page}/${totalPages})\n\n`;
 
   prints.forEach((print: any, index: number) => {
     const num = skip + index + 1;
     message += `${num}. *${print.name}*\n`;
-    message += `   Category: ${print.category}\n`;
-    message += `   Front Image: ${print.frontImage ? "✅" : "❌"}\n`;
-    message += `   Back Image: ${print.backImage ? "✅" : "❌"}\n\n`;
+    message += `   Категория: ${print.category}\n`;
+    message += `   Спереди: ${print.frontImage ? "✅" : "❌"}\n`;
+    message += `   Сзади: ${print.backImage ? "✅" : "❌"}\n\n`;
   });
 
   const keyboard =

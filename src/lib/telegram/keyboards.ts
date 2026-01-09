@@ -2,15 +2,15 @@ import TelegramBot from "node-telegram-bot-api";
 
 export const mainMenuKeyboard: TelegramBot.ReplyKeyboardMarkup = {
   keyboard: [
-    [{ text: "📦 Products" }, { text: "🛍️ Orders" }],
-    [{ text: "🎨 Prints" }, { text: "🖼️ Gallery" }],
+    [{ text: "📦 Товары" }, { text: "🛍️ Заказы" }],
+    [{ text: "🎨 Принты" }, { text: "🖼️ Галерея" }],
   ],
   resize_keyboard: true,
   one_time_keyboard: false,
 };
 
 export const backKeyboard: TelegramBot.ReplyKeyboardMarkup = {
-  keyboard: [[{ text: "⬅️ Back to Menu" }]],
+  keyboard: [[{ text: "⬅️ Назад в меню" }]],
   resize_keyboard: true,
   one_time_keyboard: false,
 };
@@ -26,7 +26,7 @@ export const paginationKeyboard = (
 
   if (currentPage > 1) {
     buttons.push({
-      text: "⬅️ Previous",
+      text: "⬅️ Пред.",
       callback_data: `${type}_page_${currentPage - 1}`,
     });
   }
@@ -38,7 +38,7 @@ export const paginationKeyboard = (
 
   if (currentPage < totalPages) {
     buttons.push({
-      text: "Next ➡️",
+      text: "След. ➡️",
       callback_data: `${type}_page_${currentPage + 1}`,
     });
   }
