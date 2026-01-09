@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CartItem } from "@/types";
 import { createOrder } from "@/app/actions/orders";
 import toast from "react-hot-toast";
+import Dropdown from "@/components/ui/Dropdown";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -22,19 +23,49 @@ export default function CheckoutModal({
 }: CheckoutModalProps) {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
+  const [region, setRegion] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [homeNumber, setHomeNumber] = useState("");
+  const [telegramUsername, setTelegramUsername] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Uzbekistan regions
+  const uzbekistanRegions = [
+    "город Ташкент",
+    "Ташкентская область",
+    "Андижанская область",
+    "Бухарская область",
+    "Ферганская область",
+    "Джизакская область",
+    "Хорезмская область",
+    "Наманганская область",
+    "Навоийская область",
+    "Кашкадарьинская область",
+    "Республика Каракалпакстан",
+    "Самаркандская область",
+    "Сырдарьинская область",
+    "Сурхандарьинская область",
+  ];
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!customerName || !customerPhone || !customerAddress) {
-      toast.error("Please fill in all required fields");
+    if (
+      !customerName ||
+      !customerPhone ||
+      !region ||
+      !streetAddress ||
+      !homeNumber
+    ) {
+      toast.error("Пожалуйста, заполните все обязательные поля");
       return;
     }
+
+    // Combine street address and home number only
+    const fullAddress = `${streetAddress}, ${homeNumber}`;
 
     setIsSubmitting(true);
 
@@ -65,10 +96,11 @@ export default function CheckoutModal({
       const result = await createOrder({
         customerName,
         customerPhone,
-        customerAddress,
+        region,
+        customerAddress: fullAddress,
         items: orderItems,
         totalAmount,
-        notes: notes || undefined,
+        notes: notes || `Telegram: ${telegramUsername}`,
       });
 
       if (result.success && result.order) {
@@ -77,7 +109,10 @@ export default function CheckoutModal({
         // Reset form
         setCustomerName("");
         setCustomerPhone("");
-        setCustomerAddress("");
+        setRegion("");
+        setStreetAddress("");
+        setHomeNumber("");
+        setTelegramUsername("");
         setNotes("");
       } else {
         // Handle stock validation errors
@@ -104,7 +139,7 @@ export default function CheckoutModal({
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-[30px]/[37px] text-[#333333] font-medium">
-              Checkout
+              Оформление заказа
             </h2>
             <button
               onClick={onClose}
@@ -116,11 +151,11 @@ export default function CheckoutModal({
 
           {/* Order Summary */}
           <div className="mb-6 p-4 bg-gray-50 rounded-xl">
-            <h3 className="text-lg font-medium mb-2">Order Summary</h3>
+            <h3 className="text-lg font-medium mb-2">Сводка заказа</h3>
             <div className="space-y-1 text-sm text-gray-600">
-              <p>{items.length} item(s)</p>
+              <p>{items.length} товар(ов)</p>
               <p className="text-xl font-bold text-[#333333]">
-                Total: {totalAmount.toLocaleString()} UZS
+                Итого: {totalAmount.toLocaleString()} UZS
               </p>
             </div>
           </div>
@@ -129,21 +164,21 @@ export default function CheckoutModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name <span className="text-red-500">*</span>
+                Полное имя <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
-                placeholder="Enter your full name"
+                placeholder="Например: Алиев Вали"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number <span className="text-red-500">*</span>
+                Номер телефона <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
@@ -155,30 +190,73 @@ export default function CheckoutModal({
               />
             </div>
 
+            {/* Region */}
+            <Dropdown
+              label="Область/Город"
+              value={region}
+              onChange={(value) => setRegion(value)}
+              options={uzbekistanRegions.map((r) => ({
+                value: r,
+                label: r,
+              }))}
+              placeholder="Выберите область"
+              required
+            />
+
+            {/* Street Address */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Delivery Address <span className="text-red-500">*</span>
+                Адрес улицы <span className="text-red-500">*</span>
               </label>
-              <textarea
-                value={customerAddress}
-                onChange={(e) => setCustomerAddress(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] resize-none"
-                rows={3}
-                placeholder="Enter your full delivery address"
+              <input
+                type="text"
+                value={streetAddress}
+                onChange={(e) => setStreetAddress(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                placeholder="Например: улица Амира Темура, дом 15"
                 required
+              />
+            </div>
+
+            {/* Home/Apartment Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Номер дома/квартиры <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={homeNumber}
+                onChange={(e) => setHomeNumber(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                placeholder="Например: квартира 12"
+                required
+              />
+            </div>
+
+            {/* Telegram Username */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Телеграм юзернэйм
+              </label>
+              <input
+                type="text"
+                value={telegramUsername}
+                onChange={(e) => setTelegramUsername(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                placeholder="@username"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Order Notes (Optional)
+                Примечания к заказу (необязательно)
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] resize-none"
                 rows={2}
-                placeholder="Any special instructions for your order?"
+                placeholder="Любые особые пожелания к заказу?"
               />
             </div>
 
@@ -190,14 +268,14 @@ export default function CheckoutModal({
                 className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 disabled={isSubmitting}
               >
-                Cancel
+                Отмена
               </button>
               <button
                 type="submit"
                 className="flex-1 px-6 py-3 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Placing Order..." : "Place Order"}
+                {isSubmitting ? "Оформление..." : "Оформить заказ"}
               </button>
             </div>
           </form>

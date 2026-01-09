@@ -8,6 +8,7 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 import { FiArrowLeft } from "react-icons/fi";
 import { Order, OrderStatus, PaymentStatus } from "@/types";
+import Dropdown from "@/components/ui/Dropdown";
 
 export default function OrderDetailPage() {
   const params = useParams();
@@ -172,6 +173,10 @@ export default function OrderDetailPage() {
                 <p className="font-medium">{order.customerPhone}</p>
               </div>
               <div>
+                <label className="text-sm text-gray-600">Регион</label>
+                <p className="font-medium">{order.region}</p>
+              </div>
+              <div>
                 <label className="text-sm text-gray-600">Адрес доставки</label>
                 <p className="font-medium">{order.customerAddress}</p>
               </div>
@@ -190,38 +195,36 @@ export default function OrderDetailPage() {
           {/* Order Status */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <h2 className="text-lg font-bold mb-4">Статус заказа</h2>
-            <select
+            <Dropdown
               value={order.status}
-              onChange={(e) =>
-                handleStatusUpdate(e.target.value as OrderStatus)
-              }
+              onChange={(value) => handleStatusUpdate(value as OrderStatus)}
               disabled={updating}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] disabled:opacity-50"
-            >
-              <option value="pending">Ожидает</option>
-              <option value="confirmed">Подтвержден</option>
-              <option value="processing">В обработке</option>
-              <option value="shipped">Отправлен</option>
-              <option value="delivered">Доставлен</option>
-              <option value="cancelled">Отменен</option>
-            </select>
+              options={[
+                { value: "pending", label: "Ожидает" },
+                { value: "confirmed", label: "Подтвержден" },
+                { value: "processing", label: "В обработке" },
+                { value: "shipped", label: "Отправлен" },
+                { value: "delivered", label: "Доставлен" },
+                { value: "cancelled", label: "Отменен" },
+              ]}
+            />
           </div>
 
           {/* Payment Status */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <h2 className="text-lg font-bold mb-4">Статус оплаты</h2>
-            <select
+            <Dropdown
               value={order.paymentStatus}
-              onChange={(e) =>
-                handlePaymentStatusUpdate(e.target.value as PaymentStatus)
+              onChange={(value) =>
+                handlePaymentStatusUpdate(value as PaymentStatus)
               }
               disabled={updating}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] disabled:opacity-50"
-            >
-              <option value="pending">Ожидает</option>
-              <option value="paid">Оплачено</option>
-              <option value="failed">Ошибка</option>
-            </select>
+              options={[
+                { value: "pending", label: "Ожидает" },
+                { value: "paid", label: "Оплачено" },
+                { value: "failed", label: "Ошибка" },
+              ]}
+            />
           </div>
 
           {/* Order Info */}

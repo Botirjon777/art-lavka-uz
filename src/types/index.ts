@@ -62,6 +62,7 @@ export interface Order {
   orderNumber: string;
   customerName: string;
   customerPhone: string;
+  region: string;
   customerAddress: string;
   items: OrderItem[];
   totalAmount: number;

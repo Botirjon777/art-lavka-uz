@@ -15,6 +15,7 @@ function generateOrderNumber(): string {
 export async function createOrder(orderData: {
   customerName: string;
   customerPhone: string;
+  region: string;
   customerAddress: string;
   items: any[];
   totalAmount: number;
