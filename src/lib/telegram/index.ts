@@ -12,13 +12,16 @@ import { handleOrdersList } from "./handlers/orders";
 import { handlePrintsList } from "./handlers/prints";
 import { handleGalleryList } from "./handlers/gallery";
 
-// Initialize bot handlers
-export function initializeTelegramBot() {
-  const globalKey = "__telegram_bot_initialized__";
-  const globalForHandlers = global as any;
+const INITIALIZED_KEY = "__telegram_bot_initialized__";
 
-  if (globalForHandlers[globalKey]) {
-    console.log("🤖 [Telegram] Handlers already registered, skipping...");
+/**
+ * Registers all message and callback handlers for the bot.
+ * This should be called once on server start or in the webhook handler.
+ */
+export function initializeTelegramBot() {
+  const globalObj = global as any;
+
+  if (globalObj[INITIALIZED_KEY]) {
     return;
   }
 
@@ -32,7 +35,6 @@ export function initializeTelegramBot() {
 
       if (!text) return;
 
-      // Log incoming messages for debugging
       console.log(`🤖 [Telegram] Message from ${chatId}: ${text}`);
 
       // Handle commands
@@ -48,7 +50,6 @@ export function initializeTelegramBot() {
         return;
       }
 
-      // Skip other commands if they are ever added
       if (text.startsWith("/")) return;
 
       await dbConnect();
@@ -84,7 +85,6 @@ export function initializeTelegramBot() {
           await handleMainMenu(bot, chatId);
           break;
         default:
-          // Unknown command
           if (session && session.isAuthenticated) {
             await bot.sendMessage(
               chatId,
@@ -102,12 +102,10 @@ export function initializeTelegramBot() {
 
       if (!chatId || !data) return;
 
-      // Answer the callback query to remove loading state
       await bot.answerCallbackQuery(query.id);
 
       if (data === "noop") return;
 
-      // Parse pagination data
       const [type, action, pageStr] = data.split("_");
       const page = parseInt(pageStr);
 
@@ -130,30 +128,37 @@ export function initializeTelegramBot() {
     });
 
     console.log("✅ [Telegram] Bot handlers registered successfully!");
-    globalForHandlers[globalKey] = true;
-
-    // Set up webhook in production
-    if (process.env.NODE_ENV === "production") {
-      const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
-      if (webhookUrl) {
-        console.log(`🤖 [Telegram] Setting up webhook: ${webhookUrl}`);
-        bot
-          .setWebHook(webhookUrl)
-          .then(() => console.log("✅ [Telegram] Webhook set successfully"))
-          .catch((err) =>
-            console.error("❌ [Telegram] Error setting webhook:", err)
-          );
-      } else {
-        console.warn(
-          "⚠️ [Telegram] TELEGRAM_WEBHOOK_URL is not defined, webhook not set"
-        );
-      }
-    }
+    globalObj[INITIALIZED_KEY] = true;
   } catch (error) {
     console.error("❌ [Telegram] Error during initialization:", error);
   }
 }
 
-// Export bot instance for use in other parts of the application
+/**
+ * Registers the webhook with Telegram.
+ * Should be called in production.
+ */
+export async function setupWebhook() {
+  if (process.env.NODE_ENV !== "production") return;
+
+  const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
+  if (!webhookUrl) {
+    console.warn("⚠️ [Telegram] TELEGRAM_WEBHOOK_URL is not defined");
+    return;
+  }
+
+  try {
+    console.log(`🤖 [Telegram] Setting up webhook: ${webhookUrl}`);
+    const result = await bot.setWebHook(webhookUrl);
+    if (result) {
+      console.log("✅ [Telegram] Webhook registered successfully");
+    } else {
+      console.error("❌ [Telegram] Failed to register webhook");
+    }
+  } catch (error) {
+    console.error("❌ [Telegram] Error setting webhook:", error);
+  }
+}
+
 export { bot };
 export { sendOrderNotification } from "./notifications";
