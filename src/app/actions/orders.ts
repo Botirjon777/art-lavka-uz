@@ -60,6 +60,15 @@ export async function createOrder(orderData: {
       console.error("Failed to update stock after order creation");
     }
 
+    // Step 4: Send Telegram notification to admins
+    try {
+      const { sendOrderNotification } = await import("@/lib/telegram");
+      await sendOrderNotification(order);
+    } catch (error) {
+      console.error("Failed to send Telegram notification:", error);
+      // Don't fail the order creation if notification fails
+    }
+
     revalidatePath("/admin/orders");
     return { success: true, order: JSON.parse(JSON.stringify(order)) };
   } catch (error: any) {
