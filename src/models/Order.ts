@@ -4,6 +4,7 @@ export interface IOrder {
   orderNumber: string;
   customerName: string;
   customerPhone: string;
+  region: string;
   customerAddress: string;
   items: {
     product: {
@@ -52,6 +53,11 @@ const OrderSchema = new Schema<IOrder>(
       trim: true,
     },
     customerPhone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    region: {
       type: String,
       required: true,
       trim: true,

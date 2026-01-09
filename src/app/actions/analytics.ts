@@ -119,6 +119,44 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
         salesTrend[date] = (salesTrend[date] || 0) + order.totalAmount;
       });
 
+    // Sales by Region
+    const uzbekistanRegions = [
+      "город Ташкент",
+      "Ташкентская область",
+      "Андижанская область",
+      "Бухарская область",
+      "Ферганская область",
+      "Джизакская область",
+      "Хорезмская область",
+      "Наманганская область",
+      "Навоийская область",
+      "Кашкадарьинская область",
+      "Республика Каракалпакстан",
+      "Самаркандская область",
+      "Сырдарьинская область",
+      "Сурхандарьинская область",
+    ];
+
+    // Initialize all regions with 0 values
+    const salesByRegion: Record<
+      string,
+      { region: string; revenue: number; orders: number }
+    > = {};
+
+    uzbekistanRegions.forEach((region) => {
+      salesByRegion[region] = { region, revenue: 0, orders: 0 };
+    });
+
+    // Populate with actual sales data
+    orders.forEach((order) => {
+      const region = order.region || "Unknown";
+      if (!salesByRegion[region]) {
+        salesByRegion[region] = { region, revenue: 0, orders: 0 };
+      }
+      salesByRegion[region].revenue += order.totalAmount;
+      salesByRegion[region].orders += 1;
+    });
+
     return {
       success: true,
       analytics: {
@@ -150,6 +188,9 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
         salesTrend: Object.entries(salesTrend)
           .map(([date, revenue]) => ({ date, revenue }))
           .sort((a, b) => a.date.localeCompare(b.date)),
+        salesByRegion: Object.values(salesByRegion).sort(
+          (a, b) => b.revenue - a.revenue
+        ),
       },
     };
   } catch (error: any) {

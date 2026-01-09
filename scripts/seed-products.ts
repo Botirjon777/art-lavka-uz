@@ -31,7 +31,10 @@ async function seedProducts() {
       category: "women",
       image: "/products/tshirt-white-classic-1.png",
       model: "/model/compressed/base.glb",
-      colors: ["white", "black"],
+      colors: [
+        { name: "white", hex: "#FFFFFF" },
+        { name: "black", hex: "#000000" },
+      ],
       sizes: ["XS", "S", "M", "L", "XL"],
       stock: 100,
       active: true,
@@ -42,7 +45,9 @@ async function seedProducts() {
     console.log(`  - Name: ${product.name}`);
     console.log(`  - Category: ${product.category}`);
     console.log(`  - Price: ${product.price} сум`);
-    console.log(`  - Colors: ${product.colors.join(", ")}`);
+    console.log(
+      `  - Colors: ${product.colors.map((c: any) => c.name).join(", ")}`
+    );
     console.log(`  - Sizes: ${product.sizes.join(", ")}`);
     console.log(`  - Model: ${product.model}`);
 

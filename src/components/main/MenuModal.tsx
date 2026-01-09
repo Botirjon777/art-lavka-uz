@@ -74,7 +74,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
             </h3>
             <div className="space-y-3">
               <a
-                href="https://t.me/artlavka.uz"
+                href="https://t.me/artlavkauz"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2.5 text-[14px] text-[#0088cc] hover:text-[#0088cc]/80 transition-colors"
@@ -84,7 +84,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
                 </div>
                 <div className="text-[16px]/[22px] text-[#333333]">
                   <p>Telegram</p>
-                  <p className="text-[#8814B1]">https://t.me/artlavka.uz</p>
+                  <p className="text-[#8814B1]">https://t.me/artlavkauz</p>
                 </div>
               </a>
               <a

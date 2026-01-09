@@ -9,6 +9,11 @@ export interface ProductInventory {
   XXL: number;
 }
 
+export interface ProductColor {
+  name: string;
+  hex: string;
+}
+
 export interface IProduct {
   name: string;
   description?: string;
@@ -16,7 +21,7 @@ export interface IProduct {
   category: string;
   image: string;
   model: string; // Path to 3D model file
-  colors: string[]; // Available colors
+  colors: ProductColor[]; // Available colors with name and hex
   sizes: string[]; // Available sizes
   stock: number; // Total stock (calculated from inventory)
   inventory: ProductInventory; // Stock per size
@@ -56,7 +61,12 @@ const ProductSchema = new Schema<IProduct>(
       required: true,
     },
     colors: {
-      type: [String],
+      type: [
+        {
+          name: { type: String, required: true },
+          hex: { type: String, required: true },
+        },
+      ],
       required: true,
       default: [],
     },

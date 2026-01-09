@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PrintDesign, ConfiguratorState, Product } from "@/types";
+import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "./TShirtScene";
 import SizeTableModal from "../SizeTableModal";
 
@@ -12,38 +12,20 @@ interface RightConfiguratorProps {
   onProductClick?: () => void;
 }
 
-const COLOR_MAP: Record<string, string> = {
-  white: "#FFFFFF",
-  black: "#000000",
-  red: "#EF4444",
-  blue: "#3B82F6",
-  green: "#10B981",
-  yellow: "#FBBF24",
-  gray: "#9CA3AF",
-  "off-white": "#FAF9F6",
-};
-
-const COLOR_NAMES: Record<string, string> = {
-  white: "Белый",
-  black: "Черный",
-  red: "Красный",
-  blue: "Синий",
-  green: "Зеленый",
-  yellow: "Желтый",
-  gray: "Серый",
-  "off-white": "Молочный",
-};
-
 export default function RightConfigurator({
   selectedProduct,
   selectedPrint,
   onAddToCart,
   onProductClick,
 }: RightConfiguratorProps) {
-  const productColors = selectedProduct.colors || ["white"];
+  const productColors: ProductColor[] = selectedProduct.colors || [
+    { name: "Белый", hex: "#FFFFFF" },
+  ];
   const productSizes = selectedProduct.sizes || ["XS", "S", "M", "L", "XL"];
 
-  const [selectedColor, setSelectedColor] = useState(productColors[0]);
+  const [selectedColor, setSelectedColor] = useState<ProductColor>(
+    productColors[0]
+  );
   const [selectedSize, setSelectedSize] = useState(productSizes[0]);
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
@@ -85,7 +67,7 @@ export default function RightConfigurator({
   const handleAddToCart = () => {
     onAddToCart({
       selectedPrint,
-      selectedColor,
+      selectedColor: selectedColor.name,
       selectedSize,
       quantity,
     });
@@ -105,7 +87,7 @@ export default function RightConfigurator({
                 productName={selectedProduct.name}
                 productDescription={selectedProduct.description}
                 selectedPrint={selectedPrint}
-                selectedColor={selectedColor}
+                selectedColor={selectedColor.hex}
                 onProductClick={onProductClick}
               />
             </div>
@@ -115,20 +97,20 @@ export default function RightConfigurator({
               {/* Color Selection */}
               <div>
                 <h3 className="text-[16px]/[22px] text-[#333333] mb-[15px]">
-                  Цвет: {COLOR_NAMES[selectedColor] || selectedColor}
+                  Цвет: {selectedColor.name}
                 </h3>
                 <div className="flex gap-[15px]">
                   {productColors.map((color) => (
                     <button
-                      key={color}
+                      key={color.hex}
                       onClick={() => setSelectedColor(color)}
                       className={`w-10 h-10 rounded-full cursor-pointer border transition-all ${
-                        selectedColor === color
+                        selectedColor.hex === color.hex
                           ? "border-white ring ring-[#00C6F1] scale-110"
                           : "border-white"
                       }`}
-                      style={{ backgroundColor: COLOR_MAP[color] || color }}
-                      title={color}
+                      style={{ backgroundColor: color.hex }}
+                      title={color.name}
                     />
                   ))}
                 </div>
@@ -243,7 +225,11 @@ export default function RightConfigurator({
 
                   {!isOutOfStock && (
                     <span className="text-[14px]/[17px] text-[#333333]">
-                      доступно: {sizeStock} шт
+                      доступно:{" "}
+                      <span className="inline-block min-w-[2ch] text-center">
+                        {sizeStock}
+                      </span>{" "}
+                      шт
                     </span>
                   )}
                 </div>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { ProductInventory } from "@/types";
+import ColorPicker, { Color } from "@/components/admin/ColorPicker";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function NewProductPage() {
     XL: 0,
     XXL: 0,
   });
+  const [colors, setColors] = useState<Color[]>([]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,6 +59,7 @@ export default function NewProductPage() {
     const formData = new FormData(e.currentTarget);
     formData.set("image", imageUrl);
     formData.set("inventory", JSON.stringify(inventory));
+    formData.set("colors", JSON.stringify(colors));
 
     const result = await createProduct(formData);
 
@@ -226,6 +229,14 @@ export default function NewProductPage() {
               }, 0)}
             </span>
           </p>
+        </div>
+
+        {/* Colors */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Цвета товара
+          </label>
+          <ColorPicker colors={colors} onChange={setColors} />
         </div>
 
         {/* Category */}

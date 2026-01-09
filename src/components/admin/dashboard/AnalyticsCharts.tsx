@@ -33,6 +33,7 @@ interface AnalyticsChartsProps {
     popularPrints: Array<{ name: string; count: number }>;
     salesByDay: Array<{ day: string; revenue: number }>;
     salesByHour: Array<{ hour: number; revenue: number }>;
+    salesByRegion: Array<{ region: string; revenue: number; orders: number }>;
   };
 }
 
@@ -162,6 +163,43 @@ export default function AnalyticsCharts({ analytics }: AnalyticsChartsProps) {
               fillOpacity={0.6}
             />
           </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Sales by Region */}
+      <div className="bg-white rounded-[20px] p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">
+          Продажи по регионам
+        </h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={analytics.salesByRegion}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="region"
+              angle={-45}
+              textAnchor="end"
+              height={120}
+              tick={{ fontSize: 11 }}
+            />
+            <YAxis tick={{ fontSize: 12 }} />
+            <Tooltip
+              formatter={(value: any, name: string | undefined) => {
+                if (name === "revenue")
+                  return [value.toLocaleString() + " UZS", "Выручка"];
+                if (name === "orders") return [value, "Заказов"];
+                return [value, name || ""];
+              }}
+            />
+            <Legend
+              formatter={(value: string) => {
+                if (value === "revenue") return "Выручка";
+                if (value === "orders") return "Заказов";
+                return value;
+              }}
+            />
+            <Bar dataKey="revenue" fill="#8814B1" />
+            <Bar dataKey="orders" fill="#00C6F1" />
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
