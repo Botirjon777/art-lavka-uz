@@ -10,11 +10,11 @@ import {
   Html,
 } from "@react-three/drei";
 import * as THREE from "three";
-import { PrintDesign, Product } from "@/types";
-import Loader from "../Loader";
+import { PrintDesign } from "@/types";
+import Loader from "../../Loader";
 import { AiFillQuestionCircle } from "react-icons/ai";
 import { TbRotate3D } from "react-icons/tb";
-import { Tooltip } from "../ui";
+import { Tooltip } from "../../ui";
 
 interface TShirtModelProps {
   selectedPrint: PrintDesign | null;

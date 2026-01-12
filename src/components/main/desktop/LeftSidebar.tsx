@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { PrintDesign, ConfiguratorState } from "@/types";
-import { SidebarPrintSkeleton } from "../LoadingSkeleton";
+import { PrintDesign } from "@/types";
+import { SidebarPrintSkeleton } from "../../LoadingSkeleton";
 import { Button } from "@/components/ui";
 
 interface LeftSidebarProps {

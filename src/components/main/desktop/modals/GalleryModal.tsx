@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Modal from "../Modal";
+import Modal from "../../../Modal";
 import { Product } from "@/types";
 import Image from "next/image";
 

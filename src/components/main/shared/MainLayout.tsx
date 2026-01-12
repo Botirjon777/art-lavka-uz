@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { PiShoppingCartSimpleBold } from "react-icons/pi";
 import { Toaster } from "react-hot-toast";
-import Navbar from "./Navbar";
+import Navbar from "../mobile/Navbar";
 
 interface MainLayoutProps {
   children: ReactNode;

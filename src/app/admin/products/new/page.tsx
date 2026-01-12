@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import Image from "next/image";
 import { ProductInventory } from "@/types";
 import ColorPicker, { Color } from "@/components/admin/ColorPicker";
-import TShirtScene from "@/components/main/TShirtScene";
+import TShirtScene from "@/components/main/shared/TShirtScene";
 
 export default function NewProductPage() {
   const router = useRouter();

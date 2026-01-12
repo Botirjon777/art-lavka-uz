@@ -2,21 +2,21 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import MainLayout from "@/components/main/MainLayout";
-import LeftSidebar from "@/components/main/LeftSidebar";
-import RightConfigurator from "@/components/main/RightConfigurator";
-import MobileConfigurator from "@/components/main/MobileConfigurator";
-import MenuModal from "@/components/main/MenuModal";
-import MobileMenuModal from "@/components/main/MobileMenuModal";
-import GalleryModal from "@/components/main/GalleryModal";
-import MobileGalleryModal from "@/components/main/MobileGalleryModal";
-import CartModal from "@/components/main/CartModal";
-import MobileCartModal from "@/components/main/MobileCartModal";
-import ProductsModal from "@/components/main/ProductsModal";
-import MobileProductsModal from "@/components/main/MobileProductsModal";
-import MobilePrintsModal from "@/components/main/MobilePrintsModal";
-import CheckoutModal from "@/components/main/CheckoutModal";
-import OrderSuccessModal from "@/components/main/OrderSuccessModal";
+import MainLayout from "@/components/main/shared/MainLayout";
+import LeftSidebar from "@/components/main/desktop/LeftSidebar";
+import RightConfigurator from "@/components/main/desktop/RightConfigurator";
+import MobileConfigurator from "@/components/main/mobile/MobileConfigurator";
+import MenuModal from "@/components/main/desktop/modals/MenuModal";
+import MobileMenuModal from "@/components/main/mobile/modals/MobileMenuModal";
+import GalleryModal from "@/components/main/desktop/modals/GalleryModal";
+import MobileGalleryModal from "@/components/main/mobile/modals/MobileGalleryModal";
+import CartModal from "@/components/main/desktop/modals/CartModal";
+import MobileCartModal from "@/components/main/mobile/modals/MobileCartModal";
+import ProductsModal from "@/components/main/desktop/modals/ProductsModal";
+import MobileProductsModal from "@/components/main/mobile/modals/MobileProductsModal";
+import MobilePrintsModal from "@/components/main/mobile/modals/MobilePrintsModal";
+import CheckoutModal from "@/components/main/shared/modals/CheckoutModal";
+import OrderSuccessModal from "@/components/main/shared/modals/OrderSuccessModal";
 import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 export default function Home() {
