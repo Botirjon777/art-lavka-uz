@@ -5,7 +5,6 @@ import Image from "next/image";
 import MobileModal from "./MobileModal";
 import { RiTelegram2Fill } from "react-icons/ri";
 import { MdOutlineEmail } from "react-icons/md";
-import { MobileFooter } from "../MobileFooter";
 
 interface MobileMenuModalProps {
   isOpen: boolean;
@@ -278,9 +277,6 @@ export default function MobileMenuModal({
             </div>
           )}
         </section>
-
-        {/* Footer */}
-        <MobileFooter />
       </div>
     </MobileModal>
   );

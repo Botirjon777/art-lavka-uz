@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect } from "react";
 import Image from "next/image";
+import { MobileFooter } from "../MobileFooter";
 
 interface MobileModalProps {
   isOpen: boolean;
@@ -98,6 +99,7 @@ export default function MobileModal({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">{children}</div>
+        <MobileFooter />
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import MobileModal from "./MobileModal";
 import { PrintDesign } from "@/types";
 import Image from "next/image";
-import { MobileFooter } from "../MobileFooter";
 
 interface MobilePrintsModalProps {
   isOpen: boolean;
@@ -63,7 +62,7 @@ export default function MobilePrintsModal({
 
   return (
     <MobileModal isOpen={isOpen} onClose={onClose}>
-      <div className="px-4 py-4">
+      <div className="py-4">
         {/* Tabs */}
         <div className="flex gap-4 mb-4 border-b border-gray-200 overflow-x-auto">
           {categories.map((cat) => (
@@ -152,9 +151,6 @@ export default function MobilePrintsModal({
                 ))
               )}
             </div>
-
-            {/* Footer */}
-            <MobileFooter />
           </>
         )}
       </div>

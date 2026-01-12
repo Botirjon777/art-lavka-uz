@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import MobileModal from "./MobileModal";
 import { Product } from "@/types";
 import Image from "next/image";
-import { MobileFooter } from "../MobileFooter";
 
 interface MobileProductsModalProps {
   isOpen: boolean;
@@ -117,9 +116,6 @@ export default function MobileProductsModal({
                 ))
               )}
             </div>
-
-            {/* Footer */}
-            <MobileFooter />
           </>
         )}
       </div>
