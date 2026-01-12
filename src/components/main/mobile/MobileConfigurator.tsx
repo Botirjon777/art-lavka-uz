@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "../shared/TShirtScene";
 import SizeTableModal from "../../SizeTableModal";
+import { MobileFooter } from "./MobileFooter";
 
 interface MobileConfiguratorProps {
   selectedProduct: Product;
@@ -75,9 +76,9 @@ export default function MobileConfigurator({
   };
 
   return (
-    <div className="flex flex-col bg-white min-h-screen pb-20">
+    <div className="flex flex-col bg-white min-h-screen">
       {/* T-Shirt Scene */}
-      <div className="relative bg-gray-50 flex items-center justify-center py-8">
+      <div className="relative bg-image flex items-center justify-center py-8">
         <div className="w-full max-w-md">
           <TShirtScene
             key={selectedProduct.id}
@@ -87,38 +88,16 @@ export default function MobileConfigurator({
             selectedPrint={selectedPrint}
             selectedColor={selectedColor.hex}
             onProductClick={onProductClick}
+            onPrintClick={onPrintClick}
           />
         </div>
       </div>
 
-      {/* Product Name */}
-      <div className="px-4 py-4 border-b border-gray-200">
-        <h1 className="text-lg font-medium text-[#333333] text-center">
-          {selectedProduct.name}
-        </h1>
-      </div>
-
-      {/* Select Buttons */}
-      <div className="px-4 py-4 grid grid-cols-2 gap-3 border-b border-gray-200">
-        <button
-          onClick={onPrintClick}
-          className="py-3 px-4 bg-white border border-gray-300 rounded-lg text-sm font-medium text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
-        >
-          Выбрать принт
-        </button>
-        <button
-          onClick={onProductClick}
-          className="py-3 px-4 bg-white border border-gray-300 rounded-lg text-sm font-medium text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
-        >
-          Выбрать продукт
-        </button>
-      </div>
-
       {/* Configurator Options */}
-      <div className="px-4 py-6 space-y-6">
+      <div className="p-5 space-y-5">
         {/* Color Selection */}
         <div>
-          <h3 className="text-sm font-medium text-[#333333] mb-3">
+          <h3 className="text-[13px]/[16px] text-[#333333] mb-3">
             Цвет: {selectedColor.name}
           </h3>
           <div className="flex gap-3">
@@ -140,18 +119,12 @@ export default function MobileConfigurator({
 
         {/* Size Selection */}
         <div>
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-sm font-medium text-[#333333]">
+          <div className="flex justify-between items-center mb-[15px]">
+            <p className="text-[13px]/[16px] text-[#333333]">
               Размер: {selectedSize}
             </p>
-            <button
-              onClick={() => setIsSizeModalOpen(true)}
-              className="text-xs text-[#8814B1] underline"
-            >
-              Таблица размеров
-            </button>
           </div>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-2.5">
             {productSizes.map((size) => {
               const stock = getInventoryStock(size);
               if (stock === 0) return null;
@@ -160,10 +133,10 @@ export default function MobileConfigurator({
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`py-2.5 text-sm font-medium rounded-lg transition-all ${
+                  className={`py-[5px] text-[13px]/[16px] rounded-[5px] shadow-sm transition-all ${
                     selectedSize === size
                       ? "bg-[#00C6F1] text-white"
-                      : "bg-gray-100 text-[#333333]"
+                      : "bg-white text-[#333333]"
                   }`}
                 >
                   {size}
@@ -172,9 +145,16 @@ export default function MobileConfigurator({
             })}
           </div>
 
+          <button
+            onClick={() => setIsSizeModalOpen(true)}
+            className="text-[13px]/[16px] text-[#333333] underline mt-[15px]"
+          >
+            Таблица размеров
+          </button>
+
           {/* Stock Info */}
           {!isOutOfStock && sizeStock < 5 && (
-            <p className="text-orange-600 text-xs mt-2">
+            <p className="text-orange-600 text-xs mt-5">
               Осталось всего {sizeStock} шт.
             </p>
           )}
@@ -182,7 +162,7 @@ export default function MobileConfigurator({
 
         {/* Quantity */}
         <div>
-          <p className="text-sm font-medium text-[#333333] mb-3">
+          <p className="text-[13px]/[16px] text-[#333333] mb-3">
             Количество: {quantity}шт
           </p>
           <div className="flex items-center gap-4">
@@ -206,7 +186,7 @@ export default function MobileConfigurator({
               </svg>
             </button>
 
-            <span className="text-lg font-semibold text-[#333333] min-w-[3ch] text-center">
+            <span className="text-[16px]/[20px] text-[#333333] min-w-[3ch] text-center">
               {quantity}
             </span>
 
@@ -240,23 +220,23 @@ export default function MobileConfigurator({
 
         {/* Price */}
         <div>
-          <p className="text-sm text-[#666666] mb-1">
+          <p className="text-[13px]/[16px] text-[#666666] mb-1">
             Цена{" "}
             <span className="line-through text-[#9F9F9F]">
               {(price * 1.2).toLocaleString()} сум
             </span>
           </p>
-          <p className="text-2xl font-bold text-[#333333]">
+          <p className="text-[20px]/[24px] text-[#333333]">
             {price.toLocaleString()} сум
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-3 pt-4">
+        <div className="flex gap-2.5 pt-2.5">
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`w-full py-3.5 rounded-xl font-medium text-base transition-colors ${
+            className={`w-full py-[15px] rounded-xl text-[13px]/[16px] transition-colors ${
               isOutOfStock
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-[#00C6F1] hover:bg-[#00C6F1]/90 text-white active:scale-95"
@@ -267,7 +247,7 @@ export default function MobileConfigurator({
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`w-full py-3.5 rounded-xl font-medium text-base transition-colors ${
+            className={`w-full py-[15px] rounded-xl text-[13px]/[16px] transition-colors ${
               isOutOfStock
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-[#8814B1] hover:bg-[#8814B1]/90 text-white active:scale-95"
@@ -279,9 +259,7 @@ export default function MobileConfigurator({
       </div>
 
       {/* Footer */}
-      <div className="text-center py-6 text-sm text-gray-500 border-t border-gray-200">
-        © 2023 - 2025
-      </div>
+      <MobileFooter />
 
       <SizeTableModal
         isOpen={isSizeModalOpen}

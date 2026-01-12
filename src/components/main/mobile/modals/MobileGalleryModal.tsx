@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import MobileModal from "./MobileModal";
 import { Product } from "@/types";
 import Image from "next/image";
+import { MobileFooter } from "../MobileFooter";
 
 interface GalleryImage {
   _id: string;
@@ -88,9 +89,7 @@ export default function MobileGalleryModal({
             </div>
 
             {/* Footer */}
-            <div className="text-center py-6 text-sm text-gray-500">
-              © 2023 - 2025
-            </div>
+            <MobileFooter />
           </>
         )}
       </div>

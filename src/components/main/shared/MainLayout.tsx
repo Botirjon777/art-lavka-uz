@@ -29,7 +29,7 @@ export default function MainLayout({
         cartItemCount={cartItemCount}
       />
 
-      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center px-3 py-4 pt-24 md:p-6">
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center xl:px-3 xl:py-4 pt-24 md:p-6">
         {/* Centered Container */}
         <div className="relative w-full max-w-[1600px]">
           {/* Menu Icon - Top Left of Container */}
@@ -86,7 +86,7 @@ export default function MainLayout({
           </button>
 
           {/* Main Content */}
-          <div className="py-20 relative">{children}</div>
+          <div className="xl:py-20 relative">{children}</div>
         </div>
 
         {/* Toast Notifications */}
