@@ -35,6 +35,27 @@ body {
   background: var(--purple-secondary);
 }
 
+/* Mobile Scrollbar - Thinner and more subtle */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(136, 20, 177, 0.3);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(136, 20, 177, 0.5);
+  }
+}
+
 /* Animations */
 @keyframes slide-in-left {
   from {
