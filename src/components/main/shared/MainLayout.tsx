@@ -27,6 +27,7 @@ export default function MainLayout({
         onMenuClick={onMenuClick}
         onCartClick={onCartClick}
         cartItemCount={cartItemCount}
+        activeModal={activeModal}
       />
 
       <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center xl:px-3 xl:py-4 pt-24 md:p-6">

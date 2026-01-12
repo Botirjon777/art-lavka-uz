@@ -22,7 +22,7 @@ export default function MobileMenuModal({
   };
 
   return (
-    <MobileModal isOpen={isOpen} onClose={onClose}>
+    <MobileModal isOpen={isOpen} onClose={onClose} showCloseButton={false}>
       <div className="px-4 py-6 space-y-4">
         {/* Delivery Section */}
         <section className="bg-white rounded-xl border border-gray-200 overflow-hidden">

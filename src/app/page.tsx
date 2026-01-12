@@ -138,8 +138,8 @@ export default function Home() {
 
   return (
     <MainLayout
-      onMenuClick={() => setActiveModal("menu")}
-      onCartClick={() => setActiveModal(activeModal ? null : "cart")}
+      onMenuClick={() => setActiveModal(activeModal === "menu" ? null : "menu")}
+      onCartClick={() => setActiveModal(activeModal === "cart" ? null : "cart")}
       cartItemCount={cartItems.length}
       activeModal={activeModal}
     >

@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import Image from "next/image";
 import { MobileFooter } from "../MobileFooter";
 
 interface MobileModalProps {
@@ -9,6 +8,7 @@ interface MobileModalProps {
   onClose: () => void;
   children: ReactNode;
   title?: string;
+  showCloseButton?: boolean;
 }
 
 export default function MobileModal({
@@ -16,6 +16,7 @@ export default function MobileModal({
   onClose,
   children,
   title,
+  showCloseButton = true,
 }: MobileModalProps) {
   useEffect(() => {
     if (isOpen) {
@@ -31,58 +32,18 @@ export default function MobileModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100 md:hidden">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
+    <div className="fixed inset-0 z-50 md:hidden pointer-events-none">
       {/* Modal Content */}
-      <div className="relative h-full bg-white flex flex-col animate-slide-in-bottom">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-10">
-          {/* Menu Button */}
+      <div className="absolute bottom-0 left-0 right-0 top-20 bg-white flex flex-col animate-slide-in-bottom overflow-hidden pointer-events-auto">
+        {/* Close Button - Only show if showCloseButton is true */}
+        {showCloseButton && (
           <button
             onClick={onClose}
-            className="w-12 h-12 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-colors"
-            aria-label="Close menu"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-
-          {/* Logo */}
-          <div className="flex-1 flex justify-center">
-            <Image
-              src="/art-lavka.png"
-              alt="ART LAVKA.UZ"
-              width={180}
-              height={68}
-              className="object-contain"
-              priority
-            />
-          </div>
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="w-12 h-12 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-colors"
+            className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center bg-white hover:bg-gray-100 text-gray-600 rounded-full shadow-md transition-colors"
             aria-label="Close"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -95,10 +56,12 @@ export default function MobileModal({
               />
             </svg>
           </button>
-        </div>
+        )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">{children}</div>
+        <div className="flex-1 overflow-y-auto pt-4">{children}</div>
+
+        {/* Footer */}
         <MobileFooter />
       </div>
     </div>
