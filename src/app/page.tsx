@@ -6,8 +6,10 @@ import MainLayout from "@/components/main/MainLayout";
 import LeftSidebar from "@/components/main/LeftSidebar";
 import RightConfigurator from "@/components/main/RightConfigurator";
 import MenuModal from "@/components/main/MenuModal";
+import MobileMenuModal from "@/components/main/MobileMenuModal";
 import GalleryModal from "@/components/main/GalleryModal";
 import CartModal from "@/components/main/CartModal";
+import MobileCartModal from "@/components/main/MobileCartModal";
 import ProductsModal from "@/components/main/ProductsModal";
 import CheckoutModal from "@/components/main/CheckoutModal";
 import OrderSuccessModal from "@/components/main/OrderSuccessModal";
@@ -173,8 +175,14 @@ export default function Home() {
         </div>
       )}
 
-      {/* Modals */}
+      {/* Desktop Modals */}
       <MenuModal
+        isOpen={activeModal === "menu"}
+        onClose={() => setActiveModal(null)}
+      />
+
+      {/* Mobile Modals */}
+      <MobileMenuModal
         isOpen={activeModal === "menu"}
         onClose={() => setActiveModal(null)}
       />
@@ -185,7 +193,18 @@ export default function Home() {
         onSelectProduct={handleSelectProduct}
       />
 
+      {/* Desktop Cart Modal */}
       <CartModal
+        isOpen={activeModal === "cart"}
+        onClose={() => setActiveModal(null)}
+        items={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
+        onCheckout={handleCheckout}
+      />
+
+      {/* Mobile Cart Modal */}
+      <MobileCartModal
         isOpen={activeModal === "cart"}
         onClose={() => setActiveModal(null)}
         items={cartItems}

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F5F5F5;
+  --background: #f5f5f5;
   --foreground: #171717;
   --purple-primary: #7c3aed;
   --purple-secondary: #a855f7;
@@ -11,7 +11,8 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-montserrat), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-montserrat), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 /* Custom Scrollbar */
@@ -97,4 +98,19 @@ body {
 
 .animate-slide-in-top {
   animation: slide-in-top 0.3s ease-out forwards;
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s ease-out forwards;
 }
