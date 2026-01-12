@@ -5,15 +5,18 @@ import Image from "next/image";
 import MobileModal from "./MobileModal";
 import { RiTelegram2Fill } from "react-icons/ri";
 import { MdOutlineEmail } from "react-icons/md";
+import Link from "next/link";
 
 interface MobileMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onGalleryClick: () => void;
 }
 
 export default function MobileMenuModal({
   isOpen,
   onClose,
+  onGalleryClick,
 }: MobileMenuModalProps) {
   const [openSection, setOpenSection] = useState<string | null>("delivery");
 
@@ -24,6 +27,7 @@ export default function MobileMenuModal({
   return (
     <MobileModal isOpen={isOpen} onClose={onClose} showCloseButton={false}>
       <div className="p-5 space-y-5">
+        {/* Delivery Section */}
         <button
           onClick={() => toggleSection("delivery")}
           className="w-full bg-white shadow-md rounded-xl flex items-center justify-between px-5 py-2.5 text-left"
@@ -274,6 +278,23 @@ export default function MobileMenuModal({
             </div>
           </div>
         )}
+
+        <div className="flex gap-2.5">
+          {/* Track Order Button */}
+          <Link
+            href="/track-order"
+            className="block w-full py-2.5 px-5 bg-linear-to-r from-[#8814B1] to-[#a01dc4] hover:from-[#8814B1]/90 hover:to-[#a01dc4]/90 text-center text-white rounded-xl transition-all shadow-lg text-[14px]/[17px]"
+          >
+            Отследить заказ
+          </Link>
+          {/* Gallery Button */}
+          <button
+            onClick={onGalleryClick}
+            className="block w-full py-2.5 px-5 bg-[#8814B1] hover:bg-[#8814B1]/90 text-center text-white rounded-xl transition-all shadow-lg text-[14px]/[17px]"
+          >
+            Фото Галерея
+          </button>
+        </div>
       </div>
     </MobileModal>
   );

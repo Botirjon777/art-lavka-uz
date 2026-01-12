@@ -203,6 +203,7 @@ export default function Home() {
       <MobileMenuModal
         isOpen={activeModal === "menu"}
         onClose={() => setActiveModal(null)}
+        onGalleryClick={() => setActiveModal("gallery")}
       />
 
       {/* Desktop Gallery Modal */}

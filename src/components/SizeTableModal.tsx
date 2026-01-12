@@ -78,11 +78,6 @@ export default function SizeTableModal({
               </span>
             </p>
           </div>
-
-          {/* Footer */}
-          <div className="text-center py-6 text-sm text-gray-500">
-            © 2023 - 2025
-          </div>
         </div>
       </MobileModal>
     );

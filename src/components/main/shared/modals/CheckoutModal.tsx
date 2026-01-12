@@ -5,6 +5,8 @@ import { CartItem } from "@/types";
 import { createOrder } from "@/app/actions/orders";
 import toast from "react-hot-toast";
 import Dropdown from "@/components/ui/Dropdown";
+import MobileModal from "@/components/main/mobile/modals/MobileModal";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -47,6 +49,8 @@ export default function CheckoutModal({
     "Сырдарьинская область",
     "Сурхандарьинская область",
   ];
+
+  const isMobile = useIsMobile();
 
   if (!isOpen) return null;
 
@@ -132,9 +136,158 @@ export default function CheckoutModal({
     }
   };
 
+  // Mobile version
+  if (isMobile) {
+    return (
+      <MobileModal isOpen={isOpen} onClose={onClose}>
+        <div className="p-2.5">
+          {/* Header */}
+          <div className="mb-5">
+            <h2 className="text-[22px]/[27px] text-[#333333]">
+              Оформление заказа
+            </h2>
+          </div>
+
+          {/* Order Summary */}
+          <div className="mb-5 p-2.5 bg-white shadow-lg rounded-xl">
+            <h3 className="text-[16px]/[20px] mb-2">Сводка заказа</h3>
+            <div className="space-y-1 text-[13px]/[16px] text-[#666666]">
+              <p>{items.length} товар(ов)</p>
+              <p className="text-[16px]/[20px] text-[#333333]">
+                Итого: {totalAmount.toLocaleString()} UZS
+              </p>
+            </div>
+          </div>
+
+          {/* Customer Information Form */}
+          <form onSubmit={handleSubmit} className="space-y-2.5">
+            <div>
+              <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                Полное имя <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                placeholder="Например: Алиев Вали"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                Номер телефона <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                placeholder="+998 XX XXX XX XX"
+                required
+              />
+            </div>
+
+            {/* Region */}
+            <Dropdown
+              label="Область/Город"
+              value={region}
+              onChange={(value) => setRegion(value)}
+              options={uzbekistanRegions.map((r) => ({
+                value: r,
+                label: r,
+              }))}
+              placeholder="Выберите область"
+              buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
+              required
+            />
+
+            {/* Street Address */}
+            <div>
+              <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                Адрес улицы <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={streetAddress}
+                onChange={(e) => setStreetAddress(e.target.value)}
+                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                placeholder="Например: улица Амира Темура, дом 15"
+                required
+              />
+            </div>
+
+            {/* Home/Apartment Number */}
+            <div>
+              <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                Номер дома/квартиры <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={homeNumber}
+                onChange={(e) => setHomeNumber(e.target.value)}
+                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                placeholder="Например: квартира 12"
+                required
+              />
+            </div>
+
+            {/* Telegram Username */}
+            <div>
+              <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                Телеграм юзернэйм
+              </label>
+              <input
+                type="text"
+                value={telegramUsername}
+                onChange={(e) => setTelegramUsername(e.target.value)}
+                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                placeholder="@username"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                Примечания к заказу (необязательно)
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] resize-none text-[14px]/[17px]"
+                rows={2}
+                placeholder="Любые особые пожелания к заказу?"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2.5 pt-2.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-[13px]/[16px]"
+                disabled={isSubmitting}
+              >
+                Отмена
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2.5 bg-[#8814B1] text-white rounded-lg hover:bg-[#8814B1]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[13px]/[16px]"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Оформление..." : "Оформить заказ"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </MobileModal>
+    );
+  }
+
+  // Desktop version
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[30px] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-[30px] w-full max-w-5xl max-h-[90vh]">
         <div className="p-8">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
@@ -143,7 +296,7 @@ export default function CheckoutModal({
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
+              className="text-[#666666] hover:text-[#8814B1] text-[30px]/[37px] cursor-pointer"
             >
               ×
             </button>
@@ -162,32 +315,33 @@ export default function CheckoutModal({
 
           {/* Customer Information Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Полное имя <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
-                placeholder="Например: Алиев Вали"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Номер телефона <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
-                placeholder="+998 XX XXX XX XX"
-                required
-              />
+            <div className="flex gap-2.5">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Полное имя <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  placeholder="Например: Алиев Вали"
+                  required
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Номер телефона <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  placeholder="+998 XX XXX XX XX"
+                  required
+                />
+              </div>
             </div>
 
             {/* Region */}
@@ -204,33 +358,34 @@ export default function CheckoutModal({
             />
 
             {/* Street Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Адрес улицы <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={streetAddress}
-                onChange={(e) => setStreetAddress(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
-                placeholder="Например: улица Амира Темура, дом 15"
-                required
-              />
-            </div>
-
-            {/* Home/Apartment Number */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Номер дома/квартиры <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={homeNumber}
-                onChange={(e) => setHomeNumber(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
-                placeholder="Например: квартира 12"
-                required
-              />
+            <div className="flex gap-2.5">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Адрес улицы <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={streetAddress}
+                  onChange={(e) => setStreetAddress(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  placeholder="Например: улица Амира Темура, дом 15"
+                  required
+                />
+              </div>
+              {/* Home/Apartment Number */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Номер дома/квартиры <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={homeNumber}
+                  onChange={(e) => setHomeNumber(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  placeholder="Например: квартира 12"
+                  required
+                />
+              </div>
             </div>
 
             {/* Telegram Username */}
@@ -265,14 +420,14 @@ export default function CheckoutModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="flex-1 px-6 py-3 border-2 cursor-pointer border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 disabled={isSubmitting}
               >
                 Отмена
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-[#00C6F1] cursor-pointer text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Оформление..." : "Оформить заказ"}

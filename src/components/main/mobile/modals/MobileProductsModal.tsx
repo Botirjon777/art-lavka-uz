@@ -50,23 +50,25 @@ export default function MobileProductsModal({
 
   return (
     <MobileModal isOpen={isOpen} onClose={onClose}>
-      <div className="px-4 py-4">
+      <div className="px-5 pt-16">
         {/* Tabs */}
-        <div className="flex gap-6 mb-6 border-b border-gray-200 overflow-x-auto">
+        <div className="flex gap-2.5 mb-6">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => !tab.soon && setActiveTab(tab.id)}
-              className={`pb-3 whitespace-nowrap transition-colors ${
+              className={`whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? "border-b-2 border-[#8814B1] text-[#8814B1]"
                   : "text-[#666666]"
               } ${tab.soon ? "opacity-50 cursor-not-allowed" : ""}`}
               disabled={tab.soon}
             >
-              <span className="font-medium">{tab.label}</span>
+              <span className="text-[13px]/[16px]">{tab.label}</span>
               {tab.soon && (
-                <span className="text-xs ml-1 text-[#8814B1]">- Скоро</span>
+                <span className="text-[13px]/[16px] ml-1 text-[#8814B1]">
+                  - Скоро
+                </span>
               )}
             </button>
           ))}
@@ -81,7 +83,7 @@ export default function MobileProductsModal({
         ) : (
           <>
             {/* Product Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {products.length === 0 ? (
                 <div className="col-span-2 text-center py-12">
                   <p className="text-gray-600">Нет доступных продуктов</p>
@@ -96,7 +98,7 @@ export default function MobileProductsModal({
                     }}
                     className="group text-center"
                   >
-                    <div className="relative w-full aspect-3/4 mb-2 bg-gray-100 rounded-lg overflow-hidden">
+                    <div className="relative w-full aspect-3/4 mb-2 overflow-hidden">
                       <Image
                         src={product.image}
                         alt={product.name}
