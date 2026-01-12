@@ -19,6 +19,7 @@ export interface DropdownProps {
   required?: boolean;
   disabled?: boolean;
   className?: string;
+  buttonClassName?: string;
   id?: string;
 }
 
@@ -33,6 +34,7 @@ export default function Dropdown({
   required = false,
   disabled = false,
   className = "",
+  buttonClassName = "",
   id,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -108,7 +110,9 @@ export default function Dropdown({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-left flex items-center justify-between ${
+          className={`w-full ${
+            buttonClassName || "px-4 py-3"
+          } border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-left flex items-center justify-between ${
             error
               ? "border-red-500 focus:ring-red-500"
               : "border-gray-300 focus:ring-[#00C6F1]"

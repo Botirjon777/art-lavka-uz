@@ -2,20 +2,26 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import MainLayout from "@/components/main/MainLayout";
-import LeftSidebar from "@/components/main/LeftSidebar";
-import RightConfigurator from "@/components/main/RightConfigurator";
-import MenuModal from "@/components/main/MenuModal";
-import GalleryModal from "@/components/main/GalleryModal";
-import CartModal from "@/components/main/CartModal";
-import ProductsModal from "@/components/main/ProductsModal";
-import CheckoutModal from "@/components/main/CheckoutModal";
-import OrderSuccessModal from "@/components/main/OrderSuccessModal";
+import MainLayout from "@/components/main/shared/MainLayout";
+import LeftSidebar from "@/components/main/desktop/LeftSidebar";
+import RightConfigurator from "@/components/main/desktop/RightConfigurator";
+import MobileConfigurator from "@/components/main/mobile/MobileConfigurator";
+import MenuModal from "@/components/main/desktop/modals/MenuModal";
+import MobileMenuModal from "@/components/main/mobile/modals/MobileMenuModal";
+import GalleryModal from "@/components/main/desktop/modals/GalleryModal";
+import MobileGalleryModal from "@/components/main/mobile/modals/MobileGalleryModal";
+import CartModal from "@/components/main/desktop/modals/CartModal";
+import MobileCartModal from "@/components/main/mobile/modals/MobileCartModal";
+import ProductsModal from "@/components/main/desktop/modals/ProductsModal";
+import MobileProductsModal from "@/components/main/mobile/modals/MobileProductsModal";
+import MobilePrintsModal from "@/components/main/mobile/modals/MobilePrintsModal";
+import CheckoutModal from "@/components/main/shared/modals/CheckoutModal";
+import OrderSuccessModal from "@/components/main/shared/modals/OrderSuccessModal";
 import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 export default function Home() {
   const [activeModal, setActiveModal] = useState<
-    "menu" | "cart" | "gallery" | "products" | null
+    "menu" | "cart" | "gallery" | "products" | "prints" | null
   >(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -132,8 +138,8 @@ export default function Home() {
 
   return (
     <MainLayout
-      onMenuClick={() => setActiveModal("menu")}
-      onCartClick={() => setActiveModal(activeModal ? null : "cart")}
+      onMenuClick={() => setActiveModal(activeModal === "menu" ? null : "menu")}
+      onCartClick={() => setActiveModal(activeModal === "cart" ? null : "cart")}
       cartItemCount={cartItems.length}
       activeModal={activeModal}
     >
@@ -157,34 +163,64 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col justify-center md:flex-row gap-[78px]">
-          <LeftSidebar
-            onGalleryClick={() => setActiveModal("gallery")}
-            selectedPrint={selectedPrint}
-            onPrintSelect={setSelectedPrint}
-          />
+        <>
+          {/* Desktop Layout */}
+          <div className="hidden md:flex flex-col justify-center md:flex-row gap-[78px]">
+            <LeftSidebar
+              onGalleryClick={() => setActiveModal("gallery")}
+              selectedPrint={selectedPrint}
+              onPrintSelect={setSelectedPrint}
+            />
 
-          <RightConfigurator
-            selectedProduct={selectedProduct}
-            selectedPrint={selectedPrint}
-            onAddToCart={handleAddToCart}
-            onProductClick={() => setActiveModal("products")}
-          />
-        </div>
+            <RightConfigurator
+              selectedProduct={selectedProduct}
+              selectedPrint={selectedPrint}
+              onAddToCart={handleAddToCart}
+              onProductClick={() => setActiveModal("products")}
+            />
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden">
+            <MobileConfigurator
+              selectedProduct={selectedProduct}
+              selectedPrint={selectedPrint}
+              onAddToCart={handleAddToCart}
+              onProductClick={() => setActiveModal("products")}
+              onPrintClick={() => setActiveModal("prints")}
+            />
+          </div>
+        </>
       )}
 
-      {/* Modals */}
+      {/* Desktop Modals */}
       <MenuModal
         isOpen={activeModal === "menu"}
         onClose={() => setActiveModal(null)}
       />
 
+      {/* Mobile Modals */}
+      <MobileMenuModal
+        isOpen={activeModal === "menu"}
+        onClose={() => setActiveModal(null)}
+        onGalleryClick={() => setActiveModal("gallery")}
+      />
+
+      {/* Desktop Gallery Modal */}
       <GalleryModal
         isOpen={activeModal === "gallery"}
         onClose={() => setActiveModal(null)}
         onSelectProduct={handleSelectProduct}
       />
 
+      {/* Mobile Gallery Modal */}
+      <MobileGalleryModal
+        isOpen={activeModal === "gallery"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
+      />
+
+      {/* Desktop Cart Modal */}
       <CartModal
         isOpen={activeModal === "cart"}
         onClose={() => setActiveModal(null)}
@@ -194,10 +230,36 @@ export default function Home() {
         onCheckout={handleCheckout}
       />
 
+      {/* Mobile Cart Modal */}
+      <MobileCartModal
+        isOpen={activeModal === "cart"}
+        onClose={() => setActiveModal(null)}
+        items={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
+        onCheckout={handleCheckout}
+      />
+
+      {/* Desktop Products Modal */}
       <ProductsModal
         isOpen={activeModal === "products"}
         onClose={() => setActiveModal(null)}
         onSelectProduct={handleSelectProduct}
+      />
+
+      {/* Mobile Products Modal */}
+      <MobileProductsModal
+        isOpen={activeModal === "products"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
+      />
+
+      {/* Mobile Prints Modal */}
+      <MobilePrintsModal
+        isOpen={activeModal === "prints"}
+        onClose={() => setActiveModal(null)}
+        onSelectPrint={setSelectedPrint}
+        selectedPrint={selectedPrint}
       />
 
       <CheckoutModal

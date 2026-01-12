@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { PrintDesign, ConfiguratorState } from "@/types";
-import { SidebarPrintSkeleton } from "../LoadingSkeleton";
+import { PrintDesign } from "@/types";
+import { SidebarPrintSkeleton } from "../../LoadingSkeleton";
 import { Button } from "@/components/ui";
 
 interface LeftSidebarProps {
@@ -60,9 +60,9 @@ export default function LeftSidebar({
   });
 
   return (
-    <div className="w-full max-w-[558px] h-[calc(100vh-160px)] max-h-[886px] px-6 flex flex-col shrink-0">
+    <div className="w-full max-w-[558px] h-auto md:h-[calc(100vh-160px)] md:max-h-[886px] px-3 md:px-6 flex flex-col shrink-0">
       {/* Logo */}
-      <div className="mb-4 flex justify-between items-center gap-6 shrink-0">
+      <div className="mb-4 hidden md:flex justify-between items-center gap-6 shrink-0">
         <Image
           src="/art-lavka.png"
           alt="ART LAVKA.UZ"
@@ -132,7 +132,7 @@ export default function LeftSidebar({
             scrollbarColor: "#8814B1 transparent",
           }}
         >
-          <div className="grid grid-cols-3 xl:grid-cols-4 gap-4 pb-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-10">
             {/* No Print Option */}
             <button
               onClick={() => onPrintSelect(null)}

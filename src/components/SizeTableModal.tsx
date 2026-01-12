@@ -1,7 +1,9 @@
 "use client";
 
 import Modal from "./Modal";
+import MobileModal from "./main/mobile/modals/MobileModal";
 import { FiX } from "react-icons/fi";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface SizeTableModalProps {
   isOpen: boolean;
@@ -21,6 +23,67 @@ export default function SizeTableModal({
   isOpen,
   onClose,
 }: SizeTableModalProps) {
+  const isMobile = useIsMobile();
+
+  // Mobile version
+  if (isMobile) {
+    return (
+      <MobileModal isOpen={isOpen} onClose={onClose}>
+        <div className="px-4 py-4">
+          <h2 className="text-xl font-semibold text-[#333333] mb-6">
+            Таблица размеров
+          </h2>
+
+          {/* Size Table */}
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white mb-6">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">
+                    Размер
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">
+                    Ширина
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">
+                    Высота
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {sizeData.map((item) => (
+                  <tr key={item.size} className="hover:bg-purple-50/30">
+                    <td className="px-4 py-3 text-sm font-bold text-[#333333]">
+                      {item.size}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {item.width} см
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {item.height} см
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Info Box */}
+          <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+            <p className="text-sm text-purple-800">
+              <span className="font-bold block mb-2">Как измерить:</span>
+              <span className="opacity-80">
+                Ширина измеряется под рукавами, высота — от высшей точки плеча
+                до низа изделия. Допуск по размерам ±2 см.
+              </span>
+            </p>
+          </div>
+        </div>
+      </MobileModal>
+    );
+  }
+
+  // Desktop version
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="w-[600px] max-w-full">

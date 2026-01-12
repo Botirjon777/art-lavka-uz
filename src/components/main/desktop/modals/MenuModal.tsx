@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Modal from "../Modal";
+import Modal from "../../../Modal";
 import { RiTelegram2Fill } from "react-icons/ri";
 import { MdOutlineEmail } from "react-icons/md";
 

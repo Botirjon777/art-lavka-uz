@@ -10,11 +10,12 @@ import {
   Html,
 } from "@react-three/drei";
 import * as THREE from "three";
-import { PrintDesign, Product } from "@/types";
-import Loader from "../Loader";
+import { PrintDesign } from "@/types";
+import Loader from "../../Loader";
 import { AiFillQuestionCircle } from "react-icons/ai";
 import { TbRotate3D } from "react-icons/tb";
-import { Tooltip } from "../ui";
+import { Tooltip } from "../../ui";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface TShirtModelProps {
   selectedPrint: PrintDesign | null;
@@ -194,6 +195,7 @@ interface TShirtSceneProps {
   selectedPrint: PrintDesign | null;
   selectedColor: string;
   onProductClick?: () => void;
+  onPrintClick?: () => void;
   showUI?: boolean;
   modelScale?: number;
   modelPosition?: [number, number, number];
@@ -207,11 +209,13 @@ export default function TShirtScene({
   selectedPrint,
   selectedColor,
   onProductClick,
+  onPrintClick,
   showUI = true,
   modelScale = 1.5,
   modelPosition = [0, -1, 0],
   cameraPosition = [0, 0, 5],
 }: TShirtSceneProps) {
+  const isMobile = useIsMobile();
   return (
     <div className="w-full h-full min-h-[400px] relative overflow-hidden">
       <Canvas
@@ -272,23 +276,58 @@ export default function TShirtScene({
             <TbRotate3D size={32} className="text-[#00C6F1]" />
           </div>
 
-          <div className="absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-5">
-            <p className="text-[16px]/[20px] text-[#333333] flex items-center gap-[5px]">
-              {productName}{" "}
-              <Tooltip content={productDescription} position="top">
-                <AiFillQuestionCircle
-                  size={20}
-                  className="text-white cursor-help"
-                />
-              </Tooltip>
-            </p>
-            <button
-              onClick={onProductClick}
-              className="text-[16px]/[20px] py-[15px] px-[35px] cursor-pointer rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
-            >
-              Выбрать продукт
-            </button>
-          </div>
+          {isMobile && (
+            <div className="absolute w-full bottom-0 left-0">
+              {/* Product Name */}
+              <div className="px-4 py-3 text-center">
+                <p className="text-[13px]/[16px] text-[#333333] flex items-center justify-center gap-2 underline">
+                  {productName}
+                  <Tooltip content={productDescription} position="top">
+                    <AiFillQuestionCircle
+                      size={18}
+                      className="text-[#666666] cursor-help"
+                    />
+                  </Tooltip>
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="grid grid-cols-2 gap-2.5 px-5">
+                <button
+                  onClick={onPrintClick}
+                  className="py-[15px] bg-white rounded-xl text-[13px]/[16px] text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                >
+                  Выбрать принт
+                </button>
+                <button
+                  onClick={onProductClick}
+                  className="py-[15px] bg-white rounded-xl text-[13px]/[16px] text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                >
+                  Выбрать продукт
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!isMobile && (
+            <div className="hidden xl:flex absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex-col items-center gap-5">
+              <p className="text-[16px]/[20px] underline text-[#333333] flex items-center gap-[5px]">
+                {productName}{" "}
+                <Tooltip content={productDescription} position="top">
+                  <AiFillQuestionCircle
+                    size={20}
+                    className="text-white cursor-help"
+                  />
+                </Tooltip>
+              </p>
+              <button
+                onClick={onProductClick}
+                className="text-[16px]/[20px] py-[15px] px-[35px] cursor-pointer rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
+              >
+                Выбрать продукт
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
