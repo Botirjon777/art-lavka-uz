@@ -98,11 +98,11 @@ export default function MainLayout({
             style: {
               background: "#8814B1",
               color: "#fff",
-              padding: window.innerWidth <= 768 ? "12px" : "16px",
+              padding: "12px",
               borderRadius: "10px",
-              fontSize: window.innerWidth <= 768 ? "14px" : "16px",
+              fontSize: "14px",
               fontWeight: "600",
-              maxWidth: window.innerWidth <= 768 ? "90vw" : "auto",
+              maxWidth: "90vw",
             },
             success: {
               iconTheme: {
