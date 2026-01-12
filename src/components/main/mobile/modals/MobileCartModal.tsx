@@ -30,7 +30,7 @@ export default function MobileCartModal({
     <MobileModal isOpen={isOpen} onClose={onClose} showCloseButton={false}>
       <div className="flex flex-col h-full">
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="flex-1 overflow-y-auto px-5">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <svg
@@ -49,16 +49,15 @@ export default function MobileCartModal({
               <p className="text-lg text-gray-500">Корзина пуста</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+                  className="bg-white rounded-xl p-2.5 shadow-lg relative"
                 >
-                  {/* Product Header */}
-                  <div className="flex items-start gap-3 mb-3">
+                  <div className="flex gap-3">
                     {/* Product Image */}
-                    <div className="relative w-16 h-16 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+                    <div className="relative w-20 h-20 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
                       <Image
                         src={item.product.image}
                         alt={item.product.name}
@@ -67,28 +66,92 @@ export default function MobileCartModal({
                       />
                     </div>
 
-                    {/* Product Info */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-[#333333] mb-1 truncate">
-                        {item.product.name}
-                      </h4>
-                      <p className="text-xs text-[#666666]">
-                        {item.size} {item.color}
-                      </p>
-                      {item.print && (
-                        <p className="text-xs text-[#666666]">
-                          Принт:{" "}
-                          <span className="text-[#00C6F1]">
-                            {item.print.name}
-                          </span>
+                    {/* Product Info and Controls */}
+                    <div className="flex-1 flex flex-col justify-between">
+                      {/* Product Name and Details */}
+                      <div>
+                        <h4 className="text-[14px]/[17px] text-[#333333] mb-1">
+                          {item.product.name}
+                        </h4>
+                        <p className="text-[13px]/[16px] text-[#666666]">
+                          {item.size} ({item.color})
                         </p>
-                      )}
+                        {item.print && (
+                          <p className="text-[13px]/[16px]">
+                            Принт:{" "}
+                            <span className="text-[#00C6F1]">
+                              {item.print.name}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Quantity Controls */}
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() =>
+                            onUpdateQuantity(
+                              item.id,
+                              Math.max(1, item.quantity - 1)
+                            )
+                          }
+                          className="w-8 h-8 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M20 12H4"
+                            />
+                          </svg>
+                        </button>
+                        <span className="text-[14px]/[17px] text-[#333333] w-4 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            onUpdateQuantity(item.id, item.quantity + 1)
+                          }
+                          className="w-8 h-8 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4v16m8-8H4"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+
+                      {/* Price */}
+                      <div className="mt-2">
+                        <p className="text-[16px]/[20px] text-[#333333]">
+                          {(item.price * item.quantity).toLocaleString()} сум
+                        </p>
+                        <p className="text-[13px]/[16px] text-[#9F9F9F] line-through">
+                          {(item.price * item.quantity * 1.2).toLocaleString()}{" "}
+                          сум
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Remove Button */}
+                    {/* Remove Button - Top Right */}
                     <button
                       onClick={() => onRemoveItem(item.id)}
-                      className="text-[#999999] hover:text-[#8814B1] transition-colors p-1"
+                      className="absolute top-3 right-3 text-[#999999] hover:text-[#8814B1] transition-colors"
                       aria-label="Remove item"
                     >
                       <svg
@@ -106,70 +169,6 @@ export default function MobileCartModal({
                       </svg>
                     </button>
                   </div>
-
-                  {/* Quantity and Price */}
-                  <div className="flex items-center justify-between">
-                    {/* Quantity Controls */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          onUpdateQuantity(
-                            item.id,
-                            Math.max(1, item.quantity - 1)
-                          )
-                        }
-                        className="w-8 h-8 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M20 12H4"
-                          />
-                        </svg>
-                      </button>
-                      <span className="text-sm font-medium text-[#333333] w-8 text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          onUpdateQuantity(item.id, item.quantity + 1)
-                        }
-                        className="w-8 h-8 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Price */}
-                    <div className="text-right">
-                      <p className="text-base font-semibold text-[#333333]">
-                        {(item.price * item.quantity).toLocaleString()} сум
-                      </p>
-                      <p className="text-xs text-[#9F9F9F] line-through">
-                        {(item.price * item.quantity * 1.2).toLocaleString()}{" "}
-                        сум
-                      </p>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
@@ -178,23 +177,19 @@ export default function MobileCartModal({
 
         {/* Checkout Section - Sticky Bottom */}
         {items.length > 0 && (
-          <div className="bg-white border-t border-gray-200 px-4 py-4 space-y-4">
-            {/* Payment Summary */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-[#333333]">Оплата</h3>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#666666]">
-                  Товары: {items.length} шт.
-                </span>
+          <div className="bg-white shadow-2xl m-5 p-5 rounded-xl space-y-2.5">
+            {/* Payment Summary Card */}
+            <div className="space-y-2.5 text-[#333333]">
+              <h3 className="text-[22px]/[27px]">Оплата</h3>
+              <div className="flex gap-2.5 text-[13px]/[22px]">
+                <span>Товары: {items.length} шт.</span>
                 <span className="text-[#9F9F9F] line-through">
                   {(total * 1.2).toLocaleString()} сум
                 </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-base font-medium text-[#333333]">
-                  Итого:
-                </span>
-                <span className="text-xl font-bold text-[#333333]">
+              <div className="flex gap-2.5 items-center">
+                <span className="text-[13px]/[22px]">Итого:</span>
+                <span className="text-[16px]/[20px]">
                   {total.toLocaleString()} сум
                 </span>
               </div>
@@ -203,13 +198,13 @@ export default function MobileCartModal({
             {/* Checkout Button */}
             <button
               onClick={onCheckout}
-              className="w-full py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-medium rounded-xl transition-all shadow-lg active:scale-95"
+              className="w-full py-[15px] bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-xl transition-all shadow-lg active:scale-95 text-[13px]/[16px]"
             >
               Заказать
             </button>
 
             {/* Terms */}
-            <p className="text-xs text-center text-[#666666]">
+            <p className="text-[12px]/[18px] text-left text-[#666666]">
               <span className="text-[#9F9F9F]">Соглашаюсь с условиями</span>{" "}
               Публичной оферты и правилами возврата
             </p>
