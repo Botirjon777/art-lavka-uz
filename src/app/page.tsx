@@ -8,9 +8,11 @@ import RightConfigurator from "@/components/main/RightConfigurator";
 import MenuModal from "@/components/main/MenuModal";
 import MobileMenuModal from "@/components/main/MobileMenuModal";
 import GalleryModal from "@/components/main/GalleryModal";
+import MobileGalleryModal from "@/components/main/MobileGalleryModal";
 import CartModal from "@/components/main/CartModal";
 import MobileCartModal from "@/components/main/MobileCartModal";
 import ProductsModal from "@/components/main/ProductsModal";
+import MobileProductsModal from "@/components/main/MobileProductsModal";
 import CheckoutModal from "@/components/main/CheckoutModal";
 import OrderSuccessModal from "@/components/main/OrderSuccessModal";
 import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
@@ -187,7 +189,15 @@ export default function Home() {
         onClose={() => setActiveModal(null)}
       />
 
+      {/* Desktop Gallery Modal */}
       <GalleryModal
+        isOpen={activeModal === "gallery"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
+      />
+
+      {/* Mobile Gallery Modal */}
+      <MobileGalleryModal
         isOpen={activeModal === "gallery"}
         onClose={() => setActiveModal(null)}
         onSelectProduct={handleSelectProduct}
@@ -213,7 +223,15 @@ export default function Home() {
         onCheckout={handleCheckout}
       />
 
+      {/* Desktop Products Modal */}
       <ProductsModal
+        isOpen={activeModal === "products"}
+        onClose={() => setActiveModal(null)}
+        onSelectProduct={handleSelectProduct}
+      />
+
+      {/* Mobile Products Modal */}
+      <MobileProductsModal
         isOpen={activeModal === "products"}
         onClose={() => setActiveModal(null)}
         onSelectProduct={handleSelectProduct}
