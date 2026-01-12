@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import MainLayout from "@/components/main/MainLayout";
 import LeftSidebar from "@/components/main/LeftSidebar";
 import RightConfigurator from "@/components/main/RightConfigurator";
+import MobileConfigurator from "@/components/main/MobileConfigurator";
 import MenuModal from "@/components/main/MenuModal";
 import MobileMenuModal from "@/components/main/MobileMenuModal";
 import GalleryModal from "@/components/main/GalleryModal";
@@ -13,13 +14,14 @@ import CartModal from "@/components/main/CartModal";
 import MobileCartModal from "@/components/main/MobileCartModal";
 import ProductsModal from "@/components/main/ProductsModal";
 import MobileProductsModal from "@/components/main/MobileProductsModal";
+import MobilePrintsModal from "@/components/main/MobilePrintsModal";
 import CheckoutModal from "@/components/main/CheckoutModal";
 import OrderSuccessModal from "@/components/main/OrderSuccessModal";
 import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
 
 export default function Home() {
   const [activeModal, setActiveModal] = useState<
-    "menu" | "cart" | "gallery" | "products" | null
+    "menu" | "cart" | "gallery" | "products" | "prints" | null
   >(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -161,20 +163,34 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col justify-center md:flex-row gap-[78px]">
-          <LeftSidebar
-            onGalleryClick={() => setActiveModal("gallery")}
-            selectedPrint={selectedPrint}
-            onPrintSelect={setSelectedPrint}
-          />
+        <>
+          {/* Desktop Layout */}
+          <div className="hidden md:flex flex-col justify-center md:flex-row gap-[78px]">
+            <LeftSidebar
+              onGalleryClick={() => setActiveModal("gallery")}
+              selectedPrint={selectedPrint}
+              onPrintSelect={setSelectedPrint}
+            />
 
-          <RightConfigurator
-            selectedProduct={selectedProduct}
-            selectedPrint={selectedPrint}
-            onAddToCart={handleAddToCart}
-            onProductClick={() => setActiveModal("products")}
-          />
-        </div>
+            <RightConfigurator
+              selectedProduct={selectedProduct}
+              selectedPrint={selectedPrint}
+              onAddToCart={handleAddToCart}
+              onProductClick={() => setActiveModal("products")}
+            />
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden">
+            <MobileConfigurator
+              selectedProduct={selectedProduct}
+              selectedPrint={selectedPrint}
+              onAddToCart={handleAddToCart}
+              onProductClick={() => setActiveModal("products")}
+              onPrintClick={() => setActiveModal("prints")}
+            />
+          </div>
+        </>
       )}
 
       {/* Desktop Modals */}
@@ -235,6 +251,14 @@ export default function Home() {
         isOpen={activeModal === "products"}
         onClose={() => setActiveModal(null)}
         onSelectProduct={handleSelectProduct}
+      />
+
+      {/* Mobile Prints Modal */}
+      <MobilePrintsModal
+        isOpen={activeModal === "prints"}
+        onClose={() => setActiveModal(null)}
+        onSelectPrint={setSelectedPrint}
+        selectedPrint={selectedPrint}
       />
 
       <CheckoutModal
