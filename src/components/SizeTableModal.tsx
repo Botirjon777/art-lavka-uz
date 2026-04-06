@@ -1,7 +1,7 @@
 "use client";
 
 import Modal from "./Modal";
-import MobileModal from "./main/mobile/modals/MobileModal";
+import MobileModal from "@/features/client/home/modals/mobile/MobileModal";
 import { FiX } from "react-icons/fi";
 import { useIsMobile } from "@/hooks/useIsMobile";
 

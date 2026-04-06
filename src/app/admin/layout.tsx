@@ -1,7 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/features/admin/shared/components/AdminLayout";
 
 export default function AdminRootLayout({
   children,

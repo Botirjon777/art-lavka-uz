@@ -10,7 +10,8 @@
     "seed:products": "tsx scripts/seed-products.ts",
     "seed:prints": "tsx scripts/seed-prints.ts",
     "seed:gallery": "tsx scripts/seed-gallery.ts",
-    "seed:all": "npm run seed:products && npm run seed:prints && npm run seed:gallery"
+    "seed:all": "npm run seed:products && npm run seed:prints && npm run seed:gallery",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
