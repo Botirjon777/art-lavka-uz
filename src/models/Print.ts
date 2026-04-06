@@ -28,7 +28,6 @@ const PrintSchema = new Schema<IPrint>(
     category: {
       type: String,
       required: true,
-      enum: ["national", "stylish", "funny", "all"],
     },
     active: {
       type: Boolean,

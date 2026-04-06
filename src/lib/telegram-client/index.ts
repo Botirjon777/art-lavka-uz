@@ -50,6 +50,18 @@ export async function handleClientCallbackQuery(query: any) {
 
   if (!chatId || !data) return;
 
+  // Handle order button clicks
+  if (data.startsWith("order_")) {
+    const orderNumber = data.replace("order_", "");
+
+    // Answer the callback query first
+    await bot.answerCallbackQuery(query.id);
+
+    // Show order details
+    await handleTracking(bot, chatId, orderNumber);
+    return;
+  }
+
   if (data === "check_subscription") {
     const subscribed = await isSubscribed(bot, query.from.id);
     if (subscribed) {

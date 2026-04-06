@@ -7,9 +7,16 @@ export interface ProductInventory {
   XXL: number;
 }
 
+export interface ProductVariant {
+  size: string;
+  price: number;
+  stock: number;
+}
+
 export interface ProductColor {
   name: string;
   hex: string;
+  variants: ProductVariant[];
 }
 
 export interface Product {
@@ -27,6 +34,7 @@ export interface Product {
   description?: string;
   isNew?: boolean;
 }
+
 
 export interface PrintDesign {
   id?: string;

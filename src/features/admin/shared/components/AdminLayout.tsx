@@ -1,0 +1,123 @@
+"use client";
+
+import { ReactNode } from "react";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  FiHome,
+  FiShoppingBag,
+  FiImage,
+  FiGrid,
+  FiLogOut,
+  FiShoppingCart,
+} from "react-icons/fi";
+
+interface AdminLayoutProps {
+  children: ReactNode;
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  const { data: session, status } = useSession();
+  const pathname = usePathname();
+
+  const navigation = [
+    { name: "Панель управления", href: "/admin", icon: FiHome },
+    { name: "Продукты", href: "/admin/products", icon: FiShoppingBag },
+    { name: "Заказы", href: "/admin/orders", icon: FiShoppingCart },
+    {
+      name: "Категории принтов",
+      href: "/admin/prints/categories",
+      icon: FiGrid,
+    },
+    { name: "Принты", href: "/admin/prints", icon: FiImage },
+    { name: "Галерея", href: "/admin/gallery", icon: FiGrid },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === "/admin") {
+      return pathname === href;
+    }
+
+    // Check if the current pathname is exactly the href or a sub-page of the href
+    // and ensure we don't match partial paths that are full routes themselves
+    // e.g., /admin/prints/categories shouldn't highlight /admin/prints if categories is its own link
+    if (pathname === href) return true;
+
+    // Check if the current pathname is a sub-page of the href (e.g., /admin/prints/new)
+    // but ONLY if the href doesn't have a more specific sibling route that matches better.
+    // A simple way is to check if the next character after the match is a slash.
+    if (pathname?.startsWith(href + "/")) {
+      // If the current path is /admin/prints/categories, and we are checking /admin/prints,
+      // it matches. But we only want one to be active in the sidebar.
+      // So we check if there's an exact match for another navigation item.
+      const otherMatchingNav = navigation.find(
+        (item) => item.href !== href && pathname === item.href,
+      );
+      return !otherMatchingNav;
+    }
+
+    return false;
+  };
+
+  // If user is not authenticated and not on login page, don't show sidebar
+  const isLoginPage = pathname === "/admin/login";
+  const showSidebar = session && !isLoginPage;
+
+  return (
+    <div className="h-screen bg-[#F5F5F5] flex overflow-hidden">
+      {/* Sidebar - only show when authenticated and not on login page */}
+      {showSidebar && (
+        <aside className="w-72 bg-white shadow-lg flex flex-col shrink-0 h-full">
+          <div className="p-6 border-b border-gray-200 shrink-0">
+            <h1 className="text-2xl font-bold text-[#8814B1]">Art Lavka</h1>
+            <p className="text-sm text-gray-600 mt-1">Админ панель</p>
+          </div>
+
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive(item.href)
+                      ? "bg-[#8814B1] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="p-4 border-t border-gray-200 shrink-0">
+            <div className="mb-3 px-4">
+              <p className="text-sm font-medium text-gray-700 truncate">
+                {session?.user?.name}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {session?.user?.email}
+              </p>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/admin/login" })}
+              className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 rounded-xl transition-all"
+            >
+              <FiLogOut className="w-5 h-5" />
+              <span className="font-medium">Выйти</span>
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 h-full overflow-y-auto">
+        <div className="p-8">{children}</div>
+      </main>
+    </div>
+  );
+}

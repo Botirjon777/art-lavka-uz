@@ -94,14 +94,45 @@ export async function handleTracking(
         parse_mode: "Markdown",
       });
     } else {
-      let listMessage = `📋 **Найдено несколько заказов (${orders.length}):**\n\n`;
-      orders.forEach((o, i) => {
-        listMessage += `${i + 1}. #${o.orderNumber} - ${translateStatus(
-          o.status
-        )}\n`;
+      // Create inline keyboard buttons for each order
+      const keyboard = orders.map((order) => {
+        // Get last 5 characters of order number for display
+        const shortOrderId = order.orderNumber.slice(-5);
+
+        // Get full status text (emoji + text)
+        const statusText = translateStatus(order.status);
+
+        // Format date as DD.MM.YY
+        const orderDate = new Date(order.createdAt).toLocaleDateString(
+          "ru-RU",
+          {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+          }
+        );
+
+        // Button text: "...XXXXX | Доставлен | 12.01.26"
+        const buttonText = `...${shortOrderId} | ${statusText} | ${orderDate}`;
+
+        return [
+          {
+            text: buttonText,
+            callback_data: `order_${order.orderNumber}`,
+          },
+        ];
       });
-      listMessage += `\nВведите конкретный номер заказа (например, ORD-XXX), чтобы увидеть детали.`;
-      await bot.sendMessage(chatId, listMessage, { parse_mode: "Markdown" });
+
+      await bot.sendMessage(
+        chatId,
+        `📋 *Найдено несколько заказов (${orders.length}):*\n\nНажмите на заказ, чтобы увидеть детали:`,
+        {
+          parse_mode: "Markdown",
+          reply_markup: {
+            inline_keyboard: keyboard,
+          },
+        }
+      );
     }
   } catch (error) {
     console.error("❌ [Telegram Client] Error in tracking:", error);

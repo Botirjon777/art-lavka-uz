@@ -9,9 +9,16 @@ export interface ProductInventory {
   XXL: number;
 }
 
+export interface ProductVariant {
+  size: string;
+  price: number;
+  stock: number;
+}
+
 export interface ProductColor {
   name: string;
   hex: string;
+  variants: ProductVariant[];
 }
 
 export interface IProduct {
@@ -21,12 +28,11 @@ export interface IProduct {
   category: string;
   image: string;
   model: string; // Path to 3D model file
-  colors: ProductColor[]; // Available colors with name and hex
+  colors: ProductColor[]; // Available colors with variants
   sizes: string[]; // Available sizes
-  stock: number; // Total stock (calculated from inventory)
-  inventory: ProductInventory; // Stock per size
+  stock: number; // Total stock
   active: boolean;
-  featured?: boolean; // Featured/new product
+  featured?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,13 +64,20 @@ const ProductSchema = new Schema<IProduct>(
     },
     model: {
       type: String,
-      required: true,
+      default: "",
     },
     colors: {
       type: [
         {
           name: { type: String, required: true },
           hex: { type: String, required: true },
+          variants: [
+            {
+              size: { type: String, required: true },
+              price: { type: Number, required: true, min: 0 },
+              stock: { type: Number, required: true, min: 0 },
+            },
+          ],
         },
       ],
       required: true,
@@ -79,24 +92,6 @@ const ProductSchema = new Schema<IProduct>(
       type: Number,
       default: 0,
       min: 0,
-    },
-    inventory: {
-      type: {
-        XS: { type: Number, default: 0, min: 0 },
-        S: { type: Number, default: 0, min: 0 },
-        M: { type: Number, default: 0, min: 0 },
-        L: { type: Number, default: 0, min: 0 },
-        XL: { type: Number, default: 0, min: 0 },
-        XXL: { type: Number, default: 0, min: 0 },
-      },
-      default: {
-        XS: 0,
-        S: 0,
-        M: 0,
-        L: 0,
-        XL: 0,
-        XXL: 0,
-      },
     },
     featured: {
       type: Boolean,
