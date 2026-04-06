@@ -82,6 +82,7 @@ export default function GalleryList() {
                   alt={item.name}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                   <Link
