@@ -9,6 +9,7 @@ import { Product } from "../types";
 import { createProduct, updateProduct } from "../actions/products";
 import ColorPicker, { Color } from "./ColorPicker";
 import { ProductInventory } from "@/types";
+import { Button, Input, Textarea, Dropdown } from "@/components/ui";
 
 interface ProductFormProps {
   initialData?: Product & {
@@ -28,6 +29,7 @@ export default function ProductForm({
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialData?.image || "");
   const [colors, setColors] = useState<Color[]>(initialData?.colors || []);
+  const [category, setCategory] = useState(initialData?.category || "men");
 
   useEffect(() => {
     if (initialData) {
@@ -111,24 +113,21 @@ export default function ProductForm({
 
   return (
     <div className="w-full">
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex flex-col">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-500 hover:text-[#8814B1] mb-2 transition-colors"
-          >
-            <FiArrowLeft /> Назад
-          </button>
-          <h1 className="text-3xl font-bold text-gray-800">
-            {isEditing ? "Редактировать продукт" : "Добавить продукт"}
-          </h1>
-        </div>
+      <div className="flex justify-between items-center mb-5">
+        <Button
+          onClick={() => router.back()}
+          size="sm"
+          variant="outline"
+          className="flex items-center gap-2 text-gray-500 hover:text-[#8814B1] transition-colors"
+        >
+          <FiArrowLeft /> Назад
+        </Button>
       </div>
 
       <div className="mx-auto transition-all duration-300">
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-sm p-5 shadow-sm space-y-5 border border-gray-100"
+          className="bg-white p-5 shadow-sm space-y-5 border rounded-lg border-gray-100"
         >
           {/* Image Upload */}
           <div>
@@ -162,61 +161,39 @@ export default function ProductForm({
           </div>
 
           {/* Name */}
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-semibold text-gray-700 mb-2"
-            >
-              Название товара *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              required
-              defaultValue={initialData?.name}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#8814B1] focus:ring-2 focus:ring-purple-100 outline-none transition-all"
-              placeholder="Футболка овер сайз"
-            />
-          </div>
+          <Input
+            label="Название товара"
+            id="name"
+            name="name"
+            required
+            defaultValue={initialData?.name}
+            placeholder="Футболка овер сайз"
+          />
 
           {/* Description */}
-          <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-semibold text-gray-700 mb-2"
-            >
-              Описание
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={3}
-              defaultValue={initialData?.description}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#8814B1] focus:ring-2 focus:ring-purple-100 outline-none transition-all resize-none"
-              placeholder="Описание продукта..."
-            />
-          </div>
+          <Textarea
+            label="Описание"
+            id="description"
+            name="description"
+            rows={3}
+            defaultValue={initialData?.description}
+            placeholder="Описание продукта..."
+          />
 
           {/* Category */}
-          <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-semibold text-gray-700 mb-2"
-            >
-              Категория *
-            </label>
-            <select
-              id="category"
-              name="category"
+          <div className="relative">
+            <Dropdown
+              label="Категория"
+              options={[
+                { value: "women", label: "Женское" },
+                { value: "men", label: "Мужское" },
+                { value: "kids", label: "Детское" },
+              ]}
+              value={category}
+              onChange={setCategory}
               required
-              defaultValue={initialData?.category || "men"}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#8814B1] focus:ring-2 focus:ring-purple-100 outline-none bg-white transition-all"
-            >
-              <option value="women">Женское</option>
-              <option value="men">Мужское</option>
-              <option value="kids">Детское</option>
-            </select>
+            />
+            <input type="hidden" name="category" value={category} />
           </div>
 
           {/* Colors and Variants */}
@@ -245,18 +222,14 @@ export default function ProductForm({
             </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || !imageUrl}
-            className="p-2.5 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-md transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-2"
-          >
+          <Button type="submit" size="md" disabled={loading || !imageUrl}>
             <FiSave className="w-5 h-5" />
             {loading
               ? "Сохранение..."
               : isEditing
                 ? "Сохранить изменения"
                 : "Создать продукт"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

@@ -27,7 +27,9 @@ export default function ColorPicker({
   const [colorHex, setColorHex] = useState("#000000");
 
   // Variant Modal State
-  const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(null);
+  const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(
+    null,
+  );
   const [localVariants, setLocalVariants] = useState<ProductVariant[]>([]);
 
   const commonSizes = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -62,7 +64,11 @@ export default function ColorPicker({
     setColorHex("#000000");
   };
 
-  const handleLocalVariantChange = (size: string, field: 'price' | 'stock', value: string) => {
+  const handleLocalVariantChange = (
+    size: string,
+    field: "price" | "stock",
+    value: string,
+  ) => {
     setLocalVariants((prev) => {
       const updated = [...prev];
       let variant = updated.find((v) => v.size === size);
@@ -93,9 +99,9 @@ export default function ColorPicker({
 
   const removeVariant = (colorIndex: number, variantIndex: number) => {
     const updatedColors = [...colors];
-    updatedColors[colorIndex].variants = updatedColors[colorIndex].variants.filter(
-      (_, i) => i !== variantIndex
-    );
+    updatedColors[colorIndex].variants = updatedColors[
+      colorIndex
+    ].variants.filter((_, i) => i !== variantIndex);
     onChange(updatedColors);
   };
 
@@ -243,8 +249,10 @@ export default function ColorPicker({
             <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-1 gap-4">
                 {commonSizes.map((size) => {
-                  const variant = localVariants.find(v => v.size === size) || { size, price: 0, stock: 0 };
-                  
+                  const variant = localVariants.find(
+                    (v) => v.size === size,
+                  ) || { size, price: 0, stock: 0 };
+
                   return (
                     <div
                       key={size}
@@ -264,7 +272,13 @@ export default function ColorPicker({
                           <input
                             type="number"
                             value={variant.price || ""}
-                            onChange={(e) => handleLocalVariantChange(size, 'price', e.target.value)}
+                            onChange={(e) =>
+                              handleLocalVariantChange(
+                                size,
+                                "price",
+                                e.target.value,
+                              )
+                            }
                             placeholder="0"
                             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
                           />
@@ -276,7 +290,13 @@ export default function ColorPicker({
                           <input
                             type="number"
                             value={variant.stock || ""}
-                            onChange={(e) => handleLocalVariantChange(size, 'stock', e.target.value)}
+                            onChange={(e) =>
+                              handleLocalVariantChange(
+                                size,
+                                "stock",
+                                e.target.value,
+                              )
+                            }
                             placeholder="0"
                             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
                           />
