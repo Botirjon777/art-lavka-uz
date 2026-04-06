@@ -144,6 +144,7 @@ export default function HomeContainer() {
     <MainLayout
       onMenuClick={() => setActiveModal(activeModal === "menu" ? null : "menu")}
       onCartClick={() => setActiveModal(activeModal === "cart" ? null : "cart")}
+      onCloseModal={() => setActiveModal(null)}
       cartItemCount={cartItems.length}
       activeModal={activeModal}
     >
