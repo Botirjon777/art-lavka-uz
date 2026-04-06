@@ -24,28 +24,28 @@ const fetchLowStockProducts = async (threshold: number = 5) => {
       L: 0,
       XL: 0,
       XXL: 0,
-      XXXL: 0,
     };
 
-    let hasLowStock = false;
+    let hasLowStockTotal = false;
 
-    if (product.inventory) {
-      Object.entries(product.inventory).forEach(([size, quantity]) => {
-        const qty = Number(quantity);
-        allSizes[size] = qty;
-
-        if (qty <= threshold) {
-          hasLowStock = true;
-        }
+    if (product.colors) {
+      product.colors.forEach((color: any) => {
+        color.variants.forEach((v: any) => {
+          const qty = Number(v.stock) || 0;
+          allSizes[v.size] = (allSizes[v.size] || 0) + qty;
+          if (qty <= threshold) {
+            hasLowStockTotal = true;
+          }
+        });
       });
     }
 
-    if (hasLowStock) {
+    if (hasLowStockTotal) {
       lowStockItems.push({
         productId: product._id?.toString() || "",
         productName: product.name,
         allSizes,
-        hasLowStock,
+        hasLowStock: hasLowStockTotal,
       });
     }
   });

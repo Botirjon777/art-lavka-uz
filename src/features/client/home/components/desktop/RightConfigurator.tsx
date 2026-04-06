@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "../shared/TShirtScene";
 import SizeTableModal from "@/components/SizeTableModal";
@@ -18,53 +18,35 @@ export default function RightConfigurator({
   onAddToCart,
   onProductClick,
 }: RightConfiguratorProps) {
-  const productColors: ProductColor[] = selectedProduct.colors || [
-    { name: "Белый", hex: "#FFFFFF" },
-  ];
-  const productSizes = selectedProduct.sizes || ["XS", "S", "M", "L", "XL"];
-
+  const productColors = selectedProduct.colors || [];
   const [selectedColor, setSelectedColor] = useState<ProductColor>(
-    productColors[0]
+    productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] }
   );
-  const [selectedSize, setSelectedSize] = useState(productSizes[0]);
+
+  // Get sizes available FOR THE SELECTED COLOR
+  const availableVariants = selectedColor.variants || [];
+  const productSizes = availableVariants.map(v => v.size);
+
+  const [selectedSize, setSelectedSize] = useState(productSizes[0] || "");
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
-  // Get size-specific stock
-  const inventory = selectedProduct.inventory || {
-    XS: 0,
-    S: 0,
-    M: 0,
-    L: 0,
-    XL: 0,
-    XXL: 0,
-  };
-
-  const getInventoryStock = (sizeToFind: string) => {
-    if (!sizeToFind) return 0;
-    const s = sizeToFind.trim().toUpperCase();
-
-    // 1. Try exact match
-    if (inventory[s as keyof typeof inventory] !== undefined) {
-      return Number(inventory[s as keyof typeof inventory]);
+  // Reset selected size when color changes
+  useEffect(() => {
+    if (selectedColor.variants.length > 0) {
+      setSelectedSize(selectedColor.variants[0].size);
+    } else {
+      setSelectedSize("");
     }
+  }, [selectedColor]);
 
-    // 2. Try prefix match for sizes like "XS (48)"
-    const sizeKeys = ["XXL", "XL", "XS", "S", "M", "L"];
-    for (const key of sizeKeys) {
-      if (s.startsWith(key)) {
-        return Number(inventory[key as keyof typeof inventory]);
-      }
-    }
-    return 0;
-  };
-
-  const sizeStock = getInventoryStock(selectedSize);
+  const selectedVariant = selectedColor.variants.find(v => v.size === selectedSize);
+  const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
-  const maxStock = Math.min(sizeStock, 10); // Limit to 10 or available stock
-  const price = selectedProduct.price;
+  const price = selectedVariant?.price || selectedProduct.price;
 
   const handleAddToCart = () => {
+    if (!selectedSize) return;
     onAddToCart({
       selectedPrint,
       selectedColor: selectedColor.name,
@@ -124,21 +106,20 @@ export default function RightConfigurator({
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  {productSizes.map((size) => {
-                    const stock = getInventoryStock(size);
-                    if (stock === 0) return null;
+                  {availableVariants.map((v) => {
+                    if (v.stock === 0) return null;
 
                     return (
                       <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
+                        key={v.size}
+                        onClick={() => setSelectedSize(v.size)}
                         className={`py-2.5 px-3 text-[14px]/[17px] rounded-xl transition-all ${
-                          selectedSize === size
+                          selectedSize === v.size
                             ? "bg-[#00C6F1] text-white"
                             : "bg-white text-[#333333] cursor-pointer"
                         }`}
                       >
-                        {size}
+                        {v.size}
                       </button>
                     );
                   })}

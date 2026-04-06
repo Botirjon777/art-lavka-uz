@@ -33,16 +33,22 @@ export async function createProduct(formData: FormData) {
   try {
     await dbConnect();
 
-    const inventory = JSON.parse((formData.get("inventory") as string) || "{}");
+    const colors = JSON.parse((formData.get("colors") as string) || "[]");
 
-    // Calculate total stock and derive available sizes
-    const sizeKeys = ["XS", "S", "M", "L", "XL", "XXL"];
-    const availableSizes: string[] = [];
-    const totalStock = sizeKeys.reduce((sum, key) => {
-      const count = Number(inventory[key]) || 0;
-      if (count > 0) availableSizes.push(key);
-      return sum + count;
-    }, 0);
+    // Calculate total stock and derive available sizes from variants
+    const availableSizesSet = new Set<string>();
+    let totalStock = 0;
+    
+    colors.forEach((color: any) => {
+      if (color.variants) {
+        color.variants.forEach((v: any) => {
+          totalStock += Number(v.stock) || 0;
+          if (v.stock > 0) {
+            availableSizesSet.add(v.size);
+          }
+        });
+      }
+    });
 
     const productData = {
       name: formData.get("name") as string,
@@ -51,10 +57,9 @@ export async function createProduct(formData: FormData) {
       category: formData.get("category") as string,
       image: formData.get("image") as string,
       model: formData.get("model") as string,
-      colors: JSON.parse((formData.get("colors") as string) || "[]"),
-      sizes: availableSizes,
+      colors: colors,
+      sizes: Array.from(availableSizesSet),
       stock: totalStock,
-      inventory: inventory,
       featured: formData.get("featured") === "true",
       active: formData.get("active") === "true",
     };
@@ -72,16 +77,22 @@ export async function updateProduct(id: string, formData: FormData) {
   try {
     await dbConnect();
 
-    const inventory = JSON.parse((formData.get("inventory") as string) || "{}");
+    const colors = JSON.parse((formData.get("colors") as string) || "[]");
 
-    // Calculate total stock and derive available sizes
-    const sizeKeys = ["XS", "S", "M", "L", "XL", "XXL"];
-    const availableSizes: string[] = [];
-    const totalStock = sizeKeys.reduce((sum, key) => {
-      const count = Number(inventory[key]) || 0;
-      if (count > 0) availableSizes.push(key);
-      return sum + count;
-    }, 0);
+    // Calculate total stock and derive available sizes from variants
+    const availableSizesSet = new Set<string>();
+    let totalStock = 0;
+    
+    colors.forEach((color: any) => {
+      if (color.variants) {
+        color.variants.forEach((v: any) => {
+          totalStock += Number(v.stock) || 0;
+          if (v.stock > 0) {
+            availableSizesSet.add(v.size);
+          }
+        });
+      }
+    });
 
     const productData = {
       name: formData.get("name") as string,
@@ -90,10 +101,9 @@ export async function updateProduct(id: string, formData: FormData) {
       category: formData.get("category") as string,
       image: formData.get("image") as string,
       model: formData.get("model") as string,
-      colors: JSON.parse((formData.get("colors") as string) || "[]"),
-      sizes: availableSizes,
+      colors: colors,
+      sizes: Array.from(availableSizesSet),
       stock: totalStock,
-      inventory: inventory,
       featured: formData.get("featured") === "true",
       active: formData.get("active") === "true",
     };

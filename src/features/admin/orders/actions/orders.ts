@@ -27,6 +27,7 @@ export async function createOrder(orderData: {
     // Step 1: Validate stock availability for all items
     const itemsToValidate = orderData.items.map((item) => ({
       productId: item.product._id,
+      color: item.color,
       size: item.size,
       quantity: item.quantity,
     }));

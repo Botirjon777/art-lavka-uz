@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { FiPlus, FiX } from "react-icons/fi";
+import { FiPlus, FiX, FiTrash2 } from "react-icons/fi";
+import { ProductVariant } from "@/types";
 
 export interface Color {
   name: string;
   hex: string;
+  variants: ProductVariant[];
 }
 
 interface ColorPickerProps {
@@ -24,6 +26,11 @@ export default function ColorPicker({
   const [colorName, setColorName] = useState("");
   const [colorHex, setColorHex] = useState("#000000");
 
+  // Variant Modal State
+  const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(null);
+
+  const commonSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+
   // Sync internal hex to parent for live preview
   const handleHexChange = (hex: string) => {
     setColorHex(hex);
@@ -39,11 +46,46 @@ export default function ColorPicker({
     const newColor: Color = {
       name: colorName.trim(),
       hex: colorHex,
+      variants: [],
     };
 
     onChange([...colors, newColor]);
     setColorName("");
     setColorHex("#000000");
+  };
+
+  const handleVariantChange = (size: string, field: 'price' | 'stock', value: string) => {
+    if (selectedColorIndex === null) return;
+
+    const updatedColors = [...colors];
+    const currentColor = updatedColors[selectedColorIndex];
+
+    if (!currentColor.variants) {
+      currentColor.variants = [];
+    }
+
+    let variant = currentColor.variants.find(v => v.size === size);
+
+    if (!variant) {
+      variant = { size, price: 0, stock: 0 };
+      currentColor.variants.push(variant);
+    }
+
+    if (field === 'price') {
+      variant.price = Number(value);
+    } else {
+      variant.stock = Number(value);
+    }
+
+    onChange(updatedColors);
+  };
+
+  const removeVariant = (colorIndex: number, variantIndex: number) => {
+    const updatedColors = [...colors];
+    updatedColors[colorIndex].variants = updatedColors[colorIndex].variants.filter(
+      (_, i) => i !== variantIndex
+    );
+    onChange(updatedColors);
   };
 
   const removeColor = (index: number) => {
@@ -131,12 +173,17 @@ export default function ColorPicker({
                 {/* Color Info */}
                 <div
                   className="flex-1 cursor-pointer"
-                  onClick={() => onPreview && onPreview(color.hex)}
+                  onClick={() => setSelectedColorIndex(index)}
                 >
                   <p className="font-medium text-gray-800">{color.name}</p>
-                  <p className="text-sm text-gray-500 font-mono uppercase">
-                    {color.hex}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-500 font-mono uppercase">
+                      {color.hex}
+                    </p>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                      {color.variants?.length || 0} вар.
+                    </span>
+                  </div>
                 </div>
 
                 {/* Remove Button */}
@@ -149,6 +196,97 @@ export default function ColorPicker({
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Variants Modal */}
+      {selectedColorIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setSelectedColorIndex(null)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Modal Header */}
+            <div className="p-4 border-b flex items-center justify-between bg-gray-50">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded-full border border-gray-200"
+                  style={{ backgroundColor: colors[selectedColorIndex].hex }}
+                />
+                <h3 className="font-bold text-gray-800">
+                  Варианты для "{colors[selectedColorIndex].name}"
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedColorIndex(null)}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-1 gap-4">
+                {commonSizes.map((size) => {
+                  const variant = colors[selectedColorIndex].variants?.find(v => v.size === size) || { size, price: 0, stock: 0 };
+                  
+                  return (
+                    <div
+                      key={size}
+                      className="flex items-center gap-4 p-4 border rounded-xl bg-gray-50 border-gray-100 hover:border-[#8814B1]/30 transition-colors"
+                    >
+                      {/* Size Badge */}
+                      <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center font-bold text-[#8814B1] border border-gray-100 shrink-0">
+                        {size}
+                      </div>
+
+                      {/* Inputs Grid */}
+                      <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
+                            Цена (сум)
+                          </label>
+                          <input
+                            type="number"
+                            value={variant.price || ""}
+                            onChange={(e) => handleVariantChange(size, 'price', e.target.value)}
+                            placeholder="0"
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
+                            Количество
+                          </label>
+                          <input
+                            type="number"
+                            value={variant.stock || ""}
+                            onChange={(e) => handleVariantChange(size, 'stock', e.target.value)}
+                            placeholder="0"
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-gray-50 border-t flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedColorIndex(null)}
+                className="px-6 py-2 bg-gray-800 text-white rounded-lg text-sm font-bold hover:bg-gray-700 transition-colors"
+              >
+                Готово
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ import Product from "@/models/Product";
 export async function validateStock(
   items: Array<{
     productId: string;
+    color: string;
     size: string;
     quantity: number;
   }>
@@ -17,6 +18,7 @@ export async function validateStock(
     const validatedItems: Array<{
       productId: string;
       productName: string;
+      color: string;
       size: string;
       quantity: number;
       availableStock: number;
@@ -30,17 +32,25 @@ export async function validateStock(
         continue;
       }
 
-      const availableStock =
-        product.inventory?.[item.size as keyof typeof product.inventory] || 0;
+      // Find the color variant
+      const colorData = product.colors?.find((c: any) => c.name === item.color);
+      if (!colorData) {
+        validationErrors.push(`${product.name} (Color: ${item.color}) - This color is not available.`);
+        continue;
+      }
+
+      const variant = colorData.variants?.find((v: any) => v.size === item.size);
+      const availableStock = variant ? variant.stock : 0;
 
       if (availableStock < item.quantity) {
         validationErrors.push(
-          `${product.name} (Size: ${item.size}) - Only ${availableStock} available, you requested ${item.quantity}`
+          `${product.name} (${item.color}, Size: ${item.size}) - Only ${availableStock} available, you requested ${item.quantity}`
         );
       } else {
         validatedItems.push({
           productId: item.productId,
           productName: product.name,
+          color: item.color,
           size: item.size,
           quantity: item.quantity,
           availableStock,
@@ -71,6 +81,7 @@ export async function validateStock(
 export async function decrementStock(
   items: Array<{
     productId: string;
+    color: string;
     size: string;
     quantity: number;
   }>
@@ -79,27 +90,29 @@ export async function decrementStock(
     await dbConnect();
 
     for (const item of items) {
-      // Fetch current product to check stock
       const product = await Product.findById(item.productId);
-
       if (!product) continue;
 
-      const currentStock =
-        product.inventory?.[item.size as keyof typeof product.inventory] || 0;
+      const newColors = [...(product.colors || [])];
+      const colorIdx = newColors.findIndex((c: any) => c.name === item.color);
+      if (colorIdx === -1) continue;
+
+      if (!newColors[colorIdx].variants) continue;
+      const variantIdx = newColors[colorIdx].variants.findIndex((v: any) => v.size === item.size);
+      if (variantIdx === -1) continue;
+
+      const currentStock = newColors[colorIdx].variants[variantIdx].stock;
       const newStock = Math.max(0, currentStock - item.quantity);
       const stockDiff = currentStock - newStock;
+
+      newColors[colorIdx].variants[variantIdx].stock = newStock;
 
       await Product.findByIdAndUpdate(
         item.productId,
         {
-          $set: {
-            [`inventory.${item.size}`]: newStock,
-          },
-          $inc: {
-            stock: -stockDiff,
-          },
-        },
-        { new: true }
+          $set: { colors: newColors },
+          $inc: { stock: -stockDiff },
+        }
       );
     }
 
