@@ -25,6 +25,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: "Панель управления", href: "/admin", icon: FiHome },
     { name: "Продукты", href: "/admin/products", icon: FiShoppingBag },
     { name: "Заказы", href: "/admin/orders", icon: FiShoppingCart },
+    {
+      name: "Категории принтов",
+      href: "/admin/prints/categories",
+      icon: FiGrid,
+    },
     { name: "Принты", href: "/admin/prints", icon: FiImage },
     { name: "Галерея", href: "/admin/gallery", icon: FiGrid },
   ];
@@ -33,7 +38,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     if (href === "/admin") {
       return pathname === href;
     }
-    return pathname?.startsWith(href);
+
+    // Check if the current pathname is exactly the href or a sub-page of the href
+    // and ensure we don't match partial paths that are full routes themselves
+    // e.g., /admin/prints/categories shouldn't highlight /admin/prints if categories is its own link
+    if (pathname === href) return true;
+
+    // Check if the current pathname is a sub-page of the href (e.g., /admin/prints/new)
+    // but ONLY if the href doesn't have a more specific sibling route that matches better.
+    // A simple way is to check if the next character after the match is a slash.
+    if (pathname?.startsWith(href + "/")) {
+      // If the current path is /admin/prints/categories, and we are checking /admin/prints,
+      // it matches. But we only want one to be active in the sidebar.
+      // So we check if there's an exact match for another navigation item.
+      const otherMatchingNav = navigation.find(
+        (item) => item.href !== href && pathname === item.href,
+      );
+      return !otherMatchingNav;
+    }
+
+    return false;
   };
 
   // If user is not authenticated and not on login page, don't show sidebar
@@ -44,7 +68,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="h-screen bg-[#F5F5F5] flex overflow-hidden">
       {/* Sidebar - only show when authenticated and not on login page */}
       {showSidebar && (
-        <aside className="w-64 bg-white shadow-lg flex flex-col shrink-0 h-full">
+        <aside className="w-72 bg-white shadow-lg flex flex-col shrink-0 h-full">
           <div className="p-6 border-b border-gray-200 shrink-0">
             <h1 className="text-2xl font-bold text-[#8814B1]">Art Lavka</h1>
             <p className="text-sm text-gray-600 mt-1">Админ панель</p>

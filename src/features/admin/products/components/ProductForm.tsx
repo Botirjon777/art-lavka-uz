@@ -11,11 +11,18 @@ import ColorPicker, { Color } from "./ColorPicker";
 import { ProductInventory } from "@/types";
 
 interface ProductFormProps {
-  initialData?: Product & { model?: string; colors?: Color[]; inventory?: ProductInventory };
+  initialData?: Product & {
+    model?: string;
+    colors?: Color[];
+    inventory?: ProductInventory;
+  };
   isEditing?: boolean;
 }
 
-export default function ProductForm({ initialData, isEditing = false }: ProductFormProps) {
+export default function ProductForm({
+  initialData,
+  isEditing = false,
+}: ProductFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -72,8 +79,8 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
 
     // Calculate base price if needed (e.g. min price across all variants)
     let minPrice = Infinity;
-    colors.forEach(c => {
-      c.variants?.forEach(v => {
+    colors.forEach((c) => {
+      c.variants?.forEach((v) => {
         if (v.price < minPrice) minPrice = v.price;
       });
     });
@@ -82,12 +89,15 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
     }
 
     try {
-      const result = isEditing && initialData
-        ? await updateProduct(initialData._id, formData)
-        : await createProduct(formData);
+      const result =
+        isEditing && initialData
+          ? await updateProduct(initialData._id, formData)
+          : await createProduct(formData);
 
       if (result.success) {
-        toast.success(isEditing ? "Изменения сохранены" : "Продукт успешно создан");
+        toast.success(
+          isEditing ? "Изменения сохранены" : "Продукт успешно создан",
+        );
         router.push("/admin/products");
       } else {
         toast.error(result.error || "Не удалось сохранить продукт");
@@ -115,10 +125,10 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto transition-all duration-300">
+      <div className="mx-auto transition-all duration-300">
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-[20px] p-8 shadow-sm space-y-6 border border-gray-100"
+          className="bg-white rounded-sm p-5 shadow-sm space-y-5 border border-gray-100"
         >
           {/* Image Upload */}
           <div>
@@ -211,13 +221,10 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
 
           {/* Colors and Variants */}
           <div>
-            <label className="block text-xl font-bold text-gray-800 mb-4 border-b pb-2">
+            <label className="block text-xl font-bold text-gray-800 mb-4">
               Цвета, Размеры и Цены
             </label>
-            <ColorPicker
-              colors={colors}
-              onChange={setColors}
-            />
+            <ColorPicker colors={colors} onChange={setColors} />
           </div>
 
           {/* Active Status */}
@@ -241,10 +248,14 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
           <button
             type="submit"
             disabled={loading || !imageUrl}
-            className="w-full py-4 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-2xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-2"
+            className="p-2.5 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-bold rounded-md transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-lg flex items-center justify-center gap-2"
           >
             <FiSave className="w-5 h-5" />
-            {loading ? "Сохранение..." : isEditing ? "Сохранить изменения" : "Создать продукт"}
+            {loading
+              ? "Сохранение..."
+              : isEditing
+                ? "Сохранить изменения"
+                : "Создать продукт"}
           </button>
         </form>
       </div>

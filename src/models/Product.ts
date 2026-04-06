@@ -64,7 +64,7 @@ const ProductSchema = new Schema<IProduct>(
     },
     model: {
       type: String,
-      required: true,
+      default: "",
     },
     colors: {
       type: [

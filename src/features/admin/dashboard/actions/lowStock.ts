@@ -30,7 +30,7 @@ const fetchLowStockProducts = async (threshold: number = 5) => {
 
     if (product.colors) {
       product.colors.forEach((color: any) => {
-        color.variants.forEach((v: any) => {
+        color.variants?.forEach((v: any) => {
           const qty = Number(v.stock) || 0;
           allSizes[v.size] = (allSizes[v.size] || 0) + qty;
           if (qty <= threshold) {

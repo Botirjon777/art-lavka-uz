@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiPlus, FiX, FiTrash2 } from "react-icons/fi";
 import { ProductVariant } from "@/types";
 
@@ -28,8 +28,16 @@ export default function ColorPicker({
 
   // Variant Modal State
   const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(null);
+  const [localVariants, setLocalVariants] = useState<ProductVariant[]>([]);
 
   const commonSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+
+  // Sync local variants when modal opens
+  useEffect(() => {
+    if (selectedColorIndex !== null) {
+      setLocalVariants(colors[selectedColorIndex].variants || []);
+    }
+  }, [selectedColorIndex, colors]);
 
   // Sync internal hex to parent for live preview
   const handleHexChange = (hex: string) => {
@@ -54,30 +62,33 @@ export default function ColorPicker({
     setColorHex("#000000");
   };
 
-  const handleVariantChange = (size: string, field: 'price' | 'stock', value: string) => {
+  const handleLocalVariantChange = (size: string, field: 'price' | 'stock', value: string) => {
+    setLocalVariants((prev) => {
+      const updated = [...prev];
+      let variant = updated.find((v) => v.size === size);
+
+      if (!variant) {
+        variant = { size, price: 0, stock: 0 };
+        updated.push(variant);
+      }
+
+      if (field === "price") {
+        variant.price = Number(value);
+      } else {
+        variant.stock = Number(value);
+      }
+
+      return updated;
+    });
+  };
+
+  const handleSaveVariants = () => {
     if (selectedColorIndex === null) return;
 
     const updatedColors = [...colors];
-    const currentColor = updatedColors[selectedColorIndex];
-
-    if (!currentColor.variants) {
-      currentColor.variants = [];
-    }
-
-    let variant = currentColor.variants.find(v => v.size === size);
-
-    if (!variant) {
-      variant = { size, price: 0, stock: 0 };
-      currentColor.variants.push(variant);
-    }
-
-    if (field === 'price') {
-      variant.price = Number(value);
-    } else {
-      variant.stock = Number(value);
-    }
-
+    updatedColors[selectedColorIndex].variants = localVariants;
     onChange(updatedColors);
+    setSelectedColorIndex(null);
   };
 
   const removeVariant = (colorIndex: number, variantIndex: number) => {
@@ -232,7 +243,7 @@ export default function ColorPicker({
             <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-1 gap-4">
                 {commonSizes.map((size) => {
-                  const variant = colors[selectedColorIndex].variants?.find(v => v.size === size) || { size, price: 0, stock: 0 };
+                  const variant = localVariants.find(v => v.size === size) || { size, price: 0, stock: 0 };
                   
                   return (
                     <div
@@ -253,7 +264,7 @@ export default function ColorPicker({
                           <input
                             type="number"
                             value={variant.price || ""}
-                            onChange={(e) => handleVariantChange(size, 'price', e.target.value)}
+                            onChange={(e) => handleLocalVariantChange(size, 'price', e.target.value)}
                             placeholder="0"
                             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
                           />
@@ -265,7 +276,7 @@ export default function ColorPicker({
                           <input
                             type="number"
                             value={variant.stock || ""}
-                            onChange={(e) => handleVariantChange(size, 'stock', e.target.value)}
+                            onChange={(e) => handleLocalVariantChange(size, 'stock', e.target.value)}
                             placeholder="0"
                             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
                           />
@@ -278,13 +289,20 @@ export default function ColorPicker({
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-gray-50 border-t flex justify-end">
+            <div className="p-4 bg-gray-50 border-t flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setSelectedColorIndex(null)}
-                className="px-6 py-2 bg-gray-800 text-white rounded-lg text-sm font-bold hover:bg-gray-700 transition-colors"
+                className="px-6 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors"
               >
-                Готово
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveVariants}
+                className="px-6 py-2 bg-[#8814B1] text-white rounded-lg text-sm font-bold hover:bg-[#8814B1]/90 transition-colors"
+              >
+                Сохранить
               </button>
             </div>
           </div>
