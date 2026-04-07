@@ -9,6 +9,7 @@ import { FiPlus, FiEdit2, FiTrash2, FiLayers } from "react-icons/fi";
 import { Button } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { Print, PrintCategory } from "@/types";
+import Loader from "@/components/Loader";
 
 export default function PrintList() {
   const { data: prints = [], isLoading: printsLoading } = useAdminPrints();
@@ -78,10 +79,7 @@ export default function PrintList() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mb-4"></div>
-          <p className="text-gray-400 font-medium">Загрузка коллекции...</p>
-        </div>
+        <Loader />
       ) : filteredPrints.length === 0 ? (
         <div className="bg-white rounded-[40px] p-20 text-center border-2 border-dashed border-gray-100 max-w-2xl mx-auto">
           <div className="w-24 h-24 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-6 text-[#8814B1]">

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getProductById } from "../actions/products";
 import ProductForm from "./ProductForm";
 import toast from "react-hot-toast";
+import Loader from "@/components/Loader";
 
 export default function ProductEdit() {
   const { id } = useParams();
@@ -37,11 +38,7 @@ export default function ProductEdit() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">Загрузка данных...</p>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!product) return null;

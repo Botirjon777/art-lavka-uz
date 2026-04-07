@@ -15,6 +15,7 @@ import {
 } from "react-icons/fi";
 import { Order, OrderItem, OrderStatus, PaymentStatus } from "@/types";
 import Dropdown from "@/components/ui/Dropdown";
+import Loader from "@/components/Loader";
 
 export default function OrderDetail() {
   const params = useParams();
@@ -38,12 +39,7 @@ export default function OrderDetail() {
   const updating = updateStatusMutation.isPending;
 
   if (loading) {
-    return (
-      <div className="text-center py-24">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
-        <p className="text-gray-500 font-medium">Загрузка данных заказа...</p>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!order) {

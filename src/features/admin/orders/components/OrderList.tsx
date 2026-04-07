@@ -5,6 +5,7 @@ import { useAdminOrders } from "../hooks/useOrders";
 import Link from "next/link";
 import { FiEye } from "react-icons/fi";
 import { Order, OrderStatus } from "@/types";
+import Loader from "@/components/Loader";
 
 export default function OrderList() {
   const { data: orders = [], isLoading: loading } = useAdminOrders();
@@ -93,10 +94,7 @@ export default function OrderList() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
-          <p className="text-gray-500 font-medium">Загрузка заказов...</p>
-        </div>
+        <Loader />
       ) : filteredOrders.length === 0 ? (
         <div className="bg-white rounded-[32px] p-20 text-center shadow-sm border border-gray-100">
           <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
