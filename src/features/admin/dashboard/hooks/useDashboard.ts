@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAdminStats } from "../actions/stats";
-import { getSalesAnalytics } from "../actions/analytics";
-import { getLowStockProducts } from "../actions/lowStock";
+import {
+  getAdminStats,
+  getSalesAnalytics,
+  getLowStockProducts,
+} from "../actions/dashboard";
 
 export const useAdminDashboardData = () => {
   return useQuery({

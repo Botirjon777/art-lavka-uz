@@ -1,11 +1,45 @@
 "use server";
 
 import dbConnect from "@/lib/mongodb";
+import Product from "@/models/Product";
+import Print from "@/models/Print";
+import Gallery from "@/models/Gallery";
 import Order from "@/models/Order";
 
+/**
+ * Fetches general statistics for the admin dashboard.
+ */
+export async function getAdminStats() {
+  try {
+    await dbConnect();
+
+    const [productCount, printCount, galleryCount] = await Promise.all([
+      Product.countDocuments({}),
+      Print.countDocuments({}),
+      Gallery.countDocuments({}),
+    ]);
+
+    return {
+      success: true,
+      stats: {
+        products: productCount,
+        prints: printCount,
+        gallery: galleryCount,
+      },
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: "Failed to fetch stats",
+    };
+  }
+}
+
+/**
+ * Fetches sales analytics for a given date range.
+ */
 export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
   try {
-    console.log("📊 [ANALYTICS] Fetching sales analytics...");
     await dbConnect();
 
     const dateFilter: any = {};
@@ -16,7 +50,6 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
     }
 
     const orders = await Order.find(dateFilter).lean();
-    console.log(`📦 [ANALYTICS] Found ${orders.length} orders`);
 
     // Sales Overview
     const totalRevenue = (orders as any[]).reduce(
@@ -157,7 +190,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
       salesByRegion[region].orders += 1;
     });
 
-    const stats = {
+    const analytics = {
       overview: {
         totalRevenue,
         totalOrders,
@@ -191,17 +224,77 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
       ),
     };
 
-    console.log("✅ [ANALYTICS] Analytics fetched successfully");
-
     return {
       success: true,
-      analytics: stats,
+      analytics,
     };
   } catch (error: any) {
-    console.error("❌ [ANALYTICS] Error fetching sales analytics:", error);
     return {
       success: false,
       error: "Failed to fetch analytics data",
+    };
+  }
+}
+
+/**
+ * Fetches products that are low in stock.
+ */
+export async function getLowStockProducts(threshold: number = 5) {
+  try {
+    await dbConnect();
+
+    const products = await Product.find({ active: true }).lean();
+
+    const lowStockItems: Array<{
+      productId: string;
+      productName: string;
+      allSizes: Record<string, number>;
+      hasLowStock: boolean;
+    }> = [];
+
+    (products as any[]).forEach((product: any) => {
+      const allSizes: Record<string, number> = {
+        XS: 0,
+        S: 0,
+        M: 0,
+        L: 0,
+        XL: 0,
+        XXL: 0,
+      };
+
+      let hasLowStockTotal = false;
+
+      if (product.colors) {
+        product.colors.forEach((color: any) => {
+          color.variants?.forEach((v: any) => {
+            const qty = Number(v.stock) || 0;
+            allSizes[v.size] = (allSizes[v.size] || 0) + qty;
+            if (qty <= threshold) {
+              hasLowStockTotal = true;
+            }
+          });
+        });
+      }
+
+      if (hasLowStockTotal) {
+        lowStockItems.push({
+          productId: product._id?.toString() || "",
+          productName: product.name,
+          allSizes,
+          hasLowStock: hasLowStockTotal,
+        });
+      }
+    });
+
+    return {
+      success: true,
+      lowStockItems,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: "Failed to fetch low stock products",
+      lowStockItems: [],
     };
   }
 }
