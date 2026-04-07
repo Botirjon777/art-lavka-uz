@@ -17,6 +17,9 @@ import { TbRotate3D } from "react-icons/tb";
 import { Tooltip } from "@/components/ui";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
+// Global texture cache to prevent re-loading and re-uploading to GPU
+const textureCache: { [url: string]: THREE.Texture } = {};
+
 interface TShirtModelProps {
   selectedPrint: PrintDesign | null;
   selectedColor: string;
@@ -48,40 +51,37 @@ function TShirtModel({
       return;
     }
 
-    setIsLoadingTextures(true);
-    const loader = new THREE.TextureLoader();
-    let frontLoaded = false;
-    let backLoaded = !selectedPrint.backImage; // If no back image, consider it loaded
-
-    const checkAllLoaded = () => {
-      if (frontLoaded && backLoaded) {
-        setIsLoadingTextures(false);
+    const loadTexture = (url: string, setTexture: (t: THREE.Texture) => void): Promise<void> => {
+      if (textureCache[url]) {
+        setTexture(textureCache[url]);
+        return Promise.resolve();
       }
+
+      return new Promise((resolve) => {
+        const loader = new THREE.TextureLoader();
+        loader.load(url, (loadedTexture) => {
+          loadedTexture.flipY = false;
+          loadedTexture.colorSpace = THREE.SRGBColorSpace;
+          loadedTexture.needsUpdate = true;
+          textureCache[url] = loadedTexture;
+          setTexture(loadedTexture);
+          resolve();
+        });
+      });
     };
 
-    // Load front image
-    loader.load(selectedPrint.frontImage, (loadedTexture) => {
-      loadedTexture.flipY = false;
-      loadedTexture.colorSpace = THREE.SRGBColorSpace;
-      loadedTexture.needsUpdate = true;
-      setFrontTexture(loadedTexture);
-      frontLoaded = true;
-      checkAllLoaded();
-    });
-
-    // Load back image if it exists
+    setIsLoadingTextures(true);
+    
+    const tasks = [loadTexture(selectedPrint.frontImage, setFrontTexture)];
     if (selectedPrint.backImage) {
-      loader.load(selectedPrint.backImage, (loadedTexture) => {
-        loadedTexture.flipY = false;
-        loadedTexture.colorSpace = THREE.SRGBColorSpace;
-        loadedTexture.needsUpdate = true;
-        setBackTexture(loadedTexture);
-        backLoaded = true;
-        checkAllLoaded();
-      });
+      tasks.push(loadTexture(selectedPrint.backImage, setBackTexture));
     } else {
       setBackTexture(null);
     }
+
+    Promise.all(tasks).finally(() => {
+      setIsLoadingTextures(false);
+    });
   }, [selectedPrint]);
 
   // Find and store mesh reference only once
