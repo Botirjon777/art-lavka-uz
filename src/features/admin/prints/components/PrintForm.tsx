@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCreatePrint, useUpdatePrint } from "../hooks/useAdminPrints";
 import { useAdminPrintCategories } from "../hooks/useAdminCategories";
 import { useRouter } from "next/navigation";
@@ -41,6 +41,12 @@ export default function PrintForm({
   const updateMutation = useUpdatePrint();
 
   const loading = createMutation.isPending || updateMutation.isPending;
+
+  useEffect(() => {
+    if (!isEditing && !category && categories.length > 0) {
+      setCategory(categories[0].slug);
+    }
+  }, [categories, category, isEditing]);
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -155,7 +161,7 @@ export default function PrintForm({
                 <Dropdown
                   label="Категория"
                   placeholder="Выберите категорию"
-                  options={categories.map((cat: { slug: any; name: any }) => ({
+                  options={categories.map((cat: PrintCategory) => ({
                     value: cat.slug,
                     label: cat.name,
                   }))}
