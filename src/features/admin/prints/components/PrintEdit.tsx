@@ -5,7 +5,8 @@ import { getPrintById } from "../actions/prints";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import PrintForm from "./PrintForm";
-import { FiLoader, FiAlertTriangle } from "react-icons/fi";
+import { FiAlertTriangle } from "react-icons/fi";
+import Loader from "@/components/Loader";
 
 export default function PrintEdit() {
   const params = useParams();
@@ -38,12 +39,7 @@ export default function PrintEdit() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-40">
-        <FiLoader className="w-12 h-12 text-[#8814B1] animate-spin mb-6" />
-        <p className="text-gray-400 font-bold tracking-widest uppercase text-[10px]">Загрузка данных дизайна</p>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!print) {

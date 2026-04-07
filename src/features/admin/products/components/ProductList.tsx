@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
 import { Product } from "../types";
+import Loader from "@/components/Loader";
 
 export default function ProductList() {
   const { data: products = [], isLoading: loading } = useAdminProducts();
@@ -29,9 +30,7 @@ export default function ProductList() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Загрузка продуктов...</p>
-        </div>
+        <Loader />
       ) : products.length === 0 ? (
         <div className="bg-white rounded-[20px] p-12 text-center shadow-sm">
           <p className="text-gray-600 mb-4">Продукты не найдены</p>

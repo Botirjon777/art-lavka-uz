@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
 import { GalleryImage } from "../types";
+import Loader from "@/components/Loader";
 
 export default function GalleryList() {
   const { data: gallery = [], isLoading: loading } = useAdminGallery();
@@ -35,9 +36,7 @@ export default function GalleryList() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Загрузка галереи...</p>
-        </div>
+        <Loader />
       ) : gallery.length === 0 ? (
         <div className="bg-white rounded-[20px] p-12 text-center shadow-sm border border-gray-100">
           <p className="text-gray-600 mb-4">Галерея пуста</p>

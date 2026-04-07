@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useAdminPrintCategories, useCreatePrintCategory, useUpdatePrintCategory, useDeletePrintCategory } from "../hooks/useAdminCategories";
+import {
+  useAdminPrintCategories,
+  useCreatePrintCategory,
+  useUpdatePrintCategory,
+  useDeletePrintCategory,
+} from "../hooks/useAdminCategories";
 import toast from "react-hot-toast";
 import {
   FiPlus,
@@ -13,9 +18,11 @@ import {
 import { Button, Input } from "@/components/ui";
 import Modal from "@/components/Modal";
 import { PrintCategory } from "@/types";
+import Loader from "@/components/Loader";
 
 export default function CategoryList() {
-  const { data: categories = [], isLoading: loading } = useAdminPrintCategories();
+  const { data: categories = [], isLoading: loading } =
+    useAdminPrintCategories();
   const createMutation = useCreatePrintCategory();
   const updateMutation = useUpdatePrintCategory();
   const deleteMutation = useDeletePrintCategory();
@@ -53,14 +60,17 @@ export default function CategoryList() {
     formData.append("name", name);
     formData.append("slug", slug);
 
-    updateMutation.mutate({ id: selectedCategory._id, formData }, {
-      onSuccess: () => {
-        setName("");
-        setSlug("");
-        setSelectedCategory(null);
-        setIsEditOpen(false);
+    updateMutation.mutate(
+      { id: selectedCategory._id, formData },
+      {
+        onSuccess: () => {
+          setName("");
+          setSlug("");
+          setSelectedCategory(null);
+          setIsEditOpen(false);
+        },
       },
-    });
+    );
   };
 
   const handleDelete = async () => {
@@ -86,7 +96,10 @@ export default function CategoryList() {
     setIsDeleteOpen(true);
   };
 
-  const isSaving = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+  const isSaving =
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending;
 
   return (
     <div className="mx-auto">
@@ -114,12 +127,7 @@ export default function CategoryList() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 bg-white rounded-xl border border-gray-100 shadow-sm">
-          <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-[#8814B1] mb-6"></div>
-          <p className="text-gray-400 font-bold text-lg">
-            Синхронизация данных...
-          </p>
-        </div>
+        <Loader />
       ) : categories.length === 0 ? (
         <div className="bg-white rounded-lg p-10 text-center border border-gray-100">
           <h3 className="text-3xl font-black text-gray-900 mb-3">
@@ -136,7 +144,7 @@ export default function CategoryList() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-5 py-8 text-[12px] uppercase tracking-[0.2em] text-gray-400">
+                  <th className="px-5 py-5 text-[12px] uppercase tracking-[0.2em] text-gray-400">
                     Название
                   </th>
                   <th className="px-5 text-[12px] uppercase tracking-[0.2em] text-gray-400">

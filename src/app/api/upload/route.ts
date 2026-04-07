@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
+import { existsSync } from "fs";
+import cloudinary from "@/lib/cloudinary";
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,15 +42,49 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate unique filename
+    // Production: Upload to Cloudinary
+    if (process.env.NODE_ENV === "production" || process.env.USE_CLOUDINARY === "true") {
+      try {
+        const uploadResponse = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream(
+            {
+              folder: "art-lavka-uz/uploads",
+              resource_type: "auto",
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          ).end(buffer);
+        });
+
+        const result = uploadResponse as any;
+        return NextResponse.json({ 
+          success: true, 
+          url: result.secure_url 
+        });
+      } catch (cloudinaryError: any) {
+        console.error("Cloudinary upload error:", cloudinaryError);
+        return NextResponse.json(
+          { error: "Cloudinary upload failed" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Development: Save to public/uploads directory
     const timestamp = Date.now();
     const originalName = file.name.replace(/\s+/g, "-");
     const filename = `${timestamp}-${originalName}`;
-
-    // Save to public/uploads directory
+    
     const uploadDir = join(process.cwd(), "public", "uploads");
+    
+    // Ensure directory exists
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true });
+    }
+    
     const filepath = join(uploadDir, filename);
-
     await writeFile(filepath, buffer);
 
     // Return the public URL

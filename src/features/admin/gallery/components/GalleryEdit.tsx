@@ -6,6 +6,7 @@ import { getGalleryById } from "../actions/gallery";
 import GalleryForm from "./GalleryForm";
 import toast from "react-hot-toast";
 import { GalleryImage } from "../types";
+import Loader from "@/components/Loader";
 
 export default function GalleryEdit() {
   const { id } = useParams();
@@ -38,11 +39,7 @@ export default function GalleryEdit() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">Загрузка данных...</p>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!gallery) return null;
