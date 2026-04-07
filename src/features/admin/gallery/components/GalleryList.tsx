@@ -1,39 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getGalleries, deleteGallery } from "../actions/gallery";
+import { useAdminGallery, useDeleteGallery } from "../hooks/useGallery";
 import Link from "next/link";
 import Image from "next/image";
-import toast from "react-hot-toast";
 import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
 import { GalleryImage } from "../types";
 
 export default function GalleryList() {
-  const [gallery, setGallery] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadGallery();
-  }, []);
-
-  const loadGallery = async () => {
-    setLoading(true);
-    const data = await getGalleries();
-    setGallery(data);
-    setLoading(false);
-  };
+  const { data: gallery = [], isLoading: loading } = useAdminGallery();
+  const deleteMutation = useDeleteGallery();
 
   const handleDelete = async (id: string) => {
     if (!confirm("Вы уверены, что хотите удалить это изображение из галереи?"))
       return;
-
-    const result = await deleteGallery(id);
-    if (result.success) {
-      toast.success("Изображение удалено");
-      loadGallery();
-    } else {
-      toast.error("Ошибка при удалении");
-    }
+    deleteMutation.mutate(id);
   };
 
   return (
@@ -71,7 +51,7 @@ export default function GalleryList() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {gallery.map((item) => (
+          {gallery.map((item: GalleryImage) => (
             <div
               key={item._id}
               className="bg-white rounded-[20px] p-4 shadow-sm hover:shadow-lg transition-all group border border-gray-100"

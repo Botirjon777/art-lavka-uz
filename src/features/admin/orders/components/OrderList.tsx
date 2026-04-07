@@ -1,35 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getOrders } from "../actions/orders";
+import { useState } from "react";
+import { useAdminOrders } from "../hooks/useOrders";
 import Link from "next/link";
-import toast from "react-hot-toast";
 import { FiEye } from "react-icons/fi";
 import { Order, OrderStatus } from "@/types";
 
 export default function OrderList() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: orders = [], isLoading: loading } = useAdminOrders();
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  const loadOrders = async () => {
-    setLoading(true);
-    try {
-      const data = await getOrders();
-      setOrders(data);
-    } catch (error) {
-      toast.error("Ошибка при загрузке заказов");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = orders.filter((order: Order) => {
     const matchesFilter = filter === "all" || order.status === filter;
     const matchesSearch =
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -139,7 +121,7 @@ export default function OrderList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filteredOrders.map((order) => (
+                {filteredOrders.map((order: Order) => (
                   <tr key={order._id} className="hover:bg-gray-50/80 transition-colors group">
                     <td className="px-6 py-5">
                       <span className="font-bold text-gray-900 group-hover:text-[#8814B1] transition-colors">{order.orderNumber}</span>

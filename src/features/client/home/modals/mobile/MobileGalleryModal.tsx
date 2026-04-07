@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import MobileModal from "./MobileModal";
 import { Product } from "@/types";
 import Image from "next/image";
+import { useGallery } from "../../hooks/useGallery";
 
 interface GalleryImage {
   _id: string;
@@ -23,30 +24,7 @@ export default function MobileGalleryModal({
   onClose,
   onSelectProduct,
 }: MobileGalleryModalProps) {
-  const [gallery, setGallery] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchGallery();
-    }
-  }, [isOpen]);
-
-  const fetchGallery = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/gallery");
-      const data = await response.json();
-
-      if (data.success) {
-        setGallery(data.data.map((item: any) => ({ ...item, id: item._id })));
-      }
-    } catch (error) {
-      console.error("Error fetching gallery:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: gallery = [], isLoading: loading } = useGallery();
 
   return (
     <MobileModal isOpen={isOpen} onClose={onClose}>

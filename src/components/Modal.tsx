@@ -40,8 +40,8 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
       />
 
       {/* Modal Content */}
-      <div className="relative bg-white rounded-[30px] shadow-2xl w-full max-w-[1600px] max-h-[886px] overflow-hidden animate-slide-in-top bg-image z-10">
-        <div className="max-h-[886px] p-10">{children}</div>
+      <div className="relative bg-white rounded-[30px] shadow-2xl w-fit max-w-[98vw] max-h-[95vh] overflow-auto animate-slide-in-top bg-image z-10">
+        <div className="p-10">{children}</div>
       </div>
     </div>
   );

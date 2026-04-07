@@ -1,69 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getPrints, deletePrint } from "../actions/prints";
-import { getPrintCategories } from "../actions/categories";
+import { useState } from "react";
+import { useAdminPrints, useDeletePrint } from "../hooks/useAdminPrints";
+import { useAdminPrintCategories } from "../hooks/useAdminCategories";
 import Link from "next/link";
 import Image from "next/image";
-import toast from "react-hot-toast";
 import { FiPlus, FiEdit2, FiTrash2, FiLayers } from "react-icons/fi";
 import { Button } from "@/components/ui";
 import { useRouter } from "next/navigation";
-
-interface Print {
-  _id: string;
-  name: string;
-  frontImage: string;
-  backImage?: string;
-  category: string;
-  active: boolean;
-}
+import { Print, PrintCategory } from "@/types";
 
 export default function PrintList() {
-  const [prints, setPrints] = useState<Print[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: prints = [], isLoading: printsLoading } = useAdminPrints();
+  const { data: categories = [], isLoading: catsLoading } = useAdminPrintCategories();
+  const deleteMutation = useDeletePrint();
   const [filter, setFilter] = useState<string>("all");
   const router = useRouter();
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [printsData, categoriesData] = await Promise.all([
-        getPrints(),
-        getPrintCategories(),
-      ]);
-      setPrints(printsData);
-      setCategories(categoriesData);
-    } catch (error) {
-      toast.error("Ошибка при загрузке данных");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = printsLoading || catsLoading;
 
   const handleDelete = async (id: string) => {
     if (!confirm("Вы уверены, что хотите удалить этот принт?")) return;
-
-    try {
-      const result = await deletePrint(id);
-      if (result.success) {
-        toast.success("Принт успешно удален");
-        loadData();
-      } else {
-        toast.error("Не удалось удалить принт");
-      }
-    } catch (error) {
-      toast.error("Произошла ошибка при удалении");
-    }
+    deleteMutation.mutate(id);
   };
 
   const filteredPrints =
-    filter === "all" ? prints : prints.filter((p) => p.category === filter);
+    filter === "all" ? prints : prints.filter((p: Print) => p.category === filter);
 
   return (
     <div className="w-full">
@@ -99,7 +61,7 @@ export default function PrintList() {
         >
           Все
         </Button>
-        {categories.map((cat) => (
+        {categories.map((cat: PrintCategory) => (
           <Button
             key={cat.slug}
             onClick={() => setFilter(cat.slug)}
@@ -141,7 +103,7 @@ export default function PrintList() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredPrints.map((print) => (
+          {filteredPrints.map((print: Print) => (
             <div
               key={print._id}
               className="bg-white p-5 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all group rounded-xl flex flex-col h-full"
@@ -196,7 +158,7 @@ export default function PrintList() {
 
                 <div className="mt-auto pt-3 flex items-center justify-between border-t border-gray-50">
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#8814B1] px-2 py-1 bg-purple-50 rounded-md">
-                    {categories.find((c) => c.slug === print.category)?.name ||
+                    {categories.find((c: PrintCategory) => c.slug === print.category)?.name ||
                       print.category}
                   </span>
                   <div className="flex -space-x-2">

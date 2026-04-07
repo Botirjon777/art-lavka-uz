@@ -1,38 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getProducts, deleteProduct } from "../actions/products";
+import { useAdminProducts, useDeleteProduct } from "../hooks/useProducts";
 import Link from "next/link";
 import Image from "next/image";
-import toast from "react-hot-toast";
 import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
 import { Product } from "../types";
 
 export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
-    setLoading(true);
-    const data = await getProducts();
-    setProducts(data);
-    setLoading(false);
-  };
+  const { data: products = [], isLoading: loading } = useAdminProducts();
+  const deleteMutation = useDeleteProduct();
 
   const handleDelete = async (id: string) => {
     if (!confirm("Вы уверены, что хотите удалить этот продукт?")) return;
-
-    const result = await deleteProduct(id);
-    if (result.success) {
-      toast.success("Продукт успешно удален");
-      loadProducts();
-    } else {
-      toast.error("Не удалось удалить продукт");
-    }
+    deleteMutation.mutate(id);
   };
 
   return (
@@ -89,7 +69,7 @@ export default function ProductList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {products.map((product) => (
+              {products.map((product: Product) => (
                 <tr key={product._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

@@ -28,7 +28,7 @@ export default function CartModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="w-[1500px] flex gap-6">
+      <div className="w-[1500px] max-w-full min-h-[600px] flex gap-6">
         {/* Left Side - Cart Items */}
         <div className="flex-1">
           <h2 className="text-[30px]/[37px] text-[#333333] mb-5">

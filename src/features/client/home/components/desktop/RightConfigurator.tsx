@@ -19,13 +19,17 @@ export default function RightConfigurator({
   onProductClick,
 }: RightConfiguratorProps) {
   const productColors = selectedProduct.colors || [];
+  const firstAvailableColor = productColors.find((c: ProductColor) =>
+    c.variants?.some((v) => v.stock > 0),
+  );
   const [selectedColor, setSelectedColor] = useState<ProductColor>(
-    productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] }
+    firstAvailableColor ||
+      productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] },
   );
 
   // Get sizes available FOR THE SELECTED COLOR
   const availableVariants = selectedColor.variants || [];
-  const productSizes = availableVariants.map(v => v.size);
+  const productSizes = availableVariants.map((v) => v.size);
 
   const [selectedSize, setSelectedSize] = useState(productSizes[0] || "");
   const [quantity, setQuantity] = useState(1);
@@ -40,7 +44,9 @@ export default function RightConfigurator({
     }
   }, [selectedColor]);
 
-  const selectedVariant = selectedColor.variants.find(v => v.size === selectedSize);
+  const selectedVariant = selectedColor.variants.find(
+    (v) => v.size === selectedSize,
+  );
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
   const price = selectedVariant?.price || selectedProduct.price;
@@ -57,7 +63,7 @@ export default function RightConfigurator({
 
   return (
     <div className="flex items-center justify-center">
-      <div className="bg-image h-[calc(100vh-160px)] max-h-[886px] overflow-y-auto max-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
+      <div className="bg-image h-[calc(100vh-160px)] max-h-[886px] overflow-y-auto min-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
         <div className="w-full relative z-10">
           {/* Content Grid */}
           <div className="flex flex-col md:flex-row gap-8">
@@ -82,19 +88,27 @@ export default function RightConfigurator({
                   Цвет: {selectedColor.name}
                 </h3>
                 <div className="flex gap-[15px]">
-                  {productColors.map((color) => (
-                    <button
-                      key={color.hex}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full cursor-pointer border transition-all ${
-                        selectedColor.hex === color.hex
-                          ? "border-white ring ring-[#00C6F1] scale-110"
-                          : "border-white"
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                      title={color.name}
-                    />
-                  ))}
+                  {productColors.map((color) => {
+                    const hasStock = color.variants?.some((v) => v.stock > 0);
+                    return (
+                      <button
+                        key={color.hex}
+                        onClick={() => hasStock && setSelectedColor(color)}
+                        disabled={!hasStock}
+                        className={`w-10 h-10 rounded-full border transition-all ${
+                          selectedColor.hex === color.hex
+                            ? "border-white ring ring-[#00C6F1] scale-110"
+                            : "border-white"
+                        } ${
+                          !hasStock
+                            ? "opacity-20 grayscale cursor-not-allowed scale-90"
+                            : "cursor-pointer hover:scale-105"
+                        }`}
+                        style={{ backgroundColor: color.hex }}
+                        title={hasStock ? color.name : `${color.name} (нет в наличии)`}
+                      />
+                    );
+                  })}
                 </div>
               </div>
 

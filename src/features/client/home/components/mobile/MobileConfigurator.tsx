@@ -22,8 +22,12 @@ export default function MobileConfigurator({
   onPrintClick,
 }: MobileConfiguratorProps) {
   const productColors = selectedProduct.colors || [];
+  const firstAvailableColor = productColors.find((c: ProductColor) =>
+    c.variants?.some((v) => v.stock > 0),
+  );
   const [selectedColor, setSelectedColor] = useState<ProductColor>(
-    productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] }
+    firstAvailableColor ||
+      productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] }
   );
 
   // Get sizes available FOR THE SELECTED COLOR
@@ -84,19 +88,27 @@ export default function MobileConfigurator({
             Цвет: {selectedColor.name}
           </h3>
           <div className="flex gap-3">
-            {productColors.map((color) => (
-              <button
-                key={color.hex}
-                onClick={() => setSelectedColor(color)}
-                className={`w-10 h-10 rounded-full border-2 transition-all ${
-                  selectedColor.hex === color.hex
-                    ? "border-[#00C6F1] ring-2 ring-[#00C6F1]/30 scale-110"
-                    : "border-gray-300"
-                }`}
-                style={{ backgroundColor: color.hex }}
-                title={color.name}
-              />
-            ))}
+            {productColors.map((color) => {
+              const hasStock = color.variants?.some((v) => v.stock > 0);
+              return (
+                <button
+                  key={color.hex}
+                  onClick={() => hasStock && setSelectedColor(color)}
+                  disabled={!hasStock}
+                  className={`w-10 h-10 rounded-full border-2 transition-all ${
+                    selectedColor.hex === color.hex
+                      ? "border-[#00C6F1] ring-2 ring-[#00C6F1]/30 scale-110"
+                      : "border-gray-300"
+                  } ${
+                    !hasStock
+                      ? "opacity-20 grayscale cursor-not-allowed scale-90"
+                      : "active:scale-95"
+                  }`}
+                  style={{ backgroundColor: color.hex }}
+                  title={hasStock ? color.name : `${color.name} (нет в наличии)`}
+                />
+              );
+            })}
           </div>
         </div>
 

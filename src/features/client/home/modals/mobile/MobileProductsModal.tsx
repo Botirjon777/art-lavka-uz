@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import MobileModal from "./MobileModal";
 import { Product } from "@/types";
 import Image from "next/image";
+import { useProducts } from "../../hooks/useProducts";
 
 interface MobileProductsModalProps {
   isOpen: boolean;
@@ -17,30 +18,7 @@ export default function MobileProductsModal({
   onSelectProduct,
 }: MobileProductsModalProps) {
   const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchProducts();
-    }
-  }, [isOpen]);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/products");
-      const data = await response.json();
-
-      if (data.success) {
-        setProducts(data.data.map((item: any) => ({ ...item, id: item._id })));
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: products = [], isLoading: loading } = useProducts();
 
   const tabs = [
     { id: "women" as const, label: "Женский", soon: false },

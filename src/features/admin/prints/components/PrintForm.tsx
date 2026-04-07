@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createPrint, updatePrint } from "../actions/prints";
-import { getPrintCategories } from "../actions/categories";
+import { useState } from "react";
+import { useCreatePrint, useUpdatePrint } from "../hooks/useAdminPrints";
+import { useAdminPrintCategories } from "../hooks/useAdminCategories";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
@@ -14,6 +14,7 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 import { Button, Dropdown, Input } from "@/components/ui";
+import { PrintCategory } from "@/types";
 
 interface PrintFormProps {
   initialData?: any;
@@ -25,7 +26,6 @@ export default function PrintForm({
   isEditing = false,
 }: PrintFormProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack, setUploadingBack] = useState(false);
   const [frontImageUrl, setFrontImageUrl] = useState(
@@ -34,17 +34,13 @@ export default function PrintForm({
   const [backImageUrl, setBackImageUrl] = useState(
     initialData?.backImage || "",
   );
-  const [categories, setCategories] = useState<any[]>([]);
   const [category, setCategory] = useState(initialData?.category || "");
 
-  useEffect(() => {
-    getPrintCategories().then((data) => {
-      setCategories(data);
-      if (!isEditing && !category && data.length > 0) {
-        setCategory(data[0].slug);
-      }
-    });
-  }, [isEditing, category]);
+  const { data: categories = [] } = useAdminPrintCategories();
+  const createMutation = useCreatePrint();
+  const updateMutation = useUpdatePrint();
+
+  const loading = createMutation.isPending || updateMutation.isPending;
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -82,7 +78,6 @@ export default function PrintForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
 
     const formData = new FormData(e.currentTarget);
     formData.set("frontImage", frontImageUrl);
@@ -90,22 +85,23 @@ export default function PrintForm({
       formData.set("backImage", backImageUrl);
     }
 
-    try {
-      const result = isEditing
-        ? await updatePrint(initialData._id, formData)
-        : await createPrint(formData);
-
-      if (result.success) {
-        toast.success(isEditing ? "Принт обновлен" : "Принт успешно создан");
-        router.push("/admin/prints");
-        router.refresh();
-      } else {
-        toast.error(result.error || "Ошибка при сохранении");
-      }
-    } catch (error) {
-      toast.error("Произошла ошибка");
-    } finally {
-      setLoading(false);
+    if (isEditing) {
+      updateMutation.mutate(
+        { id: initialData._id, formData },
+        {
+          onSuccess: () => {
+            router.push("/admin/prints");
+            router.refresh();
+          },
+        },
+      );
+    } else {
+      createMutation.mutate(formData, {
+        onSuccess: () => {
+          router.push("/admin/prints");
+          router.refresh();
+        },
+      });
     }
   };
 
@@ -159,7 +155,7 @@ export default function PrintForm({
                 <Dropdown
                   label="Категория"
                   placeholder="Выберите категорию"
-                  options={categories.map((cat) => ({
+                  options={categories.map((cat: { slug: any; name: any }) => ({
                     value: cat.slug,
                     label: cat.name,
                   }))}
