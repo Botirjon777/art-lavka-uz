@@ -13,7 +13,7 @@ interface MenuModalProps {
 export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className=" w-[1500px]">
+      <div className="w-[1500px] max-w-full min-h-[600px]">
         <div className="grid grid-cols-3 gap-6 mb-8">
           {/* Delivery Section */}
           <section className="bg-white rounded-[20px] p-10 shadow-sm">

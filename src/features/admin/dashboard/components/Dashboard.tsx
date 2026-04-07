@@ -1,9 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getSalesAnalytics } from "../actions/analytics";
-import { getAdminStats } from "../actions/stats";
-import { getLowStockProducts } from "../actions/lowStock";
+import { useAdminDashboardData } from "../hooks/useDashboard";
 import StatsCards from "./StatsCards";
 import LowStockAlert from "./LowStockAlert";
 import SalesOverview from "./SalesOverview";
@@ -11,41 +8,9 @@ import AnalyticsCharts from "./AnalyticsCharts";
 import QuickActions from "./QuickActions";
 
 export default function Dashboard() {
-  const [counts, setCounts] = useState({
-    products: 0,
-    prints: 0,
-    gallery: 0,
-  });
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [lowStockItems, setLowStockItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading: loading } = useAdminDashboardData();
 
-  useEffect(() => {
-    async function loadData() {
-      const [statsResult, analyticsResult, lowStockResult] = await Promise.all([
-        getAdminStats(),
-        getSalesAnalytics(),
-        getLowStockProducts(5),
-      ]);
-
-      if (statsResult.success && statsResult.stats) {
-        setCounts(statsResult.stats);
-      }
-
-      if (analyticsResult.success && analyticsResult.analytics) {
-        setAnalytics(analyticsResult.analytics);
-      }
-
-      if (lowStockResult.success && lowStockResult.lowStockItems) {
-        setLowStockItems(lowStockResult.lowStockItems);
-      }
-
-      setLoading(false);
-    }
-    loadData();
-  }, []);
-
-  if (loading) {
+  if (loading || !data) {
     return (
       <div className="w-full">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">
@@ -64,6 +29,8 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  const { counts, lowStockItems, analytics } = data;
 
   return (
     <div className="w-full">

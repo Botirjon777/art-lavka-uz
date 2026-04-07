@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Modal from "@/components/Modal";
 import { Product } from "@/types";
 import Image from "next/image";
+import { useGallery } from "../../hooks/useGallery";
 
 interface GalleryImage {
   _id: string;
@@ -23,45 +24,23 @@ export default function GalleryModal({
   onClose,
   onSelectProduct,
 }: GalleryModalProps) {
-  const [gallery, setGallery] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchGallery();
-    }
-  }, [isOpen]);
-
-  const fetchGallery = async () => {
-    try {
-      const response = await fetch("/api/gallery");
-      const data = await response.json();
-
-      if (data.success) {
-        setGallery(data.data.map((item: any) => ({ ...item, id: item._id })));
-      }
-    } catch (error) {
-      console.error("Error fetching gallery:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: gallery = [], isLoading: loading } = useGallery();
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      {loading ? (
-        <div className="w-[1500px] flex items-center justify-center h-[600px]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin"></div>
-            <p className="text-[#666666] text-sm">Загрузка галереи...</p>
+      <div className="w-[1500px] max-w-full min-h-[600px]">
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[500px]">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin"></div>
+              <p className="text-[#666666] text-sm">Загрузка галереи...</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="w-[1500px]">
-          <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">Галерея</h2>
-
-          {/* Gallery Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+        ) : (
+          <>
+            <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">Галерея</h2>
+            {/* Gallery Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
             {gallery.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <p className="text-gray-600">No gallery images available</p>
@@ -84,9 +63,11 @@ export default function GalleryModal({
                 </div>
               ))
             )}
-          </div>
-        </div>
-      )}
+            </div>
+          </>
+        )}
+      </div>
+      
     </Modal>
   );
 }

@@ -272,10 +272,6 @@ export default function TShirtScene({
 
       {showUI && (
         <>
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
-            <TbRotate3D size={32} className="text-[#00C6F1]" />
-          </div>
-
           {isMobile && (
             <div className="absolute w-full bottom-0 left-0">
               {/* Product Name */}

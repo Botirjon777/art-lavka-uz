@@ -1,12 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  getPrintCategories,
-  createPrintCategory,
-  updatePrintCategory,
-  deletePrintCategory,
-} from "../actions/categories";
+import { useState } from "react";
+import { useAdminPrintCategories, useCreatePrintCategory, useUpdatePrintCategory, useDeletePrintCategory } from "../hooks/useAdminCategories";
 import toast from "react-hot-toast";
 import {
   FiPlus,
@@ -17,11 +12,13 @@ import {
 } from "react-icons/fi";
 import { Button, Input } from "@/components/ui";
 import Modal from "@/components/Modal";
+import { PrintCategory } from "@/types";
 
 export default function CategoryList() {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const { data: categories = [], isLoading: loading } = useAdminPrintCategories();
+  const createMutation = useCreatePrintCategory();
+  const updateMutation = useUpdatePrintCategory();
+  const deleteMutation = useDeletePrintCategory();
 
   // Modal state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -31,96 +28,50 @@ export default function CategoryList() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    setLoading(true);
-    try {
-      const data = await getPrintCategories();
-      setCategories(data);
-    } catch (error) {
-      toast.error("Ошибка при загрузке категорий");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    setIsSaving(true);
     const formData = new FormData();
     formData.append("name", name);
     formData.append("slug", slug);
 
-    try {
-      const result = await createPrintCategory(formData);
-      if (result.success) {
-        toast.success("Категория добавлена");
+    createMutation.mutate(formData, {
+      onSuccess: () => {
         setName("");
         setSlug("");
         setIsCreateOpen(false);
-        await loadCategories();
-      } else {
-        toast.error(result.error || "Ошибка при создании");
-      }
-    } catch (error) {
-      toast.error("Произошла ошибка");
-    } finally {
-      setIsSaving(false);
-    }
+      },
+    });
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !selectedCategory) return;
 
-    setIsSaving(true);
     const formData = new FormData();
     formData.append("name", name);
     formData.append("slug", slug);
 
-    try {
-      const result = await updatePrintCategory(selectedCategory._id, formData);
-      if (result.success) {
-        toast.success("Категория обновлена");
+    updateMutation.mutate({ id: selectedCategory._id, formData }, {
+      onSuccess: () => {
         setName("");
         setSlug("");
         setSelectedCategory(null);
         setIsEditOpen(false);
-        await loadCategories();
-      } else {
-        toast.error(result.error || "Ошибка при обновлении");
-      }
-    } catch (error) {
-      toast.error("Произошла ошибка");
-    } finally {
-      setIsSaving(false);
-    }
+      },
+    });
   };
 
   const handleDelete = async () => {
     if (!selectedCategory) return;
 
-    setIsSaving(true);
-    try {
-      const result = await deletePrintCategory(selectedCategory._id);
-      if (result.success) {
-        toast.success("Категория удалена");
+    deleteMutation.mutate(selectedCategory._id, {
+      onSuccess: () => {
         setIsDeleteOpen(false);
         setSelectedCategory(null);
-        await loadCategories();
-      } else {
-        toast.error(result.error || "Ошибка при удалении");
-      }
-    } catch (error) {
-      toast.error("Произошла ошибка");
-    } finally {
-      setIsSaving(false);
-    }
+      },
+    });
   };
 
   const openEdit = (cat: any) => {
@@ -134,6 +85,8 @@ export default function CategoryList() {
     setSelectedCategory(cat);
     setIsDeleteOpen(true);
   };
+
+  const isSaving = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <div className="mx-auto">
@@ -198,7 +151,7 @@ export default function CategoryList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {categories.map((cat) => (
+                {categories.map((cat: PrintCategory) => (
                   <tr
                     key={cat._id}
                     className="hover:bg-gray-50/50 transition-all group"

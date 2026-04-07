@@ -36,13 +36,33 @@ export interface Product {
 }
 
 
+export interface PrintCategory {
+  _id: string;
+  name: string;
+  slug: string;
+  printCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Print {
+  _id: string;
+  name: string;
+  frontImage: string;
+  backImage?: string;
+  category: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PrintDesign {
   id?: string;
   _id?: string;
   name: string;
   frontImage: string;
   backImage?: string;
-  category: "national" | "stylish" | "funny" | "all";
+  category: string;
 }
 
 export interface CartItem {
