@@ -42,13 +42,16 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // Get target folder from formData
+    const targetFolder = (formData.get("folder") as string) || "art-lavka/uploads";
+
     // Production: Upload to Cloudinary
     if (process.env.NODE_ENV === "production" || process.env.USE_CLOUDINARY === "true") {
       try {
         const uploadResponse = await new Promise((resolve, reject) => {
           cloudinary.uploader.upload_stream(
             {
-              folder: "art-lavka-uz/uploads",
+              folder: targetFolder,
               resource_type: "auto",
             },
             (error, result) => {
