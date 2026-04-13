@@ -7,9 +7,8 @@ import { validateStock, decrementStock } from "./validateStock";
 
 // Generate unique order number
 function generateOrderNumber(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 7);
-  return `ORD-${timestamp}-${random}`.toUpperCase();
+  const random = Math.random().toString(36).substring(2, 9).toUpperCase();
+  return `ORD-${random}`;
 }
 
 export async function createOrder(orderData: {

@@ -107,7 +107,7 @@ export interface OrderItem {
     _id: string;
     name: string;
     image: string;
-    model: string;
+    model?: string;
     category?: string;
   };
   print: {

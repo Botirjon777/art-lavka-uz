@@ -16,6 +16,7 @@ import {
 } from "react-icons/md";
 import { IconType } from "react-icons";
 import { RiTelegram2Line, RiArrowRightSLine, RiArrowLeftLine } from "react-icons/ri";
+import { normalizePhoneNumber } from "@/lib/phoneUtils";
 
 export default function TrackOrder() {
   const [orderNumber, setOrderNumber] = useState("");
@@ -41,7 +42,8 @@ export default function TrackOrder() {
       }
 
       setLoading(true);
-      const result = await trackOrder(orderNumber, phone);
+      const normalizedPhone = normalizePhoneNumber(phone);
+      const result = await trackOrder(orderNumber, normalizedPhone);
 
       if (result.success && result.order) {
         setOrder(result.order);
@@ -56,7 +58,8 @@ export default function TrackOrder() {
       }
 
       setLoading(true);
-      const result = await getOrdersByPhone(phone);
+      const normalizedPhone = normalizePhoneNumber(phone);
+      const result = await getOrdersByPhone(normalizedPhone);
 
       if (result.success && result.orders) {
         setOrdersList(result.orders);
@@ -212,7 +215,7 @@ export default function TrackOrder() {
                         value={orderNumber}
                         onChange={(e) => setOrderNumber(e.target.value.toUpperCase())}
                         className="w-full pl-14 pr-6 py-5 bg-gray-50 border border-gray-100 rounded-[24px] focus:bg-white focus:ring-4 focus:ring-purple-50 focus:border-[#8814B1] outline-none transition-all font-black text-gray-900 uppercase placeholder:text-gray-300 tracking-wider"
-                        placeholder="ORD-XXXXXXXXX"
+                        placeholder="ORD-7CHARS"
                       />
                     </div>
                   </div>
@@ -393,7 +396,19 @@ export default function TrackOrder() {
                              <span>{item.quantity} шт.</span>
                           </p>
                           {item.print && (
-                            <p className="text-[10px] font-black text-[#8814B1] uppercase mt-1">Design: {item.print.name}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <div className="relative w-8 h-8 bg-white rounded-lg overflow-hidden border border-purple-100 shadow-xs shrink-0">
+                                <Image
+                                  src={item.print.frontImage}
+                                  alt={item.print.name}
+                                  fill
+                                  className="object-contain p-0.5"
+                                />
+                              </div>
+                              <p className="text-[10px] font-black text-[#8814B1] uppercase tracking-tight">
+                                Design: {item.print.name}
+                              </p>
+                            </div>
                           )}
                         </div>
                         <div className="text-right">

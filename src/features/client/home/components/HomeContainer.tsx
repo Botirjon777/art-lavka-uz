@@ -34,6 +34,7 @@ export default function HomeContainer() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+  const [oneClickItem, setOneClickItem] = useState<CartItem | null>(null);
 
   // Fetch products on mount and set up auto-refresh
   useEffect(() => {
@@ -104,6 +105,23 @@ export default function HomeContainer() {
     toast.success("Товар добавлен в корзину!");
   };
 
+  const handleBuyOneClick = (config: ConfiguratorState) => {
+    if (!selectedProduct) return;
+
+    const newItem: CartItem = {
+      id: "one-click-" + Date.now().toString(),
+      product: selectedProduct,
+      print: config.selectedPrint,
+      color: config.selectedColor,
+      size: config.selectedSize,
+      quantity: config.quantity,
+      price: selectedProduct.price,
+    };
+
+    setOneClickItem(newItem);
+    handleCheckout();
+  };
+
   const handleUpdateQuantity = (id: string, quantity: number) => {
     setCartItems(
       cartItems.map((item) => (item.id === id ? { ...item, quantity } : item))
@@ -128,6 +146,7 @@ export default function HomeContainer() {
     setShowCheckout(false);
     setShowOrderSuccess(true);
     setCartItems([]); // Clear cart
+    setOneClickItem(null); // Clear one-click state
   };
 
   const handleCloseOrderSuccess = () => {
@@ -181,6 +200,7 @@ export default function HomeContainer() {
               selectedProduct={selectedProduct}
               selectedPrint={selectedPrint}
               onAddToCart={handleAddToCart}
+              onBuyOneClick={handleBuyOneClick}
               onProductClick={() => setActiveModal("products")}
             />
           </div>
@@ -191,6 +211,7 @@ export default function HomeContainer() {
               selectedProduct={selectedProduct}
               selectedPrint={selectedPrint}
               onAddToCart={handleAddToCart}
+              onBuyOneClick={handleBuyOneClick}
               onProductClick={() => setActiveModal("products")}
               onPrintClick={() => setActiveModal("prints")}
             />
@@ -261,9 +282,16 @@ export default function HomeContainer() {
 
       <CheckoutModal
         isOpen={showCheckout}
-        onClose={() => setShowCheckout(false)}
-        items={cartItems}
-        totalAmount={totalAmount}
+        onClose={() => {
+          setShowCheckout(false);
+          setOneClickItem(null);
+        }}
+        items={oneClickItem ? [oneClickItem] : cartItems}
+        totalAmount={
+          oneClickItem
+            ? oneClickItem.price * oneClickItem.quantity
+            : totalAmount
+        }
         onSuccess={handleOrderSuccess}
       />
 
