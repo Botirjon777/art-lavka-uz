@@ -16,7 +16,10 @@ export const mainMenu: ReplyKeyboardMarkup = {
  * Keyboard to request user contact (phone number).
  */
 export const contactKeyboard: ReplyKeyboardMarkup = {
-  keyboard: [[{ text: "📲 Поделиться номером телефона", request_contact: true }]],
+  keyboard: [
+    [{ text: "📲 Поделиться номером телефона", request_contact: true }],
+    [{ text: "🔙 Главное меню" }],
+  ],
   resize_keyboard: true,
   one_time_keyboard: true,
 };
