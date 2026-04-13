@@ -9,7 +9,7 @@ export const mainMenu: ReplyKeyboardMarkup = {
     [{ text: "❓ Помощь" }],
   ],
   resize_keyboard: true,
-  persistent: true,
+  is_persistent: true,
 };
 
 /**
