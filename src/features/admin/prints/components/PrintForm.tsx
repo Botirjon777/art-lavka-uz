@@ -60,6 +60,7 @@ export default function PrintForm({
     setLoadingField(true);
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("folder", "art-lavka/prints");
 
     try {
       const response = await fetch("/api/upload", {

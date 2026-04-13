@@ -29,7 +29,7 @@ async function seedProducts() {
         "Стильная женская футболка оверсайз с возможностью нанесения принта",
       price: 100000,
       category: "women",
-      image: "/products/tshirt-white-classic-1.png",
+      image: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078218/art-lavka/products/tshirt-white-classic-1.png",
       model: "/model/compressed/base.glb",
       colors: [
         { name: "white", hex: "#FFFFFF" },

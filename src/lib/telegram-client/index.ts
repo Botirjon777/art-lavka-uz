@@ -1,7 +1,9 @@
 import bot from "./bot";
 import dbConnect from "@/lib/mongodb";
 import { isSubscribed, sendSubscriptionPrompt } from "./handlers/subscription";
-import { handleTracking } from "./handlers/tracking";
+import { handleTracking, handleMyOrdersPrompt } from "./handlers/tracking";
+import { handleCatalog } from "./handlers/catalog";
+import { mainMenu } from "./keyboards";
 
 const INITIALIZED_KEY = "__telegram_client_bot_initialized__";
 
@@ -11,20 +13,38 @@ const INITIALIZED_KEY = "__telegram_client_bot_initialized__";
 export async function handleClientMessage(msg: any) {
   const chatId = msg.chat.id;
   const text = msg.text;
+  const contact = msg.contact;
+
+  console.log(`🤖 [Telegram Client] Message from ${chatId}: ${text || "[Media/Contact]"}`);
+
+  // 1. Handle Contact Sharing
+  if (contact) {
+    const subscribed = await isSubscribed(bot, msg.from.id);
+    if (!subscribed) {
+      await sendSubscriptionPrompt(bot, chatId);
+      return;
+    }
+    const phoneNumber = contact.phone_number;
+    await bot.sendMessage(chatId, `🔍 Ищу заказы для номера: ${phoneNumber}...`);
+    await handleTracking(bot, chatId, phoneNumber);
+    return;
+  }
 
   if (!text) return;
 
-  console.log(`🤖 [Telegram Client] Message from ${chatId}: ${text}`);
-
-  if (text === "/start") {
+  // 2. Handle Commands and Menu Buttons
+  if (text === "/start" || text === "🔙 Главное меню") {
     const subscribed = await isSubscribed(bot, msg.from.id);
     if (!subscribed) {
       await sendSubscriptionPrompt(bot, chatId);
     } else {
       await bot.sendMessage(
         chatId,
-        "✅ Вы подписаны! Введите ваш **номер телефона** или **номер заказа** (например, ORD-123), чтобы узнать статус заказа.",
-        { parse_mode: "Markdown" }
+        "👋 Добро пожаловать в Art Lavka! \n\nВыберите нужный раздел в меню ниже:",
+        { 
+          parse_mode: "Markdown",
+          reply_markup: mainMenu 
+        }
       );
     }
     return;
@@ -37,7 +57,31 @@ export async function handleClientMessage(msg: any) {
     return;
   }
 
-  // If subscribed, treat text as tracking input
+  // 3. Handle specific menu buttons
+  if (text === "📦 Мои заказы") {
+    await handleMyOrdersPrompt(bot, chatId);
+    return;
+  }
+
+  if (text === "👕 Каталог") {
+    await handleCatalog(bot, chatId);
+    return;
+  }
+
+  if (text === "❓ Помощь") {
+    await bot.sendMessage(
+      chatId,
+      "ℹ️ *Как пользоваться ботом:* \n\n" +
+      "1. Нажмите **'📦 Мои заказы'**, чтобы найти историю ваших покупок.\n" +
+      "2. Нажмите **'👕 Каталог'**, чтобы посмотреть наши товары.\n" +
+      "3. Вы всегда можете просто написать **номер заказа** (например, ORD-123) или **номер телефона**, чтобы узнать статус.\n\n" +
+      "Если у вас есть вопросы, пишите нашему менеджеру: @artlavkauz_admin",
+      { parse_mode: "Markdown", reply_markup: mainMenu }
+    );
+    return;
+  }
+
+  // 4. Default: Treat text as tracking input (phone or order number)
   await handleTracking(bot, chatId, text);
 }
 

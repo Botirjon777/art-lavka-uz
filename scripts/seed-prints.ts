@@ -22,66 +22,38 @@ async function seedPrints() {
       process.exit(0);
     }
 
-    // Create 10 initial prints
+    // Create some initial prints from Cloudinary
     const prints = [
       {
-        name: "Принт 1",
-        image: "/prints/print-1.png",
-        category: "national",
-        active: true,
-      },
-      {
-        name: "Принт 2",
-        image: "/prints/print-2.png",
+        name: "Bear Ultra",
+        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078229/art-lavka/prints/bear-ultra.png",
         category: "stylish",
         active: true,
       },
       {
-        name: "Принт 3",
-        image: "/prints/print-3.png",
-        category: "funny",
-        active: true,
-      },
-      {
-        name: "Принт 4",
-        image: "/prints/print-4.png",
-        category: "national",
-        active: true,
-      },
-      {
-        name: "Принт 5",
-        image: "/prints/print-5.png",
+        name: "Mickey Mouse",
+        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078255/art-lavka/prints/mickey-ultra.png",
         category: "stylish",
         active: true,
       },
       {
-        name: "Принт 6",
-        image: "/prints/print-6.png",
+        name: "Garfield",
+        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078246/art-lavka/prints/garfield-ultra.png",
         category: "funny",
         active: true,
       },
       {
-        name: "Принт 7",
-        image: "/prints/print-7.png",
+        name: "Uzbek Pattern",
+        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078286/art-lavka/prints/uzbek-national-front.jpg",
+        backImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078277/art-lavka/prints/uzbek-national-back.jpg",
         category: "national",
         active: true,
       },
       {
-        name: "Принт 8",
-        image: "/prints/print-8.png",
-        category: "stylish",
-        active: true,
-      },
-      {
-        name: "Принт 9",
-        image: "/prints/print-9.png",
+        name: "Funny Cat",
+        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078234/art-lavka/prints/cat-front.jpg",
+        backImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078232/art-lavka/prints/cat-back.jpg",
         category: "funny",
-        active: true,
-      },
-      {
-        name: "Принт 10",
-        image: "/prints/print-10.png",
-        category: "all",
         active: true,
       },
     ];

@@ -34,6 +34,9 @@ function formatOrderMessage(order: any): string {
     message += `${index + 1}. ${item.product.name} (${item.size}, ${
       item.color
     }) - ${item.quantity} шт.\n`;
+    if (item.print) {
+      message += `   🎨 *Принт:* ${item.print.name}\n`;
+    }
   });
 
   if (order.status === "shipped") {
@@ -44,6 +47,22 @@ function formatOrderMessage(order: any): string {
 }
 
 /**
+ * Prompts the user to provide their phone number or order ID.
+ */
+export async function handleMyOrdersPrompt(bot: TelegramBot, chatId: number) {
+  const { contactKeyboard } = await import("../keyboards");
+
+  await bot.sendMessage(
+    chatId,
+    "📦 *Чтобы найти ваши заказы:* \n\nНажмите на кнопку ниже, чтобы поделиться вашим номером, или просто напишите ваш номер телефона или номер заказа вручную.",
+    {
+      parse_mode: "Markdown",
+      reply_markup: contactKeyboard,
+    }
+  );
+}
+
+/**
  * Handles order search by phone or order number.
  */
 export async function handleTracking(
@@ -51,6 +70,7 @@ export async function handleTracking(
   chatId: number,
   input: string
 ) {
+  const { mainMenu } = await import("../keyboards");
   await dbConnect();
 
   // Normalize input
@@ -67,12 +87,10 @@ export async function handleTracking(
       if (order) orders.push(order);
     } else {
       // Treat as phone number
-      // Remove all non-numeric characters for comparison if needed,
-      // but here we'll search as is first.
       const phoneDigits = cleanInput.replace(/\D/g, "");
 
       if (phoneDigits.length >= 7) {
-        // Search by phone (partial match or regex)
+        // Search by phone
         orders = await Order.find({
           customerPhone: { $regex: phoneDigits },
         })
@@ -84,7 +102,8 @@ export async function handleTracking(
     if (orders.length === 0) {
       await bot.sendMessage(
         chatId,
-        "🔍 К сожалению, заказы не найдены. Проверьте правильность номера телефона или номера заказа."
+        "🔍 К сожалению, заказы не найдены. Проверьте правильность номера телефона или номера заказа.",
+        { reply_markup: mainMenu }
       );
       return;
     }
@@ -92,27 +111,19 @@ export async function handleTracking(
     if (orders.length === 1) {
       await bot.sendMessage(chatId, formatOrderMessage(orders[0]), {
         parse_mode: "Markdown",
+        reply_markup: mainMenu,
       });
     } else {
       // Create inline keyboard buttons for each order
       const keyboard = orders.map((order) => {
-        // Get last 5 characters of order number for display
         const shortOrderId = order.orderNumber.slice(-5);
-
-        // Get full status text (emoji + text)
         const statusText = translateStatus(order.status);
+        const orderDate = new Date(order.createdAt).toLocaleDateString("ru-RU", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "2-digit",
+        });
 
-        // Format date as DD.MM.YY
-        const orderDate = new Date(order.createdAt).toLocaleDateString(
-          "ru-RU",
-          {
-            day: "2-digit",
-            month: "2-digit",
-            year: "2-digit",
-          }
-        );
-
-        // Button text: "...XXXXX | Доставлен | 12.01.26"
         const buttonText = `...${shortOrderId} | ${statusText} | ${orderDate}`;
 
         return [
@@ -138,7 +149,8 @@ export async function handleTracking(
     console.error("❌ [Telegram Client] Error in tracking:", error);
     await bot.sendMessage(
       chatId,
-      "⚠️ Произошла ошибка при поиске заказа. Попробуйте позже."
+      "⚠️ Произошла ошибка при поиске заказа. Попробуйте позже.",
+      { reply_markup: mainMenu }
     );
   }
 }

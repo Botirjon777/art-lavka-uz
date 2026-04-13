@@ -49,7 +49,10 @@ export async function handleOrdersList(
       order.paymentStatus
     )}\n`;
     message += `   Сумма: ${order.totalAmount.toLocaleString()} UZS\n`;
-    message += `   Товаров: ${order.items.length}\n`;
+    message += `   Товары:\n`;
+    order.items.forEach((item: any) => {
+      message += `    • ${item.product.name} ${item.print ? `(+${item.print.name})` : ""}\n`;
+    });
     message += `   Дата: ${new Date(order.createdAt).toLocaleDateString(
       "ru-RU"
     )}\n\n`;

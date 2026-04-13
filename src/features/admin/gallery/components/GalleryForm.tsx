@@ -57,6 +57,7 @@ export default function GalleryForm({ initialData, isEditing = false }: GalleryF
     setUploading(true);
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("folder", "art-lavka/gallery");
 
     try {
       const res = await fetch("/api/upload", {

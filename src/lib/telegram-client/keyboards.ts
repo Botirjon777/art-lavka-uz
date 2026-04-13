@@ -1,32 +1,30 @@
-import {
-  InlineKeyboardMarkup,
-  ReplyKeyboardMarkup,
-} from "node-telegram-bot-api";
+import { ReplyKeyboardMarkup } from "node-telegram-bot-api";
 
-export const subscriptionKeyboard: InlineKeyboardMarkup = {
-  inline_keyboard: [
-    [
-      {
-        text: "📢 Подписаться на канал",
-        url: "https://t.me/artlavkauz",
-      },
-    ],
-    [
-      {
-        text: "✅ Я подписался",
-        callback_data: "check_subscription",
-      },
-    ],
+/**
+ * Main menu for the client bot.
+ */
+export const mainMenu: ReplyKeyboardMarkup = {
+  keyboard: [
+    [{ text: "📦 Мои заказы" }, { text: "👕 Каталог" }],
+    [{ text: "❓ Помощь" }],
   ],
-};
-
-export const mainKeyboard: ReplyKeyboardMarkup = {
-  keyboard: [[{ text: "🔍 Отследить заказ" }]],
   resize_keyboard: true,
-  one_time_keyboard: false,
+  persistent: true,
 };
 
-export const cancelKeyboard: ReplyKeyboardMarkup = {
-  keyboard: [[{ text: "❌ Отмена" }]],
+/**
+ * Keyboard to request user contact (phone number).
+ */
+export const contactKeyboard: ReplyKeyboardMarkup = {
+  keyboard: [[{ text: "📲 Поделиться номером телефона", request_contact: true }]],
+  resize_keyboard: true,
+  one_time_keyboard: true,
+};
+
+/**
+ * Simple back button menu.
+ */
+export const backKeyboard: ReplyKeyboardMarkup = {
+  keyboard: [[{ text: "🔙 Главное меню" }]],
   resize_keyboard: true,
 };

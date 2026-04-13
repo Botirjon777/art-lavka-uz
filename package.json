@@ -11,6 +11,8 @@
     "seed:prints": "tsx scripts/seed-prints.ts",
     "seed:gallery": "tsx scripts/seed-gallery.ts",
     "seed:all": "npm run seed:products && npm run seed:prints && npm run seed:gallery",
+    "upload:images": "tsx scripts/upload-images.ts",
+    "migrate:cloudinary": "tsx scripts/migrate-to-cloudinary.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
