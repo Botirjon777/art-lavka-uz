@@ -9,6 +9,7 @@ interface RightConfiguratorProps {
   selectedProduct: Product;
   selectedPrint: PrintDesign | null;
   onAddToCart: (config: ConfiguratorState) => void;
+  onBuyOneClick: (config: ConfiguratorState) => void;
   onProductClick?: () => void;
 }
 
@@ -16,6 +17,7 @@ export default function RightConfigurator({
   selectedProduct,
   selectedPrint,
   onAddToCart,
+  onBuyOneClick,
   onProductClick,
 }: RightConfiguratorProps) {
   const productColors = selectedProduct.colors || [];
@@ -54,6 +56,16 @@ export default function RightConfigurator({
   const handleAddToCart = () => {
     if (!selectedSize) return;
     onAddToCart({
+      selectedPrint,
+      selectedColor: selectedColor.name,
+      selectedSize,
+      quantity,
+    });
+  };
+
+  const handleBuyOneClick = () => {
+    if (!selectedSize) return;
+    onBuyOneClick({
       selectedPrint,
       selectedColor: selectedColor.name,
       selectedSize,
@@ -246,7 +258,7 @@ export default function RightConfigurator({
               {/* Action Buttons */}
               <div className="space-y-[15px] flex flex-col">
                 <button
-                  onClick={handleAddToCart}
+                  onClick={handleBuyOneClick}
                   disabled={isOutOfStock}
                   className={`max-w-[240px] px-[35px] py-3.5 rounded-xl transition-colors shadow-md text-[16px]/5 ${
                     isOutOfStock

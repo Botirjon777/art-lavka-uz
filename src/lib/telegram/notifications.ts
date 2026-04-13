@@ -1,18 +1,19 @@
-import TelegramBot from "node-telegram-bot-api";
 import dbConnect from "@/lib/mongodb";
 import TelegramSession from "@/models/TelegramSession";
+
+function escapeHTML(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export async function sendOrderNotification(order: any) {
   try {
     await dbConnect();
-
-    // Get all authenticated admin sessions
-    const sessions = await TelegramSession.find({ isAuthenticated: true });
-
-    if (sessions.length === 0) {
-      console.log("No authenticated Telegram sessions found");
-      return;
-    }
 
     // Lazy import bot to avoid circular dependencies
     const { default: bot } = await import("./bot");
@@ -20,26 +21,32 @@ export async function sendOrderNotification(order: any) {
     // Format order notification message
     const message = formatOrderNotification(order);
 
-    // Send notification to all authenticated admins
-    for (const session of sessions) {
-      try {
-        await bot.sendMessage(session.chatId, message, {
-          parse_mode: "Markdown",
-        });
-      } catch (error) {
-        console.error(
-          `Failed to send notification to chat ${session.chatId}:`,
-          error
-        );
+    // 1. Send notification to all authenticated admin sessions
+    const sessions = await TelegramSession.find({ isAuthenticated: true });
+    if (sessions.length > 0) {
+      for (const session of sessions) {
+        try {
+          await bot.sendMessage(session.chatId, message, {
+            parse_mode: "HTML",
+          });
+        } catch (error) {
+          console.error(
+            `Failed to send notification to admin chat ${session.chatId}:`,
+            error
+          );
+        }
       }
+      console.log(`Order notification sent to ${sessions.length} admin(s)`);
+    } else {
+      console.log("No individual authenticated Telegram sessions found.");
     }
 
-    // Send notification to the specific order group if configured
+    // 2. Send notification to the specific order group if configured
     const groupId = process.env.TELEGRAM_ORDER_GROUP_ID;
     if (groupId) {
       try {
         await bot.sendMessage(groupId, message, {
-          parse_mode: "Markdown",
+          parse_mode: "HTML",
         });
         console.log(`Order notification sent to group ${groupId}`);
       } catch (error) {
@@ -49,8 +56,6 @@ export async function sendOrderNotification(order: any) {
         );
       }
     }
-
-    console.log(`Order notification sent to ${sessions.length} admin(s)`);
   } catch (error) {
     console.error("Error sending order notification:", error);
   }
@@ -75,39 +80,41 @@ function formatOrderNotification(order: any): string {
     failed: "Ошибка",
   };
 
-  let message = `🔔 *Получен новый заказ!*\n\n`;
-  message += `*Заказ #:* ${order.orderNumber}\n`;
-  message += `*Статус:* ${statusEmoji} ${
-    statusMap[order.status] || order.status
+  let message = `🔔 <b>Получен новый заказ!</b>\n\n`;
+  message += `<b>Заказ #:</b> ${escapeHTML(order.orderNumber)}\n`;
+  message += `<b>Статус:</b> ${statusEmoji} ${
+    statusMap[order.status] || escapeHTML(order.status)
   }\n`;
-  message += `*Оплата:* ${paymentEmoji} ${
-    paymentMap[order.paymentStatus] || order.paymentStatus
+  message += `<b>Оплата:</b> ${paymentEmoji} ${
+    paymentMap[order.paymentStatus] || escapeHTML(order.paymentStatus)
   }\n\n`;
 
-  message += `👤 *Клиент:*\n`;
-  message += `Имя: ${order.customerName}\n`;
-  message += `Телефон: ${order.customerPhone}\n`;
-  message += `Регион: ${order.region}\n`;
-  message += `Адрес: ${order.customerAddress}\n\n`;
+  message += `👤 <b>Клиент:</b>\n`;
+  message += `Имя: ${escapeHTML(order.customerName)}\n`;
+  message += `Телефон: ${escapeHTML(order.customerPhone)}\n`;
+  message += `Регион: ${escapeHTML(order.region)}\n`;
+  message += `Адрес: ${escapeHTML(order.customerAddress)}\n\n`;
 
-  message += `🛍️ *Товары:*\n`;
+  message += `🛍️ <b>Товары:</b>\n`;
   order.items.forEach((item: any, index: number) => {
-    message += `${index + 1}. ${item.product.name}\n`;
-    message += `   Размер: ${item.size} | Цвет: ${item.color}\n`;
+    message += `${index + 1}. ${escapeHTML(item.product.name)}\n`;
+    message += `   Размер: ${escapeHTML(item.size)} | Цвет: ${escapeHTML(
+      item.color
+    )}\n`;
     if (item.print) {
-      message += `   Принт: ${item.print.name}\n`;
+      message += `   Принт: ${escapeHTML(item.print.name)}\n`;
     }
     message += `   Кол-во: ${
       item.quantity
-    } × ${item.price.toLocaleString()} = ${(
+    } × ${item.price.toLocaleString()} = <b>${(
       item.quantity * item.price
-    ).toLocaleString()} UZS\n\n`;
+    ).toLocaleString()} UZS</b>\n\n`;
   });
 
-  message += `💰 *Итого:* ${order.totalAmount.toLocaleString()} UZS\n`;
+  message += `💰 <b>Итого:</b> <u>${order.totalAmount.toLocaleString()} UZS</u>\n`;
 
   if (order.notes) {
-    message += `\n📝 *Заметки:* ${order.notes}`;
+    message += `\n📝 <b>Заметки:</b> <i>${escapeHTML(order.notes)}</i>`;
   }
 
   return message;

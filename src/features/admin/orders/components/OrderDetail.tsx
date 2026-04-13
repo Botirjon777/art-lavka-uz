@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useOrderById, useUpdateOrderStatus } from "../hooks/useOrders";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -13,9 +12,10 @@ import {
   FiXCircle,
   FiInfo,
 } from "react-icons/fi";
-import { Order, OrderItem, OrderStatus, PaymentStatus } from "@/types";
+import { OrderItem, OrderStatus, PaymentStatus } from "@/types";
 import Dropdown from "@/components/ui/Dropdown";
 import Loader from "@/components/Loader";
+import { formatPhoneNumber } from "@/lib/phoneUtils";
 
 export default function OrderDetail() {
   const params = useParams();
@@ -164,26 +164,38 @@ export default function OrderDetail() {
                     </div>
 
                     {item.print && (
-                      <div className="mt-3 p-3 bg-white rounded-2xl border border-blue-50 flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                          <Image
-                            src="/icons/print.svg"
-                            alt="Print"
-                            width={16}
-                            height={16}
-                            className="opacity-50"
-                            onError={(e) =>
-                              (e.currentTarget.style.display = "none")
-                            }
-                          />
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">
-                            Принт
-                          </p>
-                          <p className="text-xs font-bold text-blue-600">
+                      <div className="mt-4 flex flex-col gap-3">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                          Выбранный принт:{" "}
+                          <span className="text-[#8814B1]">
                             {item.print.name}
-                          </p>
+                          </span>
+                        </p>
+                        <div className="flex gap-3">
+                          <div className="relative w-20 h-20 bg-white rounded-xl overflow-hidden border border-purple-100 shadow-sm group">
+                            <Image
+                              src={item.print.frontImage}
+                              alt="Front Print"
+                              fill
+                              className="object-contain p-1 group-hover:scale-110 transition-transform"
+                            />
+                            <div className="absolute inset-x-0 bottom-0 bg-black/40 text-[8px] text-white text-center py-0.5 font-bold">
+                              FRONT
+                            </div>
+                          </div>
+                          {item.print.backImage && (
+                            <div className="relative w-20 h-20 bg-white rounded-xl overflow-hidden border border-purple-100 shadow-sm group">
+                              <Image
+                                src={item.print.backImage}
+                                alt="Back Print"
+                                fill
+                                className="object-contain p-1 group-hover:scale-110 transition-transform"
+                              />
+                              <div className="absolute inset-x-0 bottom-0 bg-black/40 text-[8px] text-white text-center py-0.5 font-bold">
+                                BACK
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -213,7 +225,7 @@ export default function OrderDetail() {
                   Телефон
                 </label>
                 <p className="font-bold text-gray-900 text-lg">
-                  {order.customerPhone}
+                  {formatPhoneNumber(order.customerPhone)}
                 </p>
               </div>
               <div className="space-y-1">

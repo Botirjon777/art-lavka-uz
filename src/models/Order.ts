@@ -11,7 +11,7 @@ export interface IOrder {
       _id: string;
       name: string;
       image: string;
-      model: string;
+      model?: string;
       category?: string;
     };
     print: {
@@ -72,7 +72,7 @@ const OrderSchema = new Schema<IOrder>(
           _id: { type: String, required: true },
           name: { type: String, required: true },
           image: { type: String, required: true },
-          model: { type: String, required: true },
+          model: { type: String },
           category: { type: String },
         },
         print: {
@@ -121,6 +121,10 @@ const OrderSchema = new Schema<IOrder>(
     timestamps: true,
   }
 );
+
+if (process.env.NODE_ENV === "development") {
+  delete (mongoose.models as any).Order;
+}
 
 const Order =
   (mongoose.models.Order as Model<IOrder>) ||

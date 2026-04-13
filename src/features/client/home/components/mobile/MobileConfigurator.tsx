@@ -10,6 +10,7 @@ interface MobileConfiguratorProps {
   selectedProduct: Product;
   selectedPrint: PrintDesign | null;
   onAddToCart: (config: ConfiguratorState) => void;
+  onBuyOneClick: (config: ConfiguratorState) => void;
   onProductClick?: () => void;
   onPrintClick?: () => void;
 }
@@ -18,6 +19,7 @@ export default function MobileConfigurator({
   selectedProduct,
   selectedPrint,
   onAddToCart,
+  onBuyOneClick,
   onProductClick,
   onPrintClick,
 }: MobileConfiguratorProps) {
@@ -55,6 +57,16 @@ export default function MobileConfigurator({
   const handleAddToCart = () => {
     if (!selectedSize) return;
     onAddToCart({
+      selectedPrint,
+      selectedColor: selectedColor.name,
+      selectedSize,
+      quantity,
+    });
+  };
+
+  const handleBuyOneClick = () => {
+    if (!selectedSize) return;
+    onBuyOneClick({
       selectedPrint,
       selectedColor: selectedColor.name,
       selectedSize,
@@ -228,7 +240,7 @@ export default function MobileConfigurator({
         {/* Action Buttons */}
         <div className="flex gap-2.5 pt-2.5">
           <button
-            onClick={handleAddToCart}
+            onClick={handleBuyOneClick}
             disabled={isOutOfStock}
             className={`w-full py-[15px] rounded-xl text-[13px]/[16px] transition-colors ${
               isOutOfStock

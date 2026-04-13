@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import Dropdown from "@/components/ui/Dropdown";
 import MobileModal from "../mobile/MobileModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { normalizePhoneNumber } from "@/lib/phoneUtils";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -77,18 +78,18 @@ export default function CheckoutModal({
       // Transform cart items to order items
       const orderItems = items.map((item) => ({
         product: {
-          _id: item.product._id || item.product.id || "",
+          _id: (item.product._id || item.product.id || "").toString(),
           name: item.product.name,
           image: item.product.image,
-          model: item.product.model,
-          category: item.product.category,
+          model: item.product.model || "",
+          category: item.product.category || "",
         },
         print: item.print
           ? {
-              _id: item.print._id || item.print.id || "",
+              _id: (item.print._id || item.print.id || "").toString(),
               name: item.print.name,
               frontImage: item.print.frontImage,
-              backImage: item.print.backImage,
+              backImage: item.print.backImage || "",
             }
           : null,
         color: item.color,
@@ -99,7 +100,7 @@ export default function CheckoutModal({
 
       const result = await createOrder({
         customerName,
-        customerPhone,
+        customerPhone: normalizePhoneNumber(customerPhone),
         region,
         customerAddress: fullAddress,
         items: orderItems,
