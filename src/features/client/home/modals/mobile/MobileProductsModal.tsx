@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import MobileModal from "./MobileModal";
-import { Product } from "@/types";
+import { Product, ICategory } from "@/types";
 import Image from "next/image";
 import { useProducts } from "../../hooks/useProducts";
 import { useSettings } from "../../hooks/useSettings";
@@ -24,24 +24,24 @@ export default function MobileProductsModal({
   
   const [activeTab, setActiveTab] = useState<string>("");
 
-  const categories = settings?.categories || [
+  const categories: ICategory[] = settings?.categories || [
     { id: "women", label: "Женский", status: "active" },
     { id: "men", label: "Мужской", status: "soon" },
     { id: "kids", label: "Детский", status: "soon" },
   ];
 
-  const tabs = categories.map((cat) => ({
+  const tabs = categories.map((cat: ICategory) => ({
     id: cat.id,
     label: cat.label,
     soon: cat.status === "soon",
   }));
 
-  const allSoon = tabs.every((tab) => tab.soon);
+  const allSoon = tabs.every((tab: { soon: boolean }) => tab.soon);
 
   // Auto-select first active tab when settings load
   useEffect(() => {
     if (settings && settings.categories?.length > 0) {
-      const firstActive = settings.categories.find((cat: any) => cat.status === "active");
+      const firstActive = settings.categories.find((cat: ICategory) => cat.status === "active");
       if (firstActive) {
         setActiveTab(firstActive.id);
       } else {
@@ -59,7 +59,7 @@ export default function MobileProductsModal({
       <div className="px-5 pt-16">
         {/* Tabs */}
         <div className="flex gap-2.5 mb-6">
-          {tabs.map((tab) => (
+          {tabs.map((tab: { id: string; label: string; soon: boolean }) => (
             <button
               key={tab.id}
               onClick={() => !tab.soon && setActiveTab(tab.id)}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "@/components/Modal";
-import { Product } from "@/types";
+import { Product, ICategory } from "@/types";
 import Image from "next/image";
 import Tooltip from "@/components/ui/Tooltip";
 import { CiCircleQuestion } from "react-icons/ci";
@@ -26,24 +26,24 @@ export default function ProductsModal({
   
   const [activeTab, setActiveTab] = useState<string>("");
 
-  const categories = settings?.categories || [
+  const categories: ICategory[] = settings?.categories || [
     { id: "women", label: "Женский", status: "active" },
     { id: "men", label: "Мужской", status: "soon" },
     { id: "kids", label: "Детский", status: "soon" },
   ];
 
-  const tabs = categories.map((cat) => ({
+  const tabs = categories.map((cat: ICategory) => ({
     id: cat.id,
     label: cat.label,
     soon: cat.status === "soon",
   }));
 
-  const allSoon = tabs.every((tab) => tab.soon);
+  const allSoon = tabs.every((tab: { soon: boolean }) => tab.soon);
 
   // Auto-select first active tab when settings load
   useEffect(() => {
     if (settings && settings.categories?.length > 0) {
-      const firstActive = settings.categories.find((cat: any) => cat.status === "active");
+      const firstActive = settings.categories.find((cat: ICategory) => cat.status === "active");
       if (firstActive) {
         setActiveTab(firstActive.id);
       } else {
@@ -86,7 +86,7 @@ export default function ProductsModal({
 
             {/* Tabs */}
             <div className="flex gap-10 mb-7.5 border-b border-gray-200">
-              {tabs.map((tab) => (
+              {tabs.map((tab: { id: string; label: string; soon: boolean }) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}

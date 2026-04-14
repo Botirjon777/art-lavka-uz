@@ -8,6 +8,15 @@ export interface ICategory {
 
 export interface ISettings {
   categories: ICategory[];
+  menu: {
+    delivery: string;
+    payment: string;
+    about: string;
+    telegram: string;
+    email: string;
+    instagramArtists: string;
+    instagramStore: string;
+  };
   // Maintain backward compatibility during transition if needed
   categoryStatuses?: {
     [key: string]: "active" | "soon";
@@ -23,6 +32,15 @@ const CategorySchema = new Schema<ICategory>({
 const SettingsSchema = new Schema<ISettings>(
   {
     categories: [CategorySchema],
+    menu: {
+      delivery: { type: String, default: "" },
+      payment: { type: String, default: "" },
+      about: { type: String, default: "" },
+      telegram: { type: String, default: "" },
+      email: { type: String, default: "" },
+      instagramArtists: { type: String, default: "" },
+      instagramStore: { type: String, default: "" },
+    },
     // Legacy support
     categoryStatuses: {
       type: Map,

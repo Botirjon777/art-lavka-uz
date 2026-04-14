@@ -4,11 +4,11 @@ import Publication from "@/models/Publication";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
-    const { id } = params;
+    const { id } = await params;
 
     // 1. Increment clicks atomically
     const publication = await Publication.findByIdAndUpdate(

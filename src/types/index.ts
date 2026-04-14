@@ -160,3 +160,24 @@ export interface Publication {
   createdAt: string;
   updatedAt: string;
 }
+export interface ICategory {
+  id: string;
+  label: string;
+  status: "active" | "soon";
+}
+
+export interface ISettings {
+  categories: ICategory[];
+  menu: {
+    delivery: string;
+    payment: string;
+    about: string;
+    telegram: string;
+    email: string;
+    instagramArtists: string;
+    instagramStore: string;
+  };
+  categoryStatuses?: {
+    [key: string]: "active" | "soon";
+  };
+}

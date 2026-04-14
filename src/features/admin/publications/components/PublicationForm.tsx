@@ -246,7 +246,7 @@ export default function PublicationForm({
              <Dropdown
               label="Тип публикации"
               value={type}
-              onChange={setType}
+              onChange={(v) => setType(v as "news" | "promo" | "social")}
               options={[
                 { value: "promo", label: "Промо / Акция" },
                 { value: "news", label: "Новости" },

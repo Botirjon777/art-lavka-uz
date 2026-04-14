@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiSave, FiSettings, FiCheckCircle, FiClock, FiPlus, FiTrash2, FiEdit3 } from "react-icons/fi";
+import { FiSave, FiSettings, FiCheckCircle, FiClock, FiPlus, FiTrash2, FiEdit3, FiBookOpen, FiTruck, FiCreditCard, FiMail, FiMessageCircle, FiInstagram } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Modal from "@/components/Modal";
 import { Input, Button } from "@/components/ui";
@@ -14,12 +14,22 @@ interface Category {
 
 interface SettingsData {
   categories: Category[];
+  menu: {
+    delivery: string;
+    payment: string;
+    about: string;
+    telegram: string;
+    email: string;
+    instagramArtists: string;
+    instagramStore: string;
+  };
 }
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SettingsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<"categories" | "menu">("categories");
   
   // Category Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -162,6 +172,32 @@ export default function SettingsPage() {
     }
   };
 
+  const handleMenuChange = async (field: keyof SettingsData["menu"], value: string) => {
+    if (!settings) return;
+
+    const updatedSettings: SettingsData = {
+      ...settings,
+      menu: {
+        ...settings.menu,
+        [field]: value,
+      },
+    };
+
+    // Update local state immediately for responsiveness
+    setSettings(updatedSettings);
+
+    // Save to DB (instant pattern)
+    try {
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSettings),
+      });
+    } catch (error) {
+      toast.error("Ошибка при сохранении");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -171,110 +207,246 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-[30px] shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
             <FiSettings className="text-[#8814B1]" />
-            Глобальные настройки
+            Настройки сайта
           </h1>
-          <p className="text-gray-500 mt-1">
-            Управление динамическими категориями и видимостью магазина
-          </p>
+          <p className="text-gray-500 mt-1">Управление категориями и контентом модальных окон</p>
         </div>
-        <div className="flex gap-4">
+        
+        {/* Tab Navigation */}
+        <div className="flex bg-gray-100 p-1 rounded-2xl">
           <button
-            onClick={handleOpenAddModal}
-            className="flex items-center gap-2 px-6 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-semibold rounded-xl transition-all shadow-lg"
+            onClick={() => setActiveTab("categories")}
+            className={`px-6 py-2.5 rounded-xl font-bold transition-all ${
+              activeTab === "categories"
+                ? "bg-white text-[#8814B1] shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            <FiPlus className="w-5 h-5" />
-            Добавить категорию
+            Категории
+          </button>
+          <button
+            onClick={() => setActiveTab("menu")}
+            className={`px-6 py-2.5 rounded-xl font-bold transition-all ${
+              activeTab === "menu"
+                ? "bg-white text-[#8814B1] shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Контент меню
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-[20px] shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-8 border-b border-gray-100 bg-gray-50/50">
-          <h2 className="text-xl font-bold text-gray-800">
-            Управление категориями
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Настройте отображение категорий в конфигураторе. Категории "Скоро" будут видны, но недоступны для заказа.
-          </p>
-        </div>
+      {activeTab === "categories" ? (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-black text-gray-800 uppercase tracking-tight">Категории товаров</h2>
+            <button
+              onClick={handleOpenAddModal}
+              className="px-6 py-3 bg-[#8814B1] text-white font-bold rounded-2xl hover:bg-[#8814B1]/90 transition-all flex items-center gap-2 shadow-lg shadow-purple-100 active:scale-95"
+            >
+              <FiPlus />
+              Добавить категорию
+            </button>
+          </div>
 
-        <div className="p-8 space-y-4">
-          {settings?.categories.map((cat) => {
-            const isActive = cat.status === "active";
+          <div className="bg-white rounded-[30px] shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
+            {settings?.categories.map((cat) => {
+              const isActive = cat.status === "active";
 
-            return (
-              <div
-                key={cat.id}
-                className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-purple-100 hover:bg-purple-50/10 transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${isActive ? "bg-green-50 text-green-600" : "bg-orange-50 text-orange-600"}`}
-                  >
-                    {isActive ? (
-                      <FiCheckCircle size={24} />
-                    ) : (
-                      <FiClock size={24} />
-                    )}
+              return (
+                <div
+                  key={cat.id}
+                  className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${isActive ? "bg-green-50 text-green-600" : "bg-orange-50 text-orange-600"}`}
+                    >
+                      {isActive ? (
+                        <FiCheckCircle size={24} />
+                      ) : (
+                        <FiClock size={24} />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800 tracking-tight">{cat.label}</p>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black">
+                        ID: {cat.id}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-800">{cat.label}</p>
-                    <p className="text-sm text-gray-500 uppercase tracking-wider font-mono">
-                      ID: {cat.id}
-                    </p>
+
+                  <div className="flex items-center gap-6">
+                    {/* Status Toggle */}
+                    <div className="flex items-center gap-3 px-4 border-r border-gray-100">
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? "text-green-600" : "text-orange-600"}`}>
+                        {isActive ? "Активно" : "Скоро"}
+                      </span>
+                      <button
+                        onClick={() => handleToggleStatus(cat.id)}
+                        className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${isActive ? "bg-[#8814B1]" : "bg-gray-200"}`}
+                      >
+                        <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${isActive ? "translate-x-7" : "translate-x-1"}`} />
+                      </button>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEditModal(cat)}
+                        className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                        title="Редактировать"
+                      >
+                        <FiEdit3 size={18} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCategoryToDelete(cat);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                        title="Удалить"
+                      >
+                        <FiTrash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Menu Sections Management */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Delivery Section */}
+            <div className="bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm space-y-4">
+              <div className="flex items-center gap-3 pb-2 border-b border-gray-50">
+                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                  <FiTruck size={20} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">Доставка</h3>
+              </div>
+              <textarea
+                value={settings?.menu.delivery || ""}
+                onChange={(e) => handleMenuChange("delivery", e.target.value)}
+                placeholder="Текст об условиях доставки..."
+                rows={6}
+                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] outline-none transition-all text-sm text-gray-600 leading-relaxed"
+              />
+            </div>
 
-                <div className="flex items-center gap-6">
-                  {/* Status Toggle */}
-                  <div className="flex items-center gap-3">
-                    <span className={`text-sm font-medium ${isActive ? "text-green-600" : "text-orange-600"}`}>
-                      {isActive ? "Активно" : "Скоро"}
-                    </span>
-                    <button
-                      onClick={() => handleToggleStatus(cat.id)}
-                      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${isActive ? "bg-[#8814B1]" : "bg-gray-200"}`}
-                    >
-                      <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${isActive ? "translate-x-7" : "translate-x-1"}`} />
-                    </button>
-                  </div>
+            {/* Payment Section */}
+            <div className="bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm space-y-4">
+              <div className="flex items-center gap-3 pb-2 border-b border-gray-50">
+                <div className="w-10 h-10 bg-[#8814B1]/10 text-[#8814B1] rounded-xl flex items-center justify-center">
+                  <FiCreditCard size={20} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">Оплата</h3>
+              </div>
+              <textarea
+                value={settings?.menu.payment || ""}
+                onChange={(e) => handleMenuChange("payment", e.target.value)}
+                placeholder="Текст о способах оплаты..."
+                rows={6}
+                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] outline-none transition-all text-sm text-gray-600 leading-relaxed"
+              />
+            </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 border-l border-gray-100 pl-6 h-10">
-                    <button
-                      onClick={() => handleOpenEditModal(cat)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Редактировать"
-                    >
-                      <FiEdit3 size={18} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCategoryToDelete(cat);
-                        setIsDeleteModalOpen(true);
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Удалить"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
-                  </div>
+            {/* About Us Section */}
+            <div className="lg:col-span-2 bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm space-y-4">
+              <div className="flex items-center gap-3 pb-2 border-b border-gray-50">
+                <div className="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
+                  <FiBookOpen size={20} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">О нас</h3>
+              </div>
+              <textarea
+                value={settings?.menu.about || ""}
+                onChange={(e) => handleMenuChange("about", e.target.value)}
+                placeholder="Расскажите о вашем магазине..."
+                rows={8}
+                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] outline-none transition-all text-sm text-gray-600 leading-relaxed font-serif"
+              />
+            </div>
+
+            {/* Contacts & Socials */}
+            <div className="lg:col-span-2 bg-gray-900 p-10 rounded-[40px] shadow-xl space-y-8">
+              <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                <FiMessageCircle className="text-purple-400 text-2xl" />
+                <h3 className="text-2xl font-bold text-white">Каналы связи и соцсети</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                   <div className="flex items-center gap-3">
+                     <FiMessageCircle className="text-[#229ED9]" />
+                     <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Telegram Link</label>
+                   </div>
+                   <input
+                    type="text"
+                    value={settings?.menu.telegram || ""}
+                    onChange={(e) => handleMenuChange("telegram", e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
+                   />
+                </div>
+
+                <div className="space-y-4">
+                   <div className="flex items-center gap-3">
+                     <FiMail className="text-purple-400" />
+                     <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Email Address</label>
+                   </div>
+                   <input
+                    type="text"
+                    value={settings?.menu.email || ""}
+                    onChange={(e) => handleMenuChange("email", e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
+                   />
+                </div>
+
+                <div className="space-y-4">
+                   <div className="flex items-center gap-3">
+                     <FiInstagram className="text-pink-500" />
+                     <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Instagram (Artists)</label>
+                   </div>
+                   <input
+                    type="text"
+                    value={settings?.menu.instagramArtists || ""}
+                    onChange={(e) => handleMenuChange("instagramArtists", e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
+                   />
+                </div>
+
+                <div className="space-y-4">
+                   <div className="flex items-center gap-3">
+                     <FiInstagram className="text-purple-500" />
+                     <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Instagram (Store)</label>
+                   </div>
+                   <input
+                    type="text"
+                    value={settings?.menu.instagramStore || ""}
+                    onChange={(e) => handleMenuChange("instagramStore", e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
+                   />
                 </div>
               </div>
-            );
-          })}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Add/Edit Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="w-[450px] space-y-6">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
             {editingCategory ? "Редактировать категорию" : "Добавить категорию"}
           </h2>
           
@@ -284,10 +456,10 @@ export default function SettingsPage() {
               value={catId}
               onChange={(e) => setCatId(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
               placeholder="например: summer-collection"
-              disabled={!!editingCategory} // Forbid ID changes for existing categories to prevent breaking associations
+              disabled={!!editingCategory} 
             />
             <p className="text-[11px] text-gray-400 -mt-2">
-              ID используется в базе данных для связи с товарами. Его нельзя изменить после создания.
+              ID используется для связи с товарами. Его нельзя изменить.
             </p>
             
             <Input
@@ -301,13 +473,13 @@ export default function SettingsPage() {
           <div className="flex gap-4 pt-4">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 font-bold rounded-xl"
               onClick={() => setIsModalOpen(false)}
             >
               Отмена
             </Button>
             <Button
-              className="flex-1 bg-[#8814B1] hover:bg-[#8814B1]/90"
+              className="flex-1 bg-[#8814B1] hover:bg-[#8814B1]/90 font-bold rounded-xl"
               onClick={handleSaveCategory}
             >
               Сохранить
@@ -324,12 +496,12 @@ export default function SettingsPage() {
           </div>
           
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Удалить категорию?</h2>
+            <h2 className="text-2xl font-bold text-gray-800 tracking-tight">Удалить категорию?</h2>
             <p className="text-gray-500 mt-2">
-              Вы уверены, что хотите удалить категорию <strong>"{categoryToDelete?.label}"</strong>? 
+              Вы уверены, что хотите удалить <strong>"{categoryToDelete?.label}"</strong>? 
               {categoryToDelete && ["women", "men", "kids"].includes(categoryToDelete.id) && (
-                <span className="block mt-2 text-red-500 font-medium">
-                  Внимание: Это базовая категория системы!
+                <span className="block mt-2 text-red-500 font-bold uppercase text-xs tracking-widest">
+                  Это базовая категория системы!
                 </span>
               )}
             </p>
@@ -338,13 +510,13 @@ export default function SettingsPage() {
           <div className="flex gap-4 pt-4">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 font-bold rounded-xl"
               onClick={() => setIsDeleteModalOpen(false)}
             >
               Отмена
             </Button>
             <Button
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white border-none"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white border-none font-bold rounded-xl shadow-lg shadow-red-100"
               onClick={handleConfirmDelete}
               disabled={saving}
             >
