@@ -23,6 +23,7 @@ interface SettingsData {
     instagramArtists: string;
     instagramStore: string;
   };
+  updatedAt?: string;
 }
 
 export default function SettingsPage() {
@@ -38,6 +39,10 @@ export default function SettingsPage() {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [catId, setCatId] = useState("");
   const [catLabel, setCatLabel] = useState("");
+  
+  // Menu Draft State
+  const [menuDraft, setMenuDraft] = useState<SettingsData["menu"] | null>(null);
+  const [isMenuDirty, setIsMenuDirty] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -50,6 +55,8 @@ export default function SettingsPage() {
       const data = await response.json();
       if (data.success) {
         setSettings(data.data);
+        setMenuDraft(data.data.menu);
+        setIsMenuDirty(false);
       }
     } catch (error) {
       toast.error("Не удалось загрузить настройки");
@@ -172,29 +179,38 @@ export default function SettingsPage() {
     }
   };
 
-  const handleMenuChange = async (field: keyof SettingsData["menu"], value: string) => {
-    if (!settings) return;
+  const handleMenuDraftChange = (field: keyof SettingsData["menu"], value: string) => {
+    if (!menuDraft) return;
+    setMenuDraft({ ...menuDraft, [field]: value });
+    setIsMenuDirty(true);
+  };
+
+  const handleSaveMenu = async () => {
+    if (!settings || !menuDraft) return;
 
     const updatedSettings: SettingsData = {
       ...settings,
-      menu: {
-        ...settings.menu,
-        [field]: value,
-      },
+      menu: menuDraft,
     };
 
-    // Update local state immediately for responsiveness
-    setSettings(updatedSettings);
-
-    // Save to DB (instant pattern)
     try {
-      await fetch("/api/settings", {
+      setSaving(true);
+      const response = await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedSettings),
       });
+      const data = await response.json();
+      if (data.success) {
+        setSettings(data.data);
+        setMenuDraft(data.data.menu);
+        setIsMenuDirty(false);
+        toast.success("Контент меню сохранен");
+      }
     } catch (error) {
       toast.error("Ошибка при сохранении");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -326,9 +342,34 @@ export default function SettingsPage() {
       ) : (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Menu Sections Management */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <div className="flex items-center gap-4">
+               <h2 className="text-xl font-black text-gray-800 uppercase tracking-tight">Контент меню</h2>
+               {settings?.updatedAt && (
+                 <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-500 rounded-lg text-[10px] font-bold uppercase tracking-widest">
+                   <FiClock className="w-3 h-3" />
+                   Изменено: {new Date(settings.updatedAt).toLocaleString()}
+                 </div>
+               )}
+             </div>
+             
+             <button
+               onClick={handleSaveMenu}
+               disabled={!isMenuDirty || saving}
+               className={`px-8 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 shadow-lg active:scale-95 ${
+                 isMenuDirty 
+                   ? "bg-[#8814B1] text-white shadow-purple-100 hover:bg-[#8814B1]/90" 
+                   : "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
+               }`}
+             >
+               <FiSave />
+               {saving ? "Сохранение..." : "Сохранить изменения"}
+             </button>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Delivery Section */}
-            <div className="bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm space-y-4">
+            {/* Delivery Section - Row 1 */}
+            <div className="lg:col-span-2 bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm space-y-4">
               <div className="flex items-center gap-3 pb-2 border-b border-gray-50">
                 <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                   <FiTruck size={20} />
@@ -336,16 +377,16 @@ export default function SettingsPage() {
                 <h3 className="text-xl font-bold text-gray-800">Доставка</h3>
               </div>
               <textarea
-                value={settings?.menu.delivery || ""}
-                onChange={(e) => handleMenuChange("delivery", e.target.value)}
+                value={menuDraft?.delivery || ""}
+                onChange={(e) => handleMenuDraftChange("delivery", e.target.value)}
                 placeholder="Текст об условиях доставки..."
-                rows={6}
+                rows={4}
                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] outline-none transition-all text-sm text-gray-600 leading-relaxed"
               />
             </div>
 
-            {/* Payment Section */}
-            <div className="bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm space-y-4">
+            {/* Payment Section - Row 2 */}
+            <div className="lg:col-span-2 bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm space-y-4">
               <div className="flex items-center gap-3 pb-2 border-b border-gray-50">
                 <div className="w-10 h-10 bg-[#8814B1]/10 text-[#8814B1] rounded-xl flex items-center justify-center">
                   <FiCreditCard size={20} />
@@ -353,10 +394,10 @@ export default function SettingsPage() {
                 <h3 className="text-xl font-bold text-gray-800">Оплата</h3>
               </div>
               <textarea
-                value={settings?.menu.payment || ""}
-                onChange={(e) => handleMenuChange("payment", e.target.value)}
+                value={menuDraft?.payment || ""}
+                onChange={(e) => handleMenuDraftChange("payment", e.target.value)}
                 placeholder="Текст о способах оплаты..."
-                rows={6}
+                rows={4}
                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] outline-none transition-all text-sm text-gray-600 leading-relaxed"
               />
             </div>
@@ -370,8 +411,8 @@ export default function SettingsPage() {
                 <h3 className="text-xl font-bold text-gray-800">О нас</h3>
               </div>
               <textarea
-                value={settings?.menu.about || ""}
-                onChange={(e) => handleMenuChange("about", e.target.value)}
+                value={menuDraft?.about || ""}
+                onChange={(e) => handleMenuDraftChange("about", e.target.value)}
                 placeholder="Расскажите о вашем магазине..."
                 rows={8}
                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] outline-none transition-all text-sm text-gray-600 leading-relaxed font-serif"
@@ -393,8 +434,8 @@ export default function SettingsPage() {
                    </div>
                    <input
                     type="text"
-                    value={settings?.menu.telegram || ""}
-                    onChange={(e) => handleMenuChange("telegram", e.target.value)}
+                    value={menuDraft?.telegram || ""}
+                    onChange={(e) => handleMenuDraftChange("telegram", e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
                    />
                 </div>
@@ -406,8 +447,8 @@ export default function SettingsPage() {
                    </div>
                    <input
                     type="text"
-                    value={settings?.menu.email || ""}
-                    onChange={(e) => handleMenuChange("email", e.target.value)}
+                    value={menuDraft?.email || ""}
+                    onChange={(e) => handleMenuDraftChange("email", e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
                    />
                 </div>
@@ -419,8 +460,8 @@ export default function SettingsPage() {
                    </div>
                    <input
                     type="text"
-                    value={settings?.menu.instagramArtists || ""}
-                    onChange={(e) => handleMenuChange("instagramArtists", e.target.value)}
+                    value={menuDraft?.instagramArtists || ""}
+                    onChange={(e) => handleMenuDraftChange("instagramArtists", e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
                    />
                 </div>
@@ -432,8 +473,8 @@ export default function SettingsPage() {
                    </div>
                    <input
                     type="text"
-                    value={settings?.menu.instagramStore || ""}
-                    onChange={(e) => handleMenuChange("instagramStore", e.target.value)}
+                    value={menuDraft?.instagramStore || ""}
+                    onChange={(e) => handleMenuDraftChange("instagramStore", e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 outline-none transition-all"
                    />
                 </div>
