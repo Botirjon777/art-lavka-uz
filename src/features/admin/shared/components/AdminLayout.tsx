@@ -11,6 +11,7 @@ import {
   FiGrid,
   FiLogOut,
   FiShoppingCart,
+  FiSettings,
 } from "react-icons/fi";
 import Loader from "@/components/Loader";
 
@@ -33,6 +34,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
     { name: "Принты", href: "/admin/prints", icon: FiImage },
     { name: "Галерея", href: "/admin/gallery", icon: FiGrid },
+    { name: "Настройки", href: "/admin/settings", icon: FiSettings },
   ];
 
   const isActive = (href: string) => {

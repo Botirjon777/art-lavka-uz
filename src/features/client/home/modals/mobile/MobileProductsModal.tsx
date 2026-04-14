@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MobileModal from "./MobileModal";
 import { Product } from "@/types";
 import Image from "next/image";
 import { useProducts } from "../../hooks/useProducts";
+import { useSettings } from "../../hooks/useSettings";
+import { FiAlertTriangle } from "react-icons/fi";
 
 interface MobileProductsModalProps {
   isOpen: boolean;
@@ -17,14 +19,34 @@ export default function MobileProductsModal({
   onClose,
   onSelectProduct,
 }: MobileProductsModalProps) {
-  const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
   const { data: products = [], isLoading: loading } = useProducts();
+  const { data: settings } = useSettings();
+  
+  const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
+
+  const categoryStatuses = settings?.categoryStatuses || {
+    women: "active",
+    men: "soon",
+    kids: "soon",
+  };
 
   const tabs = [
-    { id: "women" as const, label: "Женский", soon: false },
-    { id: "men" as const, label: "Мужской", soon: true },
-    { id: "kids" as const, label: "Детский", soon: true },
+    { id: "women" as const, label: "Женский", soon: categoryStatuses.women === "soon" },
+    { id: "men" as const, label: "Мужской", soon: categoryStatuses.men === "soon" },
+    { id: "kids" as const, label: "Детский", soon: categoryStatuses.kids === "soon" },
   ];
+
+  const allSoon = tabs.every((tab) => tab.soon);
+
+  // Auto-select first active tab when settings load
+  useEffect(() => {
+    if (settings) {
+      const firstActive = tabs.find((tab) => !tab.soon);
+      if (firstActive) {
+        setActiveTab(firstActive.id);
+      }
+    }
+  }, [settings]);
 
   return (
     <MobileModal isOpen={isOpen} onClose={onClose}>
@@ -58,16 +80,36 @@ export default function MobileProductsModal({
             <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin mb-4"></div>
             <p className="text-[#666666] text-sm">Загрузка продуктов...</p>
           </div>
+        ) : allSoon ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center px-5">
+            <div className="p-4 bg-purple-50 rounded-full mb-5">
+              <FiAlertTriangle className="w-12 h-12 text-[#8814B1]" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              Извините, продуктов нет
+            </h3>
+            <p className="text-gray-500 text-sm">
+              Все категории временно недоступны. Пожалуйста, зайдите позже или следите за обновлениями!
+            </p>
+          </div>
         ) : (
           <>
             {/* Product Grid */}
             <div className="grid grid-cols-2 gap-3">
-              {products.length === 0 ? (
-                <div className="col-span-2 text-center py-12">
-                  <p className="text-gray-600">Нет доступных продуктов</p>
-                </div>
-              ) : (
-                products.map((product) => (
+              {(() => {
+                const filteredProducts = products.filter(
+                  (product) => product.category === activeTab,
+                );
+
+                if (filteredProducts.length === 0) {
+                  return (
+                    <div className="col-span-2 text-center py-12 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                      <p className="text-gray-400 text-sm">Нет доступных товаров</p>
+                    </div>
+                  );
+                }
+
+                return filteredProducts.map((product) => (
                   <button
                     key={product.id}
                     onClick={() => {
@@ -83,18 +125,13 @@ export default function MobileProductsModal({
                         fill
                         className="object-cover group-active:scale-95 transition-transform duration-200"
                       />
-                      {product.isNew && (
-                        <div className="absolute top-2 right-2 bg-[#00C6F1] text-white text-xs font-bold px-2 py-1 rounded">
-                          New
-                        </div>
-                      )}
                     </div>
                     <p className="text-sm text-[#333333] font-medium line-clamp-2">
                       {product.name}
                     </p>
                   </button>
-                ))
-              )}
+                ));
+              })()}
             </div>
           </>
         )}

@@ -10,28 +10,37 @@ interface LeftSidebarProps {
   onGalleryClick: () => void;
   selectedPrint: PrintDesign | null;
   onPrintSelect: (print: PrintDesign | null) => void;
+  initialPrints?: PrintDesign[];
+  initialLoading?: boolean;
+  printCategories?: { id: string; label: string }[];
 }
 
-const categories = [
+const DEFAULT_CATEGORIES = [
   { id: "all", label: "Все" },
-  { id: "national", label: "Национальные" },
-  { id: "stylish", label: "Стильные" },
-  { id: "funny", label: "Прикольные" },
 ];
 
 export default function LeftSidebar({
   onGalleryClick,
   selectedPrint,
   onPrintSelect,
+  initialPrints,
+  initialLoading,
+  printCategories = [],
 }: LeftSidebarProps) {
+  const categories = [...DEFAULT_CATEGORIES, ...printCategories];
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [prints, setPrints] = useState<PrintDesign[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [prints, setPrints] = useState<PrintDesign[]>(initialPrints || []);
+  const [loading, setLoading] = useState(initialLoading ?? true);
 
   useEffect(() => {
-    fetchPrints();
-  }, []);
+    if (initialPrints && initialPrints.length > 0) {
+      setPrints(initialPrints);
+      setLoading(false);
+    } else {
+      fetchPrints();
+    }
+  }, [initialPrints, initialLoading]);
 
   const fetchPrints = async () => {
     try {

@@ -32,13 +32,10 @@ export async function sendOrderNotification(order: any) {
         } catch (error) {
           console.error(
             `Failed to send notification to admin chat ${session.chatId}:`,
-            error
+            error,
           );
         }
       }
-      console.log(`Order notification sent to ${sessions.length} admin(s)`);
-    } else {
-      console.log("No individual authenticated Telegram sessions found.");
     }
 
     // 2. Send notification to the specific order group if configured
@@ -48,12 +45,19 @@ export async function sendOrderNotification(order: any) {
         await bot.sendMessage(groupId, message, {
           parse_mode: "HTML",
         });
-        console.log(`Order notification sent to group ${groupId}`);
-      } catch (error) {
-        console.error(
-          `Failed to send notification to group ${groupId}:`,
-          error
-        );
+      } catch (error: any) {
+        if (error.response?.body?.parameters?.migrate_to_chat_id) {
+          const newGroupId = error.response.body.parameters.migrate_to_chat_id;
+          console.error(
+            `❌ Telegram Group Upgraded! Please update your .env file:\n` +
+              `TELEGRAM_ORDER_GROUP_ID=${newGroupId}`,
+          );
+        } else {
+          console.error(
+            `Failed to send notification to group ${groupId}:`,
+            error,
+          );
+        }
       }
     }
   } catch (error) {
@@ -99,7 +103,7 @@ function formatOrderNotification(order: any): string {
   order.items.forEach((item: any, index: number) => {
     message += `${index + 1}. ${escapeHTML(item.product.name)}\n`;
     message += `   Размер: ${escapeHTML(item.size)} | Цвет: ${escapeHTML(
-      item.color
+      item.color,
     )}\n`;
     if (item.print) {
       message += `   Принт: ${escapeHTML(item.print.name)}\n`;

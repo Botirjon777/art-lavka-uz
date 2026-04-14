@@ -1,3 +1,9 @@
+export interface SizeTableEntry {
+  size: string;
+  width: string;
+  height: string;
+}
+
 export interface ProductInventory {
   XS: number;
   S: number;
@@ -11,6 +17,7 @@ export interface ProductVariant {
   size: string;
   price: number;
   stock: number;
+  hideExactStock?: boolean;
 }
 
 export interface ProductColor {
@@ -33,6 +40,7 @@ export interface Product {
   inventory: ProductInventory; // Stock per size
   description?: string;
   isNew?: boolean;
+  sizeTable?: SizeTableEntry[];
 }
 
 

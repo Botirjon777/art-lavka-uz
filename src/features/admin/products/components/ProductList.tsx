@@ -53,9 +53,7 @@ export default function ProductList() {
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                   Категория
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Цена
-                </th>
+
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                   Склад
                 </th>
@@ -94,13 +92,21 @@ export default function ProductList() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm capitalize">
-                      {product.category}
-                    </span>
+                    {(() => {
+                      const categoryMap: { [key: string]: { label: string; color: string } } = {
+                        women: { label: "Женское", color: "bg-purple-100 text-purple-700" },
+                        men: { label: "Мужское", color: "bg-blue-100 text-blue-700" },
+                        kids: { label: "Детское", color: "bg-orange-100 text-orange-700" },
+                      };
+                      const cat = categoryMap[product.category] || { label: product.category, color: "bg-gray-100 text-gray-700" };
+                      return (
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${cat.color}`}>
+                          {cat.label}
+                        </span>
+                      );
+                    })()}
                   </td>
-                  <td className="px-6 py-4 font-medium text-gray-800">
-                    {product.price.toLocaleString()} сум
-                  </td>
+
                   <td className="px-6 py-4 text-gray-600">{product.stock}</td>
                   <td className="px-6 py-4">
                     <span

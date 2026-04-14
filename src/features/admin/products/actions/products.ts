@@ -62,7 +62,19 @@ export async function createProduct(formData: FormData) {
       stock: totalStock,
       featured: formData.get("featured") === "true",
       active: formData.get("active") === "true",
+      sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
     };
+
+    // Use minimum variant price if provided price is invalid
+    if (!productData.price || isNaN(productData.price)) {
+      let minPrice = Infinity;
+      colors.forEach((c: any) => {
+        c.variants?.forEach((v: any) => {
+          if (v.price && v.price < minPrice) minPrice = v.price;
+        });
+      });
+      if (minPrice !== Infinity) productData.price = minPrice;
+    }
 
     const product = await Product.create(productData);
     revalidatePath("/admin/products");
@@ -106,7 +118,19 @@ export async function updateProduct(id: string, formData: FormData) {
       stock: totalStock,
       featured: formData.get("featured") === "true",
       active: formData.get("active") === "true",
+      sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
     };
+
+    // Use minimum variant price if provided price is invalid
+    if (!productData.price || isNaN(productData.price)) {
+      let minPrice = Infinity;
+      colors.forEach((c: any) => {
+        c.variants?.forEach((v: any) => {
+          if (v.price && v.price < minPrice) minPrice = v.price;
+        });
+      });
+      if (minPrice !== Infinity) productData.price = minPrice;
+    }
 
     const product = await Product.findByIdAndUpdate(id, productData, {
       new: true,

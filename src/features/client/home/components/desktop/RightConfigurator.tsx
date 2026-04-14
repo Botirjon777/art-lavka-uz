@@ -32,14 +32,20 @@ export default function RightConfigurator({
   // Get sizes available FOR THE SELECTED COLOR
   const availableVariants = selectedColor.variants || [];
   const productSizes = availableVariants.map((v) => v.size);
+  const firstInStockSize = availableVariants.find((v) => v.stock > 0)?.size;
 
-  const [selectedSize, setSelectedSize] = useState(productSizes[0] || "");
+  const [selectedSize, setSelectedSize] = useState(
+    firstInStockSize || productSizes[0] || "",
+  );
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
   // Reset selected size when color changes
   useEffect(() => {
-    if (selectedColor.variants.length > 0) {
+    const firstInStock = selectedColor.variants.find((v) => v.stock > 0);
+    if (firstInStock) {
+      setSelectedSize(firstInStock.size);
+    } else if (selectedColor.variants.length > 0) {
       setSelectedSize(selectedColor.variants[0].size);
     } else {
       setSelectedSize("");
@@ -117,7 +123,11 @@ export default function RightConfigurator({
                             : "cursor-pointer hover:scale-105"
                         }`}
                         style={{ backgroundColor: color.hex }}
-                        title={hasStock ? color.name : `${color.name} (нет в наличии)`}
+                        title={
+                          hasStock
+                            ? color.name
+                            : `${color.name} (нет в наличии)`
+                        }
                       />
                     );
                   })}
@@ -133,7 +143,7 @@ export default function RightConfigurator({
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {availableVariants.map((v) => {
-                    if (v.stock === 0) return null;
+                    if (v.stock === 0 || !v.price || v.price === 0) return null;
 
                     return (
                       <button
@@ -152,11 +162,6 @@ export default function RightConfigurator({
                 </div>
 
                 {/* Stock Info */}
-                {!isOutOfStock && sizeStock < 5 && (
-                  <p className="text-orange-600 text-xs mt-2">
-                    Осталось всего {sizeStock} шт. размера {selectedSize}
-                  </p>
-                )}
 
                 <button
                   onClick={() => setIsSizeModalOpen(true)}
@@ -233,10 +238,9 @@ export default function RightConfigurator({
                   {!isOutOfStock && (
                     <span className="text-[14px]/[17px] text-[#333333]">
                       доступно:{" "}
-                      <span className="inline-block min-w-[2ch] text-center">
-                        {sizeStock}
-                      </span>{" "}
-                      шт
+                      <span className="inline-block min-w-[2ch] text-center font-medium text-green-600">
+                        В наличии
+                      </span>
                     </span>
                   )}
                 </div>
@@ -287,6 +291,7 @@ export default function RightConfigurator({
       <SizeTableModal
         isOpen={isSizeModalOpen}
         onClose={() => setIsSizeModalOpen(false)}
+        data={selectedProduct.sizeTable}
       />
     </div>
   );

@@ -8,7 +8,10 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiUpload, FiSave } from "react-icons/fi";
 import { getProducts } from "@/features/admin/products/actions/products"; // Note: will move products actions soon
 import { createGallery, updateGallery } from "../actions/gallery";
+import { uploadFileAction } from "../../shared/actions/upload";
 import { GalleryImage } from "../types";
+
+import { Button, Input } from "@/components/ui";
 
 interface Product {
   _id: string;
@@ -29,6 +32,7 @@ export default function GalleryForm({ initialData, isEditing = false }: GalleryF
   const [name, setName] = useState(initialData?.name || "");
   const [selectedProductId, setSelectedProductId] = useState(initialData?.productId || "");
   const [products, setProducts] = useState<Product[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadProducts();
@@ -60,16 +64,12 @@ export default function GalleryForm({ initialData, isEditing = false }: GalleryF
     formData.append("folder", "art-lavka/gallery");
 
     try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
+      const data = await uploadFileAction(formData);
+      if (data.success && data.url) {
         setImageUrl(data.url);
         toast.success("Изображение загружено");
       } else {
-        toast.error("Ошибка при загрузке");
+        toast.error(data.error || "Ошибка при загрузке");
       }
     } catch (error) {
       toast.error("Ошибка при загрузке");
@@ -80,13 +80,23 @@ export default function GalleryForm({ initialData, isEditing = false }: GalleryF
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!imageUrl) {
-      toast.error("Пожалуйста, загрузите изображение");
+    
+    const formData = new FormData(e.currentTarget);
+    const nameValue = (formData.get("name") as string) || "";
+    
+    // Validation
+    const newErrors: Record<string, string> = {};
+    if (!nameValue.trim()) newErrors.name = "Пожалуйста, введите название или описание";
+    if (!imageUrl) newErrors.image = "Пожалуйста, загрузите изображение";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Пожалуйста, заполните обязательные поля");
       return;
     }
 
+    setErrors({});
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
     formData.set("image", imageUrl);
 
     try {
@@ -132,10 +142,11 @@ export default function GalleryForm({ initialData, isEditing = false }: GalleryF
 
       <form
         onSubmit={handleSubmit}
+        noValidate
         className="bg-white rounded-[20px] p-8 shadow-sm space-y-8 border border-gray-100"
       >
         {/* Image Upload */}
-        <div>
+        <div className={`p-6 rounded-[20px] border-2 transition-colors ${errors.image ? 'border-red-500 bg-red-50/10' : 'border-transparent'}`}>
           <label className="block text-sm font-semibold text-gray-700 mb-4">
             Изображение *
           </label>
@@ -171,31 +182,26 @@ export default function GalleryForm({ initialData, isEditing = false }: GalleryF
                 Рекомендуется использовать квадратные изображения высокого
                 разрешения. PNG, JPG или WebP.
               </p>
-              {uploading && (
-                <p className="text-sm text-purple-600 animate-pulse">
-                  Загрузка...
-                </p>
-              )}
+                {uploading && (
+                  <p className="text-sm text-purple-600 animate-pulse">
+                    Загрузка...
+                  </p>
+                )}
+                {errors.image && <p className="text-sm text-red-500 mt-1">{errors.image}</p>}
+              </div>
             </div>
           </div>
-        </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Name */}
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Название / Описание *
-            </label>
-            <input
-              type="text"
-              name="name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Напр: Футболка оверсайз белая"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#8814B1] focus:ring-2 focus:ring-purple-100 outline-none transition-all"
-            />
-          </div>
+          <Input
+            label="Название / Описание"
+            name="name"
+            required
+            defaultValue={name}
+            placeholder="Напр: Футболка оверсайз белая"
+            error={errors.name}
+          />
 
           {/* Product Link */}
           <div className="space-y-2">
@@ -227,7 +233,7 @@ export default function GalleryForm({ initialData, isEditing = false }: GalleryF
           </Link>
           <button
             type="submit"
-            disabled={loading || uploading}
+            disabled={loading}
             className="flex items-center gap-2 px-8 py-3 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white font-semibold rounded-xl transition-all shadow-lg disabled:opacity-50"
           >
             <FiSave className="w-5 h-5" />

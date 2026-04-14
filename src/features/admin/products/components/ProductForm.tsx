@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { FiSave, FiArrowLeft } from "react-icons/fi";
 import { Product } from "../types";
 import { createProduct, updateProduct } from "../actions/products";
+import { uploadFileAction } from "../../shared/actions/upload";
 import ColorPicker, { Color } from "./ColorPicker";
+import SizeTableEditor from "./SizeTableEditor";
+import { SizeTableEntry } from "../types";
 import { ProductInventory } from "@/types";
 import { Button, Input, Textarea, Dropdown } from "@/components/ui";
 
@@ -25,18 +29,46 @@ export default function ProductForm({
   isEditing = false,
 }: ProductFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  
+  // Form State
+   const [name, setName] = useState(initialData?.name || "");
+  const [description, setDescription] = useState(initialData?.description || "");
+  const [model, setModel] = useState(initialData?.model || "");
   const [imageUrl, setImageUrl] = useState(initialData?.image || "");
   const [colors, setColors] = useState<Color[]>(initialData?.colors || []);
   const [category, setCategory] = useState(initialData?.category || "men");
+  const [active, setActive] = useState(initialData?.active ?? true);
+  const [sizeTable, setSizeTable] = useState<SizeTableEntry[]>(
+    initialData?.sizeTable || [],
+  );
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (initialData) {
-      setImageUrl(initialData.image);
+     if (initialData) {
+      setName(initialData.name || "");
+      setDescription(initialData.description || "");
+      setModel(initialData.model || "");
+      setImageUrl(initialData.image || "");
       setColors(initialData.colors || []);
+      setCategory(initialData.category || "men");
+      setActive(initialData.active ?? true);
+      setSizeTable(initialData.sizeTable || []);
     }
   }, [initialData]);
+
+  const isDirty = 
+    name !== (initialData?.name || "") ||
+    description !== (initialData?.description || "") ||
+    model !== (initialData?.model || "") ||
+    category !== (initialData?.category || "men") ||
+    imageUrl !== (initialData?.image || "") ||
+    active !== (initialData?.active ?? true) ||
+    JSON.stringify(sizeTable) !== JSON.stringify(initialData?.sizeTable || []) ||
+    JSON.stringify(colors) !== JSON.stringify(initialData?.colors || []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,14 +80,9 @@ export default function ProductForm({
     formData.append("folder", "art-lavka/products");
 
     try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const data = await uploadFileAction(formData);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (data.success && data.url) {
         setImageUrl(data.url);
         toast.success("Изображение успешно загружено");
       } else {
@@ -67,29 +94,42 @@ export default function ProductForm({
       setUploading(false);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!imageUrl) {
-      toast.error("Пожалуйста, загрузите изображение");
+    const formData = new FormData(e.currentTarget);
+
+    // Validation
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = "Пожалуйста, введите название товара";
+    if (!category) newErrors.category = "Пожалуйста, выберите категорию";
+    if (!imageUrl)
+      newErrors.image = "Пожалуйста, загрузите основное изображение";
+
+    if (colors.length === 0) {
+      newErrors.colors = "Добавьте хотя бы один цвет";
+    } else {
+      const hasVariants = colors.some(
+        (c) => c.variants && c.variants.length > 0,
+      );
+      if (!hasVariants) {
+        newErrors.colors =
+          "Добавьте варианты (размер/цена) для выбранных цветов";
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Пожалуйста, заполните обязательные поля");
       return;
     }
 
+    setErrors({});
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
     formData.set("image", imageUrl);
     formData.set("colors", JSON.stringify(colors));
-
-    // Calculate base price if needed (e.g. min price across all variants)
-    let minPrice = Infinity;
-    colors.forEach((c) => {
-      c.variants?.forEach((v) => {
-        if (v.price < minPrice) minPrice = v.price;
-      });
-    });
-    if (minPrice !== Infinity) {
-      formData.set("price", minPrice.toString());
-    }
+    formData.set("sizeTable", JSON.stringify(sizeTable));
+    formData.set("model", model);
+    formData.set("active", active.toString());
 
     try {
       const result =
@@ -101,12 +141,18 @@ export default function ProductForm({
         toast.success(
           isEditing ? "Изменения сохранены" : "Продукт успешно создан",
         );
-        router.push("/admin/products");
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+        queryClient.invalidateQueries({ queryKey: ["products"] });
+        
+        // If we were creating, move to edit page of the new product
+        if (!isEditing && result.product?._id) {
+          router.replace(`/admin/products/${result.product._id}/edit`);
+        }
       } else {
         toast.error(result.error || "Не удалось сохранить продукт");
       }
-    } catch (error) {
-      toast.error("Произошла ошибка");
+    } catch (error: any) {
+      toast.error(error.message || "Произошла ошибка");
     } finally {
       setLoading(false);
     }
@@ -128,11 +174,14 @@ export default function ProductForm({
       <div className="mx-auto transition-all duration-300">
         <form
           onSubmit={handleSubmit}
+          noValidate
           className="bg-white p-5 shadow-sm space-y-5 border rounded-lg border-gray-100"
         >
           {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <div
+            className={`rounded-xl border transition-colors ${errors.image ? "border-red-500 bg-red-50/10" : "border-transparent"}`}
+          >
+            <label className="block text-sm font-semibold text-gray-700 mb-5">
               Изображение продукта *
             </label>
             <div className="flex items-start gap-4">
@@ -157,6 +206,9 @@ export default function ProductForm({
                 <p className="text-xs text-gray-500 mt-1">
                   PNG, JPG, WebP до 5МБ
                 </p>
+                {errors.image && (
+                  <p className="text-sm text-red-500 mt-1">{errors.image}</p>
+                )}
               </div>
             </div>
           </div>
@@ -167,8 +219,20 @@ export default function ProductForm({
             id="name"
             name="name"
             required
-            defaultValue={initialData?.name}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Футболка овер сайз"
+            error={errors.name}
+          />
+          
+          {/* 3D Model Path */}
+          <Input
+            label="Путь к 3D модели (.glb)"
+            id="model"
+            name="model"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            placeholder="/model/compressed/base.glb"
           />
 
           {/* Description */}
@@ -176,8 +240,9 @@ export default function ProductForm({
             label="Описание"
             id="description"
             name="description"
-            rows={3}
-            defaultValue={initialData?.description}
+            rows={6}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="Описание продукта..."
           />
 
@@ -193,16 +258,27 @@ export default function ProductForm({
               value={category}
               onChange={setCategory}
               required
+              error={errors.category}
             />
             <input type="hidden" name="category" value={category} />
           </div>
 
+          {/* Size Table Configuration */}
+          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+            <h3 className="text-xl text-gray-800 mb-6">Таблица размеров</h3>
+            <SizeTableEditor data={sizeTable} onChange={setSizeTable} />
+          </div>
+
           {/* Colors and Variants */}
           <div>
-            <label className="block text-xl font-bold text-gray-800 mb-4">
+            <label className="block text-xl text-gray-800 mb-4">
               Цвета, Размеры и Цены
             </label>
-            <ColorPicker colors={colors} onChange={setColors} />
+            <ColorPicker
+              colors={colors}
+              onChange={setColors}
+              error={errors.colors}
+            />
           </div>
 
           {/* Active Status */}
@@ -211,8 +287,8 @@ export default function ProductForm({
               type="checkbox"
               id="active"
               name="active"
-              value="true"
-              defaultChecked={initialData ? initialData.active : true}
+              checked={active}
+              onChange={(e) => setActive(e.target.checked)}
               className="w-5 h-5 text-[#8814B1] border-gray-300 rounded-lg focus:ring-[#8814B1] cursor-pointer"
             />
             <label
@@ -223,14 +299,28 @@ export default function ProductForm({
             </label>
           </div>
 
-          <Button type="submit" size="md" disabled={loading || !imageUrl}>
-            <FiSave className="w-5 h-5" />
-            {loading
-              ? "Сохранение..."
-              : isEditing
-                ? "Сохранить изменения"
-                : "Создать продукт"}
-          </Button>
+          <div className="flex items-center gap-4 pt-4 border-t">
+            <Button type="submit" size="md" disabled={loading || !isDirty}>
+              <FiSave className="w-5 h-5" />
+              {loading
+                ? "Сохранение..."
+                : isEditing
+                  ? "Сохранить изменения"
+                  : "Создать продукт"}
+            </Button>
+            
+            {isEditing && initialData?.updatedAt && (
+              <div className="text-sm text-gray-500">
+                <p>Изменено: {new Date(initialData.updatedAt).toLocaleString("ru-RU", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit"
+                })}</p>
+              </div>
+            )}
+          </div>
         </form>
       </div>
     </div>
