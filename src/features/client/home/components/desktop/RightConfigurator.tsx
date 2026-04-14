@@ -58,6 +58,7 @@ export default function RightConfigurator({
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
   const price = selectedVariant?.price || selectedProduct.price;
+  const oldPrice = selectedVariant?.oldPrice || selectedProduct.oldPrice;
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -250,9 +251,11 @@ export default function RightConfigurator({
               <div className="space-y-[15px]">
                 <p className="text-[16px]/[22px] text-[#333333]">
                   Цена{" "}
-                  <span className="line-through text-[18px]/[22px] text-[#9F9F9F]">
-                    {(price * 1.2).toLocaleString()} сум
-                  </span>
+                  {oldPrice && oldPrice > price && (
+                    <span className="line-through text-[18px]/[22px] text-[#9F9F9F]">
+                      {oldPrice.toLocaleString()} сум
+                    </span>
+                  )}
                 </p>
                 <p className="text-[25px]/[30px] text-[#333333]">
                   {price.toLocaleString()} сум

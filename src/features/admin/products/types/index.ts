@@ -9,10 +9,13 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
+  oldPrice?: number;
+  promoPrice?: number;
   category: string;
   image: string;
   stock: number;
   active: boolean;
+  lastPromoSentAt?: string;
   sizeTable?: SizeTableEntry[];
   createdAt?: string;
   updatedAt?: string;

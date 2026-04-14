@@ -65,6 +65,174 @@ export async function sendOrderNotification(order: any) {
   }
 }
 
+export async function broadcastPromoNotification(product: any) {
+  try {
+    await dbConnect();
+    const { default: bot } = await import("./bot");
+
+    const channelId = process.env.TELEGRAM_PROMO_CHANNEL_ID || process.env.CHANNEL_USERNAME;
+    const sessions = await TelegramSession.find({ isAuthenticated: true });
+
+    const message = formatPromoMessage(product);
+
+    // 1. Send to all authenticated users
+    for (const session of sessions) {
+      try {
+        if (product.image) {
+          await bot.sendPhoto(session.chatId, product.image, {
+            caption: message,
+            parse_mode: "HTML",
+          });
+        } else {
+          await bot.sendMessage(session.chatId, message, {
+            parse_mode: "HTML",
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to broadcast to user ${session.chatId}:`, error);
+      }
+    }
+
+    // 2. Send to channel
+    if (channelId) {
+      try {
+        if (product.image) {
+          await bot.sendPhoto(channelId, product.image, {
+            caption: message,
+            parse_mode: "HTML",
+          });
+        } else {
+          await bot.sendMessage(channelId, message, {
+            parse_mode: "HTML",
+          });
+        }
+      } catch (error: any) {
+        const botName = process.env.TELEGRAM_ADMIN_BOT_TOKEN?.slice(-5);
+        console.error(`Failed to broadcast to channel ${channelId} (Bot: ...${botName}):`, error);
+      }
+    }
+  } catch (error) {
+    console.error("Error broadcasting promo:", error);
+  }
+}
+
+function formatPromoMessage(product: any): string {
+  const oldPriceStr = product.oldPrice?.toLocaleString() || "";
+  const promoPriceStr = product.promoPrice?.toLocaleString() || "";
+  const discountPercent = product.oldPrice && product.promoPrice 
+    ? Math.round((1 - product.promoPrice / product.oldPrice) * 100)
+    : 0;
+
+  let message = `🔥 <b>АКЦИЯ! СУПЕР ЦЕНА!</b> 🔥\n\n`;
+  message += `🛍 <b>${escapeHTML(product.name)}</b>\n\n`;
+  
+  if (product.description) {
+    const cleanDesc = product.description.substring(0, 200) + (product.description.length > 200 ? "..." : "");
+    message += `📝 ${escapeHTML(cleanDesc)}\n\n`;
+  }
+
+  if (discountPercent > 0) {
+    message += `💥 Скидка: <b>-${discountPercent}%</b>\n`;
+  }
+  
+  message += `💰 Цена: <s>${oldPriceStr}</s> ➡️ <b>${promoPriceStr} UZS</b>\n\n`;
+  
+  message += `✨ Спешите приобрести, пока товар в наличии!`;
+
+  return message;
+}
+
+export async function broadcastPublicationNotification(publication: any) {
+  try {
+    await dbConnect();
+    const { default: bot } = await import("./bot");
+
+    const channelId = (process.env.TELEGRAM_PROMO_CHANNEL_ID || process.env.CHANNEL_USERNAME || "").trim();
+    if (!channelId) return;
+    const sessions = await TelegramSession.find({ isAuthenticated: true });
+
+    const message = formatPublicationMessage(publication);
+    
+    // Fallback logic for baseUrl to avoid localhost errors in Telegram buttons
+    let baseUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "").trim();
+    if (baseUrl.includes("localhost") && process.env.TELEGRAM_WEBHOOK_URL) {
+      try {
+        baseUrl = new URL(process.env.TELEGRAM_WEBHOOK_URL).origin;
+      } catch (e) {}
+    }
+    
+    const trackingLink = `${baseUrl}/api/promo/${publication._id}`;
+
+    const replyMarkup = {
+      inline_keyboard: [
+        [
+          {
+            text: "🔍 Посмотреть подробнее",
+            url: trackingLink,
+          },
+        ],
+      ],
+    };
+
+    // 1. Send to all authenticated users
+    for (const session of sessions) {
+      try {
+        if (publication.image) {
+          await bot.sendPhoto(session.chatId, publication.image, {
+            caption: message,
+            parse_mode: "HTML",
+            reply_markup: replyMarkup,
+          });
+        } else {
+          await bot.sendMessage(session.chatId, message, {
+            parse_mode: "HTML",
+            reply_markup: replyMarkup,
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to broadcast publication ${publication._id} to user ${session.chatId}:`, error);
+      }
+    }
+
+    // 2. Send to channel
+    if (channelId) {
+      try {
+        if (publication.image) {
+          await bot.sendPhoto(channelId, publication.image, {
+            caption: message,
+            parse_mode: "HTML",
+            reply_markup: replyMarkup,
+          });
+        } else {
+          await bot.sendMessage(channelId, message, {
+            parse_mode: "HTML",
+            reply_markup: replyMarkup,
+          });
+        }
+      } catch (error: any) {
+        const botName = process.env.TELEGRAM_ADMIN_BOT_TOKEN?.slice(-5);
+        console.error(`Failed to broadcast publication ${publication._id} to channel ${channelId} (Bot: ...${botName}):`, error);
+      }
+    }
+  } catch (error) {
+    console.error("Error broadcasting publication:", error);
+  }
+}
+
+function formatPublicationMessage(publication: any): string {
+  let message = `📣 <b>ОБЪЯВЛЕНИЕ</b> 📣\n\n`;
+  message += `🌟 <b>${escapeHTML(publication.title)}</b>\n\n`;
+  
+  if (publication.content) {
+    const cleanContent = publication.content.substring(0, 500) + (publication.content.length > 500 ? "..." : "");
+    message += `📝 ${escapeHTML(cleanContent)}\n\n`;
+  }
+  
+  message += `🔗 Нажмите кнопку ниже, чтобы узнать больше!`;
+
+  return message;
+}
+
 function formatOrderNotification(order: any): string {
   const statusEmoji = getStatusEmoji(order.status);
   const paymentEmoji = getPaymentEmoji(order.paymentStatus);

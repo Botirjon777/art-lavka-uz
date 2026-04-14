@@ -7,7 +7,7 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 import { FiSave, FiArrowLeft } from "react-icons/fi";
 import { Product } from "../types";
-import { createProduct, updateProduct } from "../actions/products";
+import { createProduct, updateProduct, broadcastProductPromo } from "../actions/products";
 import { uploadFileAction } from "../../shared/actions/upload";
 import ColorPicker, { Color } from "./ColorPicker";
 import SizeTableEditor from "./SizeTableEditor";
@@ -44,6 +44,12 @@ export default function ProductForm({
   const [sizeTable, setSizeTable] = useState<SizeTableEntry[]>(
     initialData?.sizeTable || [],
   );
+  const [oldPrice, setOldPrice] = useState(initialData?.oldPrice || 0);
+  const [promoPrice, setPromoPrice] = useState(initialData?.promoPrice || 0);
+  const [lastPromoSentAt, setLastPromoSentAt] = useState<string | undefined>(
+    initialData?.lastPromoSentAt
+  );
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
   
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -57,6 +63,9 @@ export default function ProductForm({
       setCategory(initialData.category || "men");
       setActive(initialData.active ?? true);
       setSizeTable(initialData.sizeTable || []);
+      setOldPrice(initialData.oldPrice || 0);
+      setPromoPrice(initialData.promoPrice || 0);
+      setLastPromoSentAt(initialData.lastPromoSentAt);
     }
   }, [initialData]);
 
@@ -67,6 +76,8 @@ export default function ProductForm({
     category !== (initialData?.category || "men") ||
     imageUrl !== (initialData?.image || "") ||
     active !== (initialData?.active ?? true) ||
+    oldPrice !== (initialData?.oldPrice || 0) ||
+    promoPrice !== (initialData?.promoPrice || 0) ||
     JSON.stringify(sizeTable) !== JSON.stringify(initialData?.sizeTable || []) ||
     JSON.stringify(colors) !== JSON.stringify(initialData?.colors || []);
 
@@ -130,6 +141,8 @@ export default function ProductForm({
     formData.set("sizeTable", JSON.stringify(sizeTable));
     formData.set("model", model);
     formData.set("active", active.toString());
+    formData.set("oldPrice", oldPrice.toString());
+    formData.set("promoPrice", promoPrice.toString());
 
     try {
       const result =
@@ -156,6 +169,51 @@ export default function ProductForm({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBroadcastPromo = async () => {
+    if (!initialData?._id) return;
+    
+    setIsBroadcasting(true);
+    try {
+      const result = await broadcastProductPromo(initialData._id);
+      if (result.success) {
+        toast.success("Рассылка успешно отправлена!");
+        setLastPromoSentAt(result.lastPromoSentAt?.toString());
+      } else {
+        toast.error(result.error || "Не удалось отправить рассылку");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Ошибка при отправке рассылки");
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
+  const canBroadcast = () => {
+    if (!isEditing || !initialData?._id) return false;
+    if (!lastPromoSentAt) return true;
+
+    const now = new Date();
+    const lastSent = new Date(lastPromoSentAt);
+    const diffMs = now.getTime() - lastSent.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    
+    return diffHours >= 24;
+  };
+
+  const getRemainingPromoTime = () => {
+    if (!lastPromoSentAt) return "";
+    const lastSent = new Date(lastPromoSentAt);
+    const nextAvailable = new Date(lastSent.getTime() + 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const diffMs = nextAvailable.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return "";
+    
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}:${minutes.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -234,6 +292,27 @@ export default function ProductForm({
             onChange={(e) => setModel(e.target.value)}
             placeholder="/model/compressed/base.glb"
           />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Общая оригинальная цена"
+              type="number"
+              id="oldPrice"
+              name="oldPrice"
+              value={oldPrice || ""}
+              onChange={(e) => setOldPrice(Number(e.target.value))}
+              placeholder="150000"
+            />
+            <Input
+              label="Общая промо цена"
+              type="number"
+              id="promoPrice"
+              name="promoPrice"
+              value={promoPrice || ""}
+              onChange={(e) => setPromoPrice(Number(e.target.value))}
+              placeholder="120000"
+            />
+          </div>
 
           {/* Description */}
           <Textarea
@@ -298,6 +377,37 @@ export default function ProductForm({
               Активен (видим для клиентов)
             </label>
           </div>
+
+          {/* Broadcast Promo */}
+          {isEditing && (
+            <div className="p-5 bg-purple-50 rounded-xl border border-purple-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h4 className="text-[16px] font-bold text-[#8814B1] flex items-center gap-2">
+                  🚀 Рассылка акции
+                </h4>
+                <p className="text-xs text-purple-600">
+                  {lastPromoSentAt 
+                    ? `Последняя рассылка: ${new Date(lastPromoSentAt).toLocaleString("ru-RU")}`
+                    : "Рассылка еще не отправлялась для этого товара"}
+                </p>
+                {!canBroadcast() && (
+                  <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">
+                    Будет доступно через: {getRemainingPromoTime()}
+                  </p>
+                )}
+              </div>
+              
+              <Button
+                type="button"
+                onClick={handleBroadcastPromo}
+                disabled={!canBroadcast() || isBroadcasting}
+                variant="primary"
+                className="bg-[#8814B1] hover:bg-[#8814B1]/90"
+              >
+                {isBroadcasting ? "Отправка..." : "Разослать акцию"}
+              </Button>
+            </div>
+          )}
 
           <div className="flex items-center gap-4 pt-4 border-t">
             <Button type="submit" size="md" disabled={loading || !isDirty}>

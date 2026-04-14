@@ -12,6 +12,8 @@ export interface ProductInventory {
 export interface ProductVariant {
   size: string;
   price: number;
+  oldPrice?: number;
+  promoPrice?: number;
   stock: number;
   hideExactStock?: boolean;
 }
@@ -32,6 +34,8 @@ export interface IProduct {
   name: string;
   description?: string;
   price: number;
+  oldPrice?: number;
+  promoPrice?: number;
   category: string;
   image: string;
   model: string; // Path to 3D model file
@@ -41,6 +45,7 @@ export interface IProduct {
   stock: number; // Total stock
   active: boolean;
   featured?: boolean;
+  lastPromoSentAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +64,14 @@ const ProductSchema = new Schema<IProduct>(
     price: {
       type: Number,
       required: true,
+      min: 0,
+    },
+    oldPrice: {
+      type: Number,
+      min: 0,
+    },
+    promoPrice: {
+      type: Number,
       min: 0,
     },
     category: {
@@ -83,6 +96,8 @@ const ProductSchema = new Schema<IProduct>(
             {
               size: { type: String, required: true },
               price: { type: Number, required: true, min: 0 },
+              oldPrice: { type: Number, min: 0 },
+              promoPrice: { type: Number, min: 0 },
               stock: { type: Number, required: true, min: 0 },
               hideExactStock: { type: Boolean, default: false },
             },
@@ -113,6 +128,9 @@ const ProductSchema = new Schema<IProduct>(
     active: {
       type: Boolean,
       default: true,
+    },
+    lastPromoSentAt: {
+      type: Date,
     },
   },
   {

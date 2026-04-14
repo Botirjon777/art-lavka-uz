@@ -59,6 +59,7 @@ export default function MobileConfigurator({
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
   const price = selectedVariant?.price || selectedProduct.price;
+  const oldPrice = selectedVariant?.oldPrice || selectedProduct.oldPrice;
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -234,9 +235,11 @@ export default function MobileConfigurator({
         <div>
           <p className="text-[13px]/[16px] text-[#666666] mb-1">
             Цена{" "}
-            <span className="line-through text-[#9F9F9F]">
-              {(price * 1.2).toLocaleString()} сум
-            </span>
+            {oldPrice && oldPrice > price && (
+              <span className="line-through text-[#9F9F9F]">
+                {oldPrice.toLocaleString()} сум
+              </span>
+            )}
           </p>
           <p className="text-[20px]/[24px] text-[#333333]">
             {price.toLocaleString()} сум

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
+import { broadcastPromoNotification } from "@/lib/telegram/notifications";
 
 export async function getProducts() {
   try {
@@ -60,10 +61,18 @@ export async function createProduct(formData: FormData) {
       colors: colors,
       sizes: Array.from(availableSizesSet),
       stock: totalStock,
-      featured: formData.get("featured") === "true",
       active: formData.get("active") === "true",
       sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
+      oldPrice: Number(formData.get("oldPrice")) || 0,
+      promoPrice: Number(formData.get("promoPrice")) || 0,
     };
+
+    // Logic: Active price is promoPrice if exists, otherwise oldPrice
+    if (productData.promoPrice && productData.promoPrice > 0) {
+      productData.price = productData.promoPrice;
+    } else {
+      productData.price = productData.oldPrice;
+    }
 
     // Use minimum variant price if provided price is invalid
     if (!productData.price || isNaN(productData.price)) {
@@ -77,6 +86,7 @@ export async function createProduct(formData: FormData) {
     }
 
     const product = await Product.create(productData);
+    
     revalidatePath("/admin/products");
     return { success: true, product: JSON.parse(JSON.stringify(product)) };
   } catch (error: any) {
@@ -116,10 +126,18 @@ export async function updateProduct(id: string, formData: FormData) {
       colors: colors,
       sizes: Array.from(availableSizesSet),
       stock: totalStock,
-      featured: formData.get("featured") === "true",
       active: formData.get("active") === "true",
       sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
+      oldPrice: Number(formData.get("oldPrice")) || 0,
+      promoPrice: Number(formData.get("promoPrice")) || 0,
     };
+
+    // Logic: Active price is promoPrice if exists, otherwise oldPrice
+    if (productData.promoPrice && productData.promoPrice > 0) {
+      productData.price = productData.promoPrice;
+    } else {
+      productData.price = productData.oldPrice;
+    }
 
     // Use minimum variant price if provided price is invalid
     if (!productData.price || isNaN(productData.price)) {
@@ -144,6 +162,54 @@ export async function updateProduct(id: string, formData: FormData) {
     return { success: true, product: JSON.parse(JSON.stringify(product)) };
   } catch (error: any) {
     console.error("Error updating product:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function broadcastProductPromo(id: string) {
+  try {
+    await dbConnect();
+    const product = await Product.findById(id);
+    
+    if (!product) {
+      return { success: false, error: "Product not found" };
+    }
+
+    // Check 24-hour limit
+    if (product.lastPromoSentAt) {
+      const now = new Date();
+      const lastSent = new Date(product.lastPromoSentAt);
+      const diffMs = now.getTime() - lastSent.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      if (diffHours < 24) {
+        const remainingHours = Math.ceil(24 - diffHours);
+        return { 
+          success: false, 
+          error: `Вы уже отправляли рассылку для этого товара. Пожалуйста, подождите ${remainingHours} ч.` 
+        };
+      }
+    }
+
+    // Send notification
+    await broadcastPromoNotification(JSON.parse(JSON.stringify(product)));
+
+    // Update last sent time using findByIdAndUpdate to avoid triggering 
+    // full document validation on potentially inconsistent data fields.
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { lastPromoSentAt: new Date() },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return { success: false, error: "Failed to update broadcast timestamp" };
+    }
+
+    revalidatePath("/admin/products");
+    return { success: true, lastPromoSentAt: updatedProduct.lastPromoSentAt };
+  } catch (error: any) {
+    console.error("Error in broadcastProductPromo:", error);
     return { success: false, error: error.message };
   }
 }

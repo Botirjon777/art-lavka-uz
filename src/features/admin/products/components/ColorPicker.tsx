@@ -68,7 +68,7 @@ export default function ColorPicker({
 
   const handleLocalVariantChange = (
     size: string,
-    field: "price" | "stock" | "hideExactStock",
+    field: "price" | "oldPrice" | "promoPrice" | "stock" | "hideExactStock",
     value: string | boolean,
   ) => {
     setLocalVariants((prev) => {
@@ -86,7 +86,9 @@ export default function ColorPicker({
           ...prev,
           {
             size,
-            price: field === "price" ? Number(value) : 0,
+            price: field === "price" ? Number(value) : Number(value) || 0,
+            oldPrice: field === "oldPrice" ? Number(value) : 0,
+            promoPrice: field === "promoPrice" ? Number(value) : 0,
             stock: field === "stock" ? Number(value) : 0,
             hideExactStock: field === "hideExactStock" ? (value as boolean) : false,
           },
@@ -99,7 +101,13 @@ export default function ColorPicker({
     if (selectedColorIndex === null) return;
 
     // Filter out empty variants (where price is 0 or not set)
-    const validVariants = localVariants.filter((v) => v.price > 0);
+    const validVariants = localVariants
+      .filter((v) => (v.oldPrice || 0) > 0 || (v.promoPrice || 0) > 0)
+      .map((v) => ({
+        ...v,
+        // Active price is promoPrice if exists, otherwise oldPrice
+        price: v.promoPrice && v.promoPrice > 0 ? v.promoPrice : (v.oldPrice || 0),
+      }));
 
     const updatedColors = [...colors];
     updatedColors[selectedColorIndex].variants = validVariants;
@@ -264,7 +272,7 @@ export default function ColorPicker({
                   {commonSizes.map((size) => {
                     const variant = localVariants.find(
                       (v) => v.size === size,
-                    ) || { size, price: 0, stock: 0 };
+                    ) || { size, price: 0, oldPrice: 0, promoPrice: 0, stock: 0 };
 
                     return (
                       <div
@@ -284,15 +292,33 @@ export default function ColorPicker({
                         <div className="flex-1 grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
-                              Цена (сум)
+                              Ориг. цена
                             </label>
                             <input
                               type="number"
-                              value={variant.price || ""}
+                              value={variant.oldPrice || ""}
                               onChange={(e) =>
                                 handleLocalVariantChange(
                                   size,
-                                  "price",
+                                  "oldPrice",
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="0"
+                              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
+                              Промо цена
+                            </label>
+                            <input
+                              type="number"
+                              value={variant.promoPrice || ""}
+                              onChange={(e) =>
+                                handleLocalVariantChange(
+                                  size,
+                                  "promoPrice",
                                   e.target.value,
                                 )
                               }
