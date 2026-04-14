@@ -117,17 +117,23 @@ export default function ColorPicker({
           v.promoPrice && v.promoPrice > 0 ? v.promoPrice : v.oldPrice || 0,
       }));
 
-    const updatedColors = [...colors];
-    updatedColors[selectedColorIndex].variants = validVariants;
+    const updatedColors = colors.map((c, i) =>
+      i === selectedColorIndex ? { ...c, variants: validVariants } : c
+    );
     onChange(updatedColors);
     setSelectedColorIndex(null);
   };
 
   const removeVariant = (colorIndex: number, variantIndex: number) => {
-    const updatedColors = [...colors];
-    updatedColors[colorIndex].variants = updatedColors[
-      colorIndex
-    ].variants.filter((_, i) => i !== variantIndex);
+    const updatedColors = colors.map((c, i) => {
+      if (i === colorIndex) {
+        return {
+          ...c,
+          variants: c.variants.filter((_, vi) => vi !== variantIndex),
+        };
+      }
+      return c;
+    });
     onChange(updatedColors);
   };
 
