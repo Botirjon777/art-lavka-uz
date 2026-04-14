@@ -34,6 +34,12 @@ export default function ColorPicker({
   );
   const [localVariants, setLocalVariants] = useState<ProductVariant[]>([]);
 
+  // Deletion State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [colorToDeleteIndex, setColorToDeleteIndex] = useState<number | null>(
+    null,
+  );
+
   const commonSizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
   // Sync local variants when modal opens
@@ -73,7 +79,7 @@ export default function ColorPicker({
   ) => {
     setLocalVariants((prev) => {
       const existingIndex = prev.findIndex((v) => v.size === size);
-      
+
       if (existingIndex > -1) {
         const updated = [...prev];
         updated[existingIndex] = {
@@ -90,7 +96,8 @@ export default function ColorPicker({
             oldPrice: field === "oldPrice" ? Number(value) : 0,
             promoPrice: field === "promoPrice" ? Number(value) : 0,
             stock: field === "stock" ? Number(value) : 0,
-            hideExactStock: field === "hideExactStock" ? (value as boolean) : false,
+            hideExactStock:
+              field === "hideExactStock" ? (value as boolean) : false,
           },
         ];
       }
@@ -106,7 +113,8 @@ export default function ColorPicker({
       .map((v) => ({
         ...v,
         // Active price is promoPrice if exists, otherwise oldPrice
-        price: v.promoPrice && v.promoPrice > 0 ? v.promoPrice : (v.oldPrice || 0),
+        price:
+          v.promoPrice && v.promoPrice > 0 ? v.promoPrice : v.oldPrice || 0,
       }));
 
     const updatedColors = [...colors];
@@ -125,6 +133,8 @@ export default function ColorPicker({
 
   const removeColor = (index: number) => {
     onChange(colors.filter((_, i) => i !== index));
+    setIsDeleteModalOpen(false);
+    setColorToDeleteIndex(null);
   };
 
   return (
@@ -213,22 +223,49 @@ export default function ColorPicker({
                     className="flex-1 cursor-pointer"
                     onClick={() => setSelectedColorIndex(index)}
                   >
-                    <p className="font-medium text-gray-800">{color.name}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500 font-mono uppercase">
-                        {color.hex}
-                      </p>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                        {color.variants?.length || 0} вар.
-                      </span>
+                    <p className="font-black text-gray-900 text-lg mb-3">
+                      {color.name}
+                    </p>
+
+                    {/* Detailed Variants List */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {color.variants && color.variants.length > 0 ? (
+                        color.variants.map((v) => (
+                          <div
+                            key={v.size}
+                            className="flex items-center justify-between bg-gray-50/80 px-2 py-1.5 rounded-lg border border-gray-100/50"
+                          >
+                            <span className="text-[9px] font-black text-[#8814B1] w-5">
+                              {v.size}
+                            </span>
+                            <span className="text-[10px] font-bold text-gray-700 flex-1 px-1.5 border-l border-gray-200 ml-1.5 truncate">
+                              {v.promoPrice && v.promoPrice > 0
+                                ? v.promoPrice
+                                : v.oldPrice}
+                            </span>
+                            <span
+                              className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${v.stock > 0 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"}`}
+                            >
+                              {v.stock}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="col-span-2 text-[10px] text-gray-400 italic bg-gray-50 p-1.5 rounded-lg text-center border border-dashed border-gray-200">
+                          Нет вариантов
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   {/* Remove Button */}
                   <button
                     type="button"
-                    onClick={() => removeColor(index)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    onClick={() => {
+                      setColorToDeleteIndex(index);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
                   >
                     <FiX className="w-5 h-5" />
                   </button>
@@ -245,90 +282,123 @@ export default function ColorPicker({
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               onClick={() => setSelectedColorIndex(null)}
             />
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="relative bg-white rounded-[30px] shadow-2xl w-full max-w-5xl overflow-hidden animate-in fade-in zoom-in duration-300">
               {/* Modal Header */}
-              <div className="p-4 border-b flex items-center justify-between bg-gray-50">
-                <div className="flex items-center gap-3">
+              <div className="p-6 border-b flex items-center justify-between bg-gray-50/50">
+                <div className="flex items-center gap-4">
                   <div
-                    className="w-6 h-6 rounded-full border border-gray-200"
+                    className="w-10 h-10 rounded-xl border-2 border-white shadow-sm"
                     style={{ backgroundColor: colors[selectedColorIndex].hex }}
                   />
-                  <h3 className="font-bold text-gray-800">
-                    Варианты для "{colors[selectedColorIndex].name}"
-                  </h3>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800">
+                      Настройка вариантов
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Цвет:{" "}
+                      <span className="font-semibold text-gray-700">
+                        {colors[selectedColorIndex].name}
+                      </span>
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedColorIndex(null)}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="p-3 hover:bg-gray-200 rounded-xl transition-colors text-gray-400"
                 >
-                  <FiX className="w-5 h-5" />
+                  <FiX className="w-6 h-6" />
                 </button>
               </div>
 
               {/* Modal Content */}
-              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                <div className="grid grid-cols-1 gap-4">
+              <div className="p-8 space-y-4 max-h-[70vh] overflow-y-auto scrollbar-hide">
+                <div className="space-y-3">
                   {commonSizes.map((size) => {
                     const variant = localVariants.find(
                       (v) => v.size === size,
-                    ) || { size, price: 0, oldPrice: 0, promoPrice: 0, stock: 0 };
+                    ) || {
+                      size,
+                      price: 0,
+                      oldPrice: 0,
+                      promoPrice: 0,
+                      stock: 0,
+                    };
 
                     return (
                       <div
                         key={size}
-                        className="flex items-center gap-4 p-4 border rounded-xl bg-gray-50 border-gray-100 hover:border-[#8814B1]/30 transition-colors"
+                        className="grid grid-cols-12 items-center gap-6 p-5 border rounded-2xl bg-white border-gray-100 hover:border-[#8814B1] hover:shadow-md transition-all group"
                       >
-                        {/* Size Badge */}
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold border shrink-0 transition-colors ${
-                          variant.price > 0 
-                            ? "bg-white text-[#8814B1] border-purple-100" 
-                            : "bg-gray-100 text-gray-300 border-gray-200"
-                        }`}>
-                          {size}
+                        {/* Size Badge (2 cols) */}
+                        <div className="col-span-1 flex flex-col items-center">
+                          <span className="text-[10px] uppercase tracking-widest font-black text-gray-300 mb-2">
+                            РАЗМЕР
+                          </span>
+                          <div
+                            className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black border-2 transition-all ${
+                              variant.price > 0
+                                ? "bg-purple-50 text-[#8814B1] border-purple-100"
+                                : "bg-gray-50 text-gray-300 border-gray-100 group-hover:bg-white"
+                            }`}
+                          >
+                            {size}
+                          </div>
                         </div>
 
-                        {/* Inputs Grid */}
-                        <div className="flex-1 grid grid-cols-2 gap-4">
+                        {/* Inputs (9 cols) */}
+                        <div className="col-span-9 grid grid-cols-3 gap-6">
                           <div>
-                            <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
-                              Ориг. цена
+                            <label className="block text-[10px] uppercase tracking-widest font-black text-gray-400 mb-2 ml-1">
+                              ОРИГ. ЦЕНА
                             </label>
-                            <input
-                              type="number"
-                              value={variant.oldPrice || ""}
-                              onChange={(e) =>
-                                handleLocalVariantChange(
-                                  size,
-                                  "oldPrice",
-                                  e.target.value,
-                                )
-                              }
-                              placeholder="0"
-                              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
-                            />
+                            <div className="relative">
+                              <input
+                                type="number"
+                                value={variant.oldPrice || ""}
+                                onChange={(e) =>
+                                  handleLocalVariantChange(
+                                    size,
+                                    "oldPrice",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="0"
+                                className="w-full pl-4 pr-10 py-3.5 bg-gray-50/50 border border-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none transition-all font-bold text-gray-700"
+                              />
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 font-bold text-xs">
+                                UZS
+                              </span>
+                            </div>
                           </div>
+
                           <div>
-                            <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
-                              Промо цена
+                            <label className="block text-[10px] uppercase tracking-widest font-black text-[#8814B1] mb-2 ml-1">
+                              ПРОМО ЦЕНА
                             </label>
-                            <input
-                              type="number"
-                              value={variant.promoPrice || ""}
-                              onChange={(e) =>
-                                handleLocalVariantChange(
-                                  size,
-                                  "promoPrice",
-                                  e.target.value,
-                                )
-                              }
-                              placeholder="0"
-                              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
-                            />
+                            <div className="relative">
+                              <input
+                                type="number"
+                                value={variant.promoPrice || ""}
+                                onChange={(e) =>
+                                  handleLocalVariantChange(
+                                    size,
+                                    "promoPrice",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="0"
+                                className="w-full pl-4 pr-10 py-3.5 bg-purple-50/30 border border-purple-100/50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none transition-all font-bold text-[#8814B1]"
+                              />
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-200 font-bold text-xs">
+                                UZS
+                              </span>
+                            </div>
                           </div>
+
                           <div>
-                            <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-1">
-                              Количество
+                            <label className="block text-[10px] uppercase tracking-widest font-black text-gray-400 mb-2 ml-1">
+                              В НАЛИЧИИ (ШТ)
                             </label>
                             <input
                               type="number"
@@ -341,32 +411,38 @@ export default function ColorPicker({
                                 )
                               }
                               placeholder="0"
-                              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8814B1] outline-none"
+                              className="w-full px-4 py-3.5 bg-gray-50/50 border border-gray-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none transition-all font-bold text-gray-700"
                             />
                           </div>
                         </div>
 
-                        {/* Hide Stock Toggle */}
-                        <div className="shrink-0 flex items-center gap-2 h-full pt-4">
-                          <input
-                            type="checkbox"
-                            id={`hide-stock-${size}`}
-                            checked={variant.hideExactStock || false}
-                            onChange={(e) =>
+                        {/* Toggle (2 cols) */}
+                        <div className="col-span-2 flex flex-col items-center justify-center border-l border-gray-50 pl-2">
+                          <label className="block text-[10px] uppercase tracking-widest font-black text-gray-300 mb-3 text-center">
+                            СКРЫТЬ КОЛ-ВО
+                          </label>
+                          <div
+                            onClick={() =>
                               handleLocalVariantChange(
                                 size,
                                 "hideExactStock",
-                                e.target.checked,
+                                !variant.hideExactStock,
                               )
                             }
-                            className="w-5 h-5 rounded text-[#8814B1] focus:ring-[#8814B1] cursor-pointer"
-                          />
-                          <label
-                            htmlFor={`hide-stock-${size}`}
-                            className="text-[10px] uppercase tracking-wider font-bold text-gray-400 cursor-pointer"
+                            className={`w-14 h-8 rounded-full p-1 cursor-pointer transition-all duration-300 ${
+                              variant.hideExactStock
+                                ? "bg-[#8814B1]"
+                                : "bg-gray-200"
+                            }`}
                           >
-                            Скрыть кол-во
-                          </label>
+                            <div
+                              className={`w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 transform ${
+                                variant.hideExactStock
+                                  ? "translate-x-6"
+                                  : "translate-x-0"
+                              }`}
+                            />
+                          </div>
                         </div>
                       </div>
                     );
@@ -396,6 +472,49 @@ export default function ColorPicker({
         )}
       </div>
       {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && colorToDeleteIndex !== null && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsDeleteModalOpen(false)}
+          />
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center space-y-6 animate-in fade-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+              <FiX size={32} />
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Удалить цвет?
+              </h2>
+              <p className="text-gray-500 mt-2">
+                Вы уверены, что хотите удалить цвет{" "}
+                <strong>"{colors[colorToDeleteIndex].name}"</strong> и все его
+                варианты?
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                className="flex-1 px-6 py-3 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                className="flex-1 px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-shadow shadow-lg shadow-red-200"
+                onClick={() => removeColor(colorToDeleteIndex)}
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

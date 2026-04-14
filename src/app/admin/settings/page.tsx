@@ -51,10 +51,10 @@ export default function SettingsPage() {
   const handleToggleStatus = async (id: string) => {
     if (!settings) return;
 
-    const newCategories = settings.categories.map((c) => 
+    const newCategories: Category[] = settings.categories.map((c) => 
       c.id === id ? { ...c, status: c.status === "active" ? "soon" : "active" } : c
     );
-    const updatedSettings = { ...settings, categories: newCategories };
+    const updatedSettings: SettingsData = { ...settings, categories: newCategories };
 
     try {
       const response = await fetch("/api/settings", {
@@ -99,7 +99,7 @@ export default function SettingsPage() {
       return;
     }
 
-    let newCategories;
+    let newCategories: Category[];
     if (editingCategory) {
       // Edit
       newCategories = settings.categories.map(c => 
@@ -110,7 +110,7 @@ export default function SettingsPage() {
       newCategories = [...settings.categories, { id: catId, label: catLabel, status: "soon" as const }];
     }
 
-    const updatedSettings = { ...settings, categories: newCategories };
+    const updatedSettings: SettingsData = { ...settings, categories: newCategories };
 
     try {
       setSaving(true);

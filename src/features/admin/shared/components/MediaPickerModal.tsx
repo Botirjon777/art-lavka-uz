@@ -42,7 +42,7 @@ export default function MediaPickerModal({
     const matchesSearch =
       (item.name || "").toLowerCase().includes(search.toLowerCase()) ||
       item.url.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesFilter = filter === "all" || item.source === filter;
 
     return matchesSearch && matchesFilter;
@@ -56,8 +56,13 @@ export default function MediaPickerModal({
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 tracking-tight">История медиа-файлов</h2>
-            <p className="text-sm text-gray-500">Выберите ранее загруженное изображение для повторного использования</p>
+            <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
+              История медиа-файлов
+            </h2>
+            <p className="text-sm text-gray-500">
+              Выберите ранее загруженное изображение для повторного
+              использования
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -107,8 +112,8 @@ export default function MediaPickerModal({
             </div>
           ) : filteredMedia.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-2">
-               <FiCheck className="w-12 h-12 opacity-20" />
-               <p className="text-sm">Изображения не найдены</p>
+              <FiCheck className="w-12 h-12 opacity-20" />
+              <p className="text-sm">Изображения не найдены</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-4">
@@ -128,9 +133,13 @@ export default function MediaPickerModal({
                     className="object-cover transition-transform group-hover:scale-105"
                     sizes="200px"
                   />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 text-left translate-y-full group-hover:translate-y-0 transition-transform">
-                    <p className="text-[10px] text-white font-bold truncate leading-tight">{item.name || "Без названия"}</p>
-                    <p className="text-[9px] text-purple-200 uppercase tracking-wider font-extrabold">{item.source}</p>
+                  <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-2 text-left translate-y-full group-hover:translate-y-0 transition-transform">
+                    <p className="text-[10px] text-white font-bold truncate leading-tight">
+                      {item.name || "Без названия"}
+                    </p>
+                    <p className="text-[9px] text-purple-200 uppercase tracking-wider font-extrabold">
+                      {item.source}
+                    </p>
                   </div>
                 </button>
               ))}
