@@ -142,20 +142,33 @@ export default function ProductsModal({
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                       </div>
-                      <div className="flex items-center justify-center gap-2 group">
-                        <p className="text-[16px]/[22px] text-[#333333] font-medium group-hover:text-[#8814B1] transition-colors">
-                          {product.name}
-                        </p>
-                        <Tooltip
-                          content={product.description || "Нет описания"}
-                          position="top"
-                        >
-                          <CiCircleQuestion
-                            size={20}
-                            className="text-gray-400 hover:text-[#8814B1] transition-colors cursor-help"
-                          />
-                        </Tooltip>
-                      </div>
+                      <Tooltip
+                        content={product.description || "Нет описания"}
+                        position="top"
+                      >
+                        <div className="flex flex-col items-center gap-1 group cursor-help">
+                          <div className="flex items-center justify-center gap-2">
+                            <p className="text-[16px]/[22px] text-[#333333] font-medium group-hover:text-[#8814B1] transition-colors">
+                              {product.name}
+                            </p>
+                            <CiCircleQuestion
+                              size={20}
+                              className="text-gray-400 group-hover:text-[#8814B1] transition-colors"
+                            />
+                          </div>
+                          {/* Price Display */}
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[15px] font-semibold ${product.promoPrice ? "text-[#8814B1]" : "text-[#333333]"}`}>
+                              {(product.promoPrice || product.price).toLocaleString()} сум
+                            </span>
+                            {product.promoPrice && (
+                              <span className="text-[13px] text-gray-400 line-through">
+                                {product.price.toLocaleString()} сум
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Tooltip>
                     </button>
                   </div>
                 ));

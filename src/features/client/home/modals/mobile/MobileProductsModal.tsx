@@ -132,9 +132,19 @@ export default function MobileProductsModal({
                         className="object-cover group-active:scale-95 transition-transform duration-200"
                       />
                     </div>
-                    <p className="text-sm text-[#333333] font-medium line-clamp-2">
+                    <p className="text-sm text-[#333333] font-medium line-clamp-1 mb-1">
                       {product.name}
                     </p>
+                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                      <span className={`text-[13px] font-bold ${product.promoPrice ? "text-[#8814B1]" : "text-[#333333]"}`}>
+                        {(product.promoPrice || product.price).toLocaleString()} сум
+                      </span>
+                      {product.promoPrice && (
+                        <span className="text-[11px] text-gray-400 line-through">
+                          {product.price.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ));
               })()}

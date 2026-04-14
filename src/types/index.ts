@@ -87,6 +87,7 @@ export interface CartItem {
   size: string;
   quantity: number;
   price: number;
+  oldPrice?: number;
 }
 
 export interface ConfiguratorState {
@@ -94,6 +95,8 @@ export interface ConfiguratorState {
   selectedColor: string;
   selectedSize: string;
   quantity: number;
+  price?: number;
+  oldPrice?: number;
 }
 
 export type ModalType = "menu" | "cart" | "gallery" | null;

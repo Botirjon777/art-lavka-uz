@@ -16,7 +16,7 @@ import {
 } from "react-icons/md";
 import { IconType } from "react-icons";
 import { RiTelegram2Line, RiArrowRightSLine, RiArrowLeftLine } from "react-icons/ri";
-import { normalizePhoneNumber } from "@/lib/phoneUtils";
+import { normalizePhoneNumber, applyPhoneMask } from "@/lib/phoneUtils";
 
 export default function TrackOrder() {
   const [orderNumber, setOrderNumber] = useState("");
@@ -230,7 +230,7 @@ export default function TrackOrder() {
                      <input
                       type="tel"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(applyPhoneMask(e.target.value))}
                       className="w-full pl-16 pr-6 py-5 bg-gray-50 border border-gray-100 rounded-[24px] focus:bg-white focus:ring-4 focus:ring-purple-50 focus:border-[#8814B1] outline-none transition-all font-black text-gray-900 placeholder:text-gray-300"
                       placeholder="XX XXX XX XX"
                     />

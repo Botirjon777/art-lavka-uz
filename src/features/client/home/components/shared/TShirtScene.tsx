@@ -51,7 +51,10 @@ function TShirtModel({
       return;
     }
 
-    const loadTexture = (url: string, setTexture: (t: THREE.Texture) => void): Promise<void> => {
+    const loadTexture = (
+      url: string,
+      setTexture: (t: THREE.Texture) => void,
+    ): Promise<void> => {
       if (textureCache[url]) {
         setTexture(textureCache[url]);
         return Promise.resolve();
@@ -71,7 +74,7 @@ function TShirtModel({
     };
 
     setIsLoadingTextures(true);
-    
+
     const tasks = [loadTexture(selectedPrint.frontImage, setFrontTexture)];
     if (selectedPrint.backImage) {
       tasks.push(loadTexture(selectedPrint.backImage, setBackTexture));
@@ -275,16 +278,16 @@ export default function TShirtScene({
           {isMobile && (
             <div className="absolute w-full bottom-0 left-0">
               {/* Product Name */}
-              <div className="px-4 py-3 text-center">
-                <p className="text-[13px]/[16px] text-[#333333] flex items-center justify-center gap-2 underline">
-                  {productName}
-                  <Tooltip content={productDescription} position="top">
+              <div className="px-4 py-3 text-center flex justify-center">
+                <Tooltip content={productDescription} position="top">
+                  <div className="text-[13px]/[16px] text-[#333333] flex items-center gap-2 cursor-help">
+                    {productName}
                     <AiFillQuestionCircle
                       size={18}
-                      className="text-[#666666] cursor-help"
+                      className="text-[#666666]"
                     />
-                  </Tooltip>
-                </p>
+                  </div>
+                </Tooltip>
               </div>
 
               {/* Buttons */}
@@ -295,33 +298,37 @@ export default function TShirtScene({
                 >
                   Выбрать принт
                 </button>
-                <button
-                  onClick={onProductClick}
-                  className="py-[15px] bg-white rounded-xl text-[13px]/[16px] text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                >
-                  Выбрать продукт
-                </button>
+                {onProductClick && (
+                  <button
+                    onClick={onProductClick}
+                    className="py-[15px] bg-white rounded-xl text-[13px]/[16px] text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  >
+                    Выбрать продукт
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {!isMobile && (
             <div className="hidden xl:flex absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex-col items-center gap-5">
-              <p className="text-[16px]/[20px] underline text-[#333333] flex items-center gap-[5px]">
-                {productName}{" "}
-                <Tooltip content={productDescription} position="top">
+              <Tooltip content={productDescription} position="top">
+                <div className="text-[16px]/[20px] underline text-[#333333] flex items-center gap-[5px] cursor-help">
+                  {productName}{" "}
                   <AiFillQuestionCircle
                     size={20}
-                    className="text-white cursor-help"
+                    className="text-gray-400 group-hover:text-white"
                   />
-                </Tooltip>
-              </p>
-              <button
-                onClick={onProductClick}
-                className="text-[16px]/[20px] py-[15px] px-[35px] cursor-pointer rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
-              >
-                Выбрать продукт
-              </button>
+                </div>
+              </Tooltip>
+              {onProductClick && (
+                <button
+                  onClick={onProductClick}
+                  className="text-[16px]/[20px] py-[15px] px-[35px] cursor-pointer rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
+                >
+                  Выбрать продукт
+                </button>
+              )}
             </div>
           )}
         </>

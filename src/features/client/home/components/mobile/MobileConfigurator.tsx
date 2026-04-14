@@ -59,8 +59,24 @@ export default function MobileConfigurator({
   const selectedVariant = selectedColor.variants.find(v => v.size === selectedSize);
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
-  const price = selectedVariant?.price || selectedProduct.price;
-  const oldPrice = selectedVariant?.oldPrice || selectedProduct.oldPrice;
+
+  // Pricing logic:
+  // 1. If variant has promoPrice, use it.
+  // 2. If product has promoPrice, use it.
+  // 3. Fallback to regular price.
+  const price = 
+    selectedVariant?.promoPrice || 
+    selectedProduct.promoPrice || 
+    selectedVariant?.price || 
+    selectedProduct.price;
+
+  // Old price logic:
+  // 1. If we are showing a promo price, the old price is the regular price.
+  // 2. If no promo, use the predefined oldPrice.
+  const hasPromo = !!(selectedVariant?.promoPrice || selectedProduct.promoPrice);
+  const oldPrice = hasPromo 
+    ? (selectedVariant?.price || selectedProduct.price)
+    : (selectedVariant?.oldPrice || selectedProduct.oldPrice);
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -69,6 +85,8 @@ export default function MobileConfigurator({
       selectedColor: selectedColor.name,
       selectedSize,
       quantity,
+      price,
+      oldPrice,
     });
   };
 
@@ -79,6 +97,8 @@ export default function MobileConfigurator({
       selectedColor: selectedColor.name,
       selectedSize,
       quantity,
+      price,
+      oldPrice,
     });
   };
 

@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import Dropdown from "@/components/ui/Dropdown";
 import MobileModal from "../mobile/MobileModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { normalizePhoneNumber } from "@/lib/phoneUtils";
+import { normalizePhoneNumber, applyPhoneMask } from "@/lib/phoneUtils";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -65,12 +65,12 @@ export default function CheckoutModal({
       newErrors.customerName = "Имя слишком короткое";
     }
 
-    // Basic Uzbekistan phone regex: +998 followed by 9 digits
-    const phoneRegex = /^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$|^\+998\d{9}$|^998\d{9}$|^\d{9}$/;
+    // Uzbekistan local phone: exactly 9 digits expected after masking spaces removed
+    const digits = customerPhone.replace(/\D/g, "");
     if (!customerPhone.trim()) {
       newErrors.customerPhone = "Введите номер телефона";
-    } else if (!phoneRegex.test(customerPhone.replace(/\s/g, ""))) {
-      newErrors.customerPhone = "Неверный формат номера (+998XXXXXXXXX)";
+    } else if (digits.length !== 9) {
+      newErrors.customerPhone = "Номер должен содержать 9 цифр";
     }
 
     if (!region) {
@@ -215,18 +215,21 @@ export default function CheckoutModal({
               <label className="block text-[13px]/[16px] text-[#333333] mb-1">
                 Номер телефона <span className="text-red-500">*</span>
               </label>
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => {
-                  setCustomerPhone(e.target.value);
-                  if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
-                }}
-                className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
-                  errors.customerPhone ? "border-red-500 focus:ring-red-200" : "border-gray-300"
-                }`}
-                placeholder="+998 XX XXX XX XX"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">+998</span>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => {
+                    setCustomerPhone(applyPhoneMask(e.target.value));
+                    if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
+                  }}
+                  className={`w-full pl-13 pr-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
+                    errors.customerPhone ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                  }`}
+                  placeholder="XX XXX XX XX"
+                />
+              </div>
               {errors.customerPhone && (
                 <p className="text-red-500 text-[11px] mt-1">{errors.customerPhone}</p>
               )}
@@ -400,18 +403,21 @@ export default function CheckoutModal({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Номер телефона <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="tel"
-                  value={customerPhone}
-                  onChange={(e) => {
-                    setCustomerPhone(e.target.value);
-                    if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
-                    errors.customerPhone ? "border-red-500 focus:ring-red-200" : "border-gray-300"
-                  }`}
-                  placeholder="+998 XX XXX XX XX"
-                />
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">+998</span>
+                  <input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => {
+                      setCustomerPhone(applyPhoneMask(e.target.value));
+                      if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
+                    }}
+                    className={`w-full pl-15 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                      errors.customerPhone ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                    }`}
+                    placeholder="XX XXX XX XX"
+                  />
+                </div>
                 {errors.customerPhone && (
                   <p className="text-red-500 text-xs mt-1">{errors.customerPhone}</p>
                 )}
