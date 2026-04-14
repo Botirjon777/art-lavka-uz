@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "@/components/Modal";
-import { Product } from "@/types";
+import { Product, ICategory } from "@/types";
 import Image from "next/image";
 import Tooltip from "@/components/ui/Tooltip";
 import { CiCircleQuestion } from "react-icons/ci";
@@ -24,29 +24,35 @@ export default function ProductsModal({
   const { data: products = [], isLoading: loading } = useProducts();
   const { data: settings } = useSettings();
   
-  const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
+  const [activeTab, setActiveTab] = useState<string>("");
 
-  const categoryStatuses = settings?.categoryStatuses || {
-    women: "active",
-    men: "soon",
-    kids: "soon",
-  };
-
-  const tabs = [
-    { id: "women" as const, label: "Женский", soon: categoryStatuses.women === "soon" },
-    { id: "men" as const, label: "Мужской", soon: categoryStatuses.men === "soon" },
-    { id: "kids" as const, label: "Детский", soon: categoryStatuses.kids === "soon" },
+  const categories: ICategory[] = settings?.categories || [
+    { id: "women", label: "Женский", status: "active" },
+    { id: "men", label: "Мужской", status: "soon" },
+    { id: "kids", label: "Детский", status: "soon" },
   ];
 
-  const allSoon = tabs.every((tab) => tab.soon);
+  const tabs = categories.map((cat: ICategory) => ({
+    id: cat.id,
+    label: cat.label,
+    soon: cat.status === "soon",
+  }));
+
+  const allSoon = tabs.every((tab: { soon: boolean }) => tab.soon);
 
   // Auto-select first active tab when settings load
   useEffect(() => {
-    if (settings) {
-      const firstActive = tabs.find((tab) => !tab.soon);
+    if (settings && settings.categories?.length > 0) {
+      const firstActive = settings.categories.find((cat: ICategory) => cat.status === "active");
       if (firstActive) {
         setActiveTab(firstActive.id);
+      } else {
+        // Fallback to first tab if none are active
+        setActiveTab(settings.categories[0].id);
       }
+    } else if (!settings) {
+       // Initial default if settings haven't loaded
+       setActiveTab("women");
     }
   }, [settings]);
 
@@ -80,7 +86,7 @@ export default function ProductsModal({
 
             {/* Tabs */}
             <div className="flex gap-10 mb-7.5 border-b border-gray-200">
-              {tabs.map((tab) => (
+              {tabs.map((tab: { id: string; label: string; soon: boolean }) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -136,20 +142,33 @@ export default function ProductsModal({
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                       </div>
-                      <div className="flex items-center justify-center gap-2 group">
-                        <p className="text-[16px]/[22px] text-[#333333] font-medium group-hover:text-[#8814B1] transition-colors">
-                          {product.name}
-                        </p>
-                        <Tooltip
-                          content={product.description || "Нет описания"}
-                          position="top"
-                        >
-                          <CiCircleQuestion
-                            size={20}
-                            className="text-gray-400 hover:text-[#8814B1] transition-colors cursor-help"
-                          />
-                        </Tooltip>
-                      </div>
+                      <Tooltip
+                        content={product.description || "Нет описания"}
+                        position="top"
+                      >
+                        <div className="flex flex-col items-center gap-1 group cursor-help">
+                          <div className="flex items-center justify-center gap-2">
+                            <p className="text-[16px]/[22px] text-[#333333] font-medium group-hover:text-[#8814B1] transition-colors">
+                              {product.name}
+                            </p>
+                            <CiCircleQuestion
+                              size={20}
+                              className="text-gray-400 group-hover:text-[#8814B1] transition-colors"
+                            />
+                          </div>
+                          {/* Price Display */}
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[15px] font-semibold ${product.promoPrice ? "text-[#8814B1]" : "text-[#333333]"}`}>
+                              {(product.promoPrice || product.price).toLocaleString()} сум
+                            </span>
+                            {product.promoPrice && (
+                              <span className="text-[13px] text-gray-400 line-through">
+                                {product.price.toLocaleString()} сум
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Tooltip>
                     </button>
                   </div>
                 ));

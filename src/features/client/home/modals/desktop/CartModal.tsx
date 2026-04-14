@@ -137,14 +137,15 @@ export default function CartModal({
                     </button>
                   </div>
 
-                  {/* Price */}
                   <div className="text-left min-w-[120px]">
                     <p className="text-[22px] text-[#333333]">
                       {(item.price * item.quantity).toLocaleString()} сум
                     </p>
-                    <p className="text-[16px] text-[#9F9F9F] line-through">
-                      {(item.price * item.quantity * 1.2).toLocaleString()} сум
-                    </p>
+                    {item.oldPrice && item.oldPrice > item.price && (
+                      <p className="text-[16px] text-[#9F9F9F] line-through">
+                        {(item.oldPrice * item.quantity).toLocaleString()} сум
+                      </p>
+                    )}
                   </div>
 
                   {/* Remove Button */}
@@ -182,9 +183,11 @@ export default function CartModal({
               <div className="space-y-3 mb-5">
                 <div className="flex justify-between text-[16px]/[22px]">
                   <span className="">Товары: {items.length} шт.</span>
-                  <span className="text-[#9F9F9F] line-through">
-                    {(total * 1.2).toLocaleString()} сум
-                  </span>
+                  {items.some(item => item.oldPrice && item.oldPrice > item.price) && (
+                    <span className="text-[#9F9F9F] line-through">
+                      {items.reduce((sum, item) => sum + (item.oldPrice || item.price) * item.quantity, 0).toLocaleString()} сум
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[16px]/[22px] ">Итого:</span>

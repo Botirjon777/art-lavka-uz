@@ -43,22 +43,40 @@ export default function MobileConfigurator({
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
-  // Reset selected size when color changes
-  useEffect(() => {
-    const firstInStock = selectedColor.variants.find(v => v.stock > 0);
+  const handleColorChange = (color: ProductColor) => {
+    setSelectedColor(color);
+    // Find first available size for the NEW color immediately to prevent flickering
+    const firstInStock = color.variants?.find((v) => v.stock > 0);
     if (firstInStock) {
       setSelectedSize(firstInStock.size);
-    } else if (selectedColor.variants.length > 0) {
-      setSelectedSize(selectedColor.variants[0].size);
+    } else if (color.variants && color.variants.length > 0) {
+      setSelectedSize(color.variants[0].size);
     } else {
       setSelectedSize("");
     }
-  }, [selectedColor]);
+  };
 
   const selectedVariant = selectedColor.variants.find(v => v.size === selectedSize);
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
-  const price = selectedVariant?.price || selectedProduct.price;
+
+  // Pricing logic:
+  // 1. If variant has promoPrice, use it.
+  // 2. If product has promoPrice, use it.
+  // 3. Fallback to regular price.
+  const price = 
+    selectedVariant?.promoPrice || 
+    selectedProduct.promoPrice || 
+    selectedVariant?.price || 
+    selectedProduct.price;
+
+  // Old price logic:
+  // 1. If we are showing a promo price, the old price is the regular price.
+  // 2. If no promo, use the predefined oldPrice.
+  const hasPromo = !!(selectedVariant?.promoPrice || selectedProduct.promoPrice);
+  const oldPrice = hasPromo 
+    ? (selectedVariant?.price || selectedProduct.price)
+    : (selectedVariant?.oldPrice || selectedProduct.oldPrice);
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -67,6 +85,8 @@ export default function MobileConfigurator({
       selectedColor: selectedColor.name,
       selectedSize,
       quantity,
+      price,
+      oldPrice,
     });
   };
 
@@ -77,6 +97,8 @@ export default function MobileConfigurator({
       selectedColor: selectedColor.name,
       selectedSize,
       quantity,
+      price,
+      oldPrice,
     });
   };
 
@@ -111,7 +133,7 @@ export default function MobileConfigurator({
               return (
                 <button
                   key={color.hex}
-                  onClick={() => hasStock && setSelectedColor(color)}
+                  onClick={() => hasStock && handleColorChange(color)}
                   disabled={!hasStock}
                   className={`w-10 h-10 rounded-full border-2 transition-all ${
                     selectedColor.hex === color.hex
@@ -139,16 +161,28 @@ export default function MobileConfigurator({
           </div>
           <div className="grid grid-cols-4 gap-2.5">
             {availableVariants.map((v) => {
-              if (v.stock === 0 || !v.price || v.price === 0) return null;
+              const price = v.price || v.promoPrice || v.oldPrice || 0;
+              const isHidden = price === 0 && v.stock === 0;
+              
+              if (isHidden) return null;
+
+              const isOutOfStock = v.stock === 0;
+              const isActive = selectedSize === v.size;
 
               return (
                 <button
                   key={v.size}
-                  onClick={() => setSelectedSize(v.size)}
-                  className={`py-[5px] text-[13px]/[16px] rounded-[5px] shadow-sm transition-all ${
-                    selectedSize === v.size
-                      ? "bg-[#00C6F1] text-white"
-                      : "bg-white text-[#333333]"
+                  onClick={() => !isOutOfStock && setSelectedSize(v.size)}
+                  disabled={isOutOfStock}
+                  style={isOutOfStock ? {
+                    backgroundImage: "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
+                  } : {}}
+                  className={`py-[5px] text-[13px]/[16px] rounded-[5px] shadow-sm transition-all relative border min-h-[32px] flex items-center justify-center ${
+                    isActive
+                      ? "bg-[#00C6F1] text-white border-[#00C6F1]"
+                      : isOutOfStock
+                      ? "bg-gray-100 text-[#9F9F9F] cursor-not-allowed opacity-60 border-gray-100"
+                      : "bg-white text-[#333333] border-transparent active:scale-95"
                   }`}
                 >
                   {v.size}
@@ -234,9 +268,11 @@ export default function MobileConfigurator({
         <div>
           <p className="text-[13px]/[16px] text-[#666666] mb-1">
             Цена{" "}
-            <span className="line-through text-[#9F9F9F]">
-              {(price * 1.2).toLocaleString()} сум
-            </span>
+            {oldPrice && oldPrice > price && (
+              <span className="line-through text-[#9F9F9F]">
+                {oldPrice.toLocaleString()} сум
+              </span>
+            )}
           </p>
           <p className="text-[20px]/[24px] text-[#333333]">
             {price.toLocaleString()} сум

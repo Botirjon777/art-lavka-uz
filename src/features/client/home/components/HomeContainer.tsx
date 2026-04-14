@@ -39,6 +39,7 @@ export default function HomeContainer() {
   const [prints, setPrints] = useState<PrintDesign[]>([]);
   const [printsLoading, setPrintsLoading] = useState(true);
   const [printCategories, setPrintCategories] = useState<{id: string, label: string}[]>([]);
+  const [hasMultipleProducts, setHasMultipleProducts] = useState(false);
 
   // Fetch products on mount and set up auto-refresh
   useEffect(() => {
@@ -91,23 +92,23 @@ export default function HomeContainer() {
           id: item._id,
         }));
 
+        setHasMultipleProducts(normalizedProducts.length > 1);
+
         if (!selectedProduct) {
           const activeSettings = currentSettings || settings;
           if (activeSettings) {
-            // Find first active category
             const categoryOrder = ["women", "men", "kids"] as const;
             const firstActiveCategory = categoryOrder.find(
-              (cat) => activeSettings.categoryStatuses[cat] === "active"
+              (cat) => activeSettings.categoryStatuses?.[cat] === "active"
             );
 
             if (firstActiveCategory) {
-              const firstProductInCategory = normalizedProducts.find(
+              const match = normalizedProducts.find(
                 (p: Product) => p.category === firstActiveCategory
               );
-              if (firstProductInCategory) {
-                setSelectedProduct(firstProductInCategory);
+              if (match) {
+                setSelectedProduct(match);
               } else {
-                // Fallback to absolute first product if no product matches active category
                 setSelectedProduct(normalizedProducts[0]);
               }
             } else {
@@ -117,18 +118,17 @@ export default function HomeContainer() {
             setSelectedProduct(normalizedProducts[0]);
           }
         } else {
-          const updatedProduct = normalizedProducts.find(
+          const updated = normalizedProducts.find(
             (p: Product) =>
               p.id === selectedProduct.id || p._id === selectedProduct._id
           );
-          if (updatedProduct) {
-            setSelectedProduct(updatedProduct);
+          if (updated) {
+            setSelectedProduct(updated);
           }
         }
       }
     } catch (error) {
       console.error("Error fetching products:", error);
-      // Don't show toast on auto-refresh errors to avoid spam
       if (!selectedProduct) {
         toast.error("Failed to load products");
       }
@@ -181,7 +181,8 @@ export default function HomeContainer() {
       color: config.selectedColor,
       size: config.selectedSize,
       quantity: config.quantity,
-      price: selectedProduct.price,
+      price: config.price || selectedProduct.price,
+      oldPrice: config.oldPrice,
     };
 
     setCartItems([...cartItems, newItem]);
@@ -198,7 +199,8 @@ export default function HomeContainer() {
       color: config.selectedColor,
       size: config.selectedSize,
       quantity: config.quantity,
-      price: selectedProduct.price,
+      price: config.price || selectedProduct.price,
+      oldPrice: config.oldPrice,
     };
 
     setOneClickItem(newItem);
@@ -297,7 +299,7 @@ export default function HomeContainer() {
               selectedPrint={selectedPrint}
               onAddToCart={handleAddToCart}
               onBuyOneClick={handleBuyOneClick}
-              onProductClick={() => setActiveModal("products")}
+              onProductClick={hasMultipleProducts ? () => setActiveModal("products") : undefined}
             />
           </div>
 
@@ -308,7 +310,7 @@ export default function HomeContainer() {
               selectedPrint={selectedPrint}
               onAddToCart={handleAddToCart}
               onBuyOneClick={handleBuyOneClick}
-              onProductClick={() => setActiveModal("products")}
+              onProductClick={hasMultipleProducts ? () => setActiveModal("products") : undefined}
               onPrintClick={() => setActiveModal("prints")}
             />
           </div>

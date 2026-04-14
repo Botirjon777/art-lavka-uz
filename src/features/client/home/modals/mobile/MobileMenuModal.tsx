@@ -7,6 +7,8 @@ import { RiTelegram2Fill } from "react-icons/ri";
 import { MdOutlineEmail } from "react-icons/md";
 import Link from "next/link";
 
+import { useSettings } from "@/features/client/home/hooks/useSettings";
+
 interface MobileMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,10 +21,15 @@ export default function MobileMenuModal({
   onGalleryClick,
 }: MobileMenuModalProps) {
   const [openSection, setOpenSection] = useState<string | null>("delivery");
+  const { data: settings, isLoading } = useSettings();
 
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
   };
+
+  if (isLoading || !settings) return null;
+
+  const { menu } = settings;
 
   return (
     <MobileModal isOpen={isOpen} onClose={onClose} showCloseButton={false}>
@@ -50,17 +57,8 @@ export default function MobileMenuModal({
           </svg>
         </button>
         {openSection === "delivery" && (
-          <div className="pb-5 text-[14px] text-[#666666] leading-relaxed">
-            Доставка по городу Фергана бесплатная.
-            <br />
-            <br />
-            Доставка в другие города Узбекистана осуществляется курьерской
-            службой по усмотрению для заказов стоимостью до 200 000 сум в
-            количестве от 4-5 единиц товара.
-            <br />
-            <br />
-            Срок доставки от 24 до 7дн рабочих дней, в зависимости от
-            удаленности региона.
+          <div className="pb-5 text-[14px] text-[#666666] leading-relaxed whitespace-pre-wrap px-1">
+            {menu.delivery}
           </div>
         )}
 
@@ -87,10 +85,9 @@ export default function MobileMenuModal({
           </svg>
         </button>
         {openSection === "payment" && (
-          <div className="pb-5 space-y-4">
-            <p className="text-[14px]/[17px] text-[#333333]">
-              Мы принимаем оплату с карт UZCARD, HUMO любых банков, а также
-              Payme CARD.
+          <div className="pb-5 space-y-4 px-1">
+            <p className="text-[14px]/[17px] text-[#333333] whitespace-pre-wrap">
+              {menu.payment}
             </p>
             <div className="flex items-center gap-2.5">
               <div className="flex-1 h-21 bg-[#efefef] rounded-lg flex items-center justify-center">
@@ -146,9 +143,9 @@ export default function MobileMenuModal({
           </svg>
         </button>
         {openSection === "contact" && (
-          <div className="pb-5 space-y-3">
+          <div className="pb-5 space-y-3 px-1">
             <a
-              href="https://t.me/artlavkauz"
+              href={menu.telegram}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 p-3 rounded-lg transition-colors"
@@ -158,11 +155,11 @@ export default function MobileMenuModal({
               </div>
               <div className="text-sm">
                 <p className="text-[#333333] font-medium">Telegram</p>
-                <p className="text-[#8814B1]">https://t.me/artlavkauz</p>
+                <p className="text-[#8814B1] break-all">{menu.telegram}</p>
               </div>
             </a>
             <a
-              href="mailto:support@artlavka.uz"
+              href={`mailto:${menu.email}`}
               className="flex items-center gap-3 p-3 rounded-lg transition-colors"
             >
               <div className="w-10 h-10 bg-[#229ED9] rounded-full flex items-center justify-center text-white shrink-0">
@@ -170,7 +167,7 @@ export default function MobileMenuModal({
               </div>
               <div className="text-sm">
                 <p className="text-[#333333] font-medium">Электронная почта</p>
-                <p className="text-[#8814B1]">support@artlavka.uz</p>
+                <p className="text-[#8814B1]">{menu.email}</p>
               </div>
             </a>
           </div>
@@ -199,39 +196,14 @@ export default function MobileMenuModal({
           </svg>
         </button>
         {openSection === "about" && (
-          <div className="pb-5 space-y-4">
-            <ul className="list-disc pl-5 text-[14px]/[17px] text-[#333333] leading-relaxed space-y-3">
-              <li>
-                Добро пожаловать в наш интернет магазин эксклюзивных
-                дизайнерских футболок! Мы рады предложить вам уникальные и
-                стильные футболки с авторскими иллюстрациями, созданные нашим
-                талантливым художником.
-              </li>
-              <li>
-                Мы используем только качественные материалы и современные
-                технологии печати, чтобы гарантировать долговечность и яркость
-                наших изделий.
-              </li>
-              <li>
-                В нашем каталоге вы найдете множество разнообразных дизайнов -
-                от креативных и смешных до серьезных и стильных. Мы уверены, что
-                каждый найдет у нас футболку, которая подойдет именно ему.
-              </li>
-              <li>
-                Мы ценим каждого нашего клиента и гарантируем быструю и надежную
-                доставку по всей стране. Если у вас возникнут вопросы или
-                пожелания, наша команда всегда готова помочь вам.
-              </li>
-              <li>
-                Спасибо, что выбрали нас! Мы надеемся, что наши футболки станут
-                вашими любимыми вещами в гардеробе и подарят вам много радости и
-                улыбок!
-              </li>
-            </ul>
+          <div className="pb-5 space-y-4 px-1">
+            <div className="text-[14px]/[17px] text-[#333333] leading-relaxed whitespace-pre-wrap">
+              {menu.about}
+            </div>
 
             <div className="space-y-3 pt-2">
               <a
-                href="https://www.instagram.com/yana_zakhary/"
+                href={menu.instagramArtists}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 transition-colors"
@@ -248,13 +220,13 @@ export default function MobileMenuModal({
                 <div className="text-sm">
                   <p className="text-[#333333]">Художники:</p>
                   <p className="text-[#8814B1] text-[14px]/[17px] break-all">
-                    instagram.com/yana_zakhary
+                    {menu.instagramArtists}
                   </p>
                 </div>
               </a>
 
               <a
-                href="https://www.instagram.com/art_lavka.uz/"
+                href={menu.instagramStore}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 transition-colors"
@@ -269,9 +241,9 @@ export default function MobileMenuModal({
                   </svg>
                 </div>
                 <div className="text-sm">
-                  <p className="text-[#333333]">Следите за нами в Instagram:</p>
+                  <p className="text-[#333333]">Instagram:</p>
                   <p className="text-[#8814B1] text-[14px]/[17px] break-all">
-                    instagram.com/art_lavka.uz
+                    {menu.instagramStore}
                   </p>
                 </div>
               </a>

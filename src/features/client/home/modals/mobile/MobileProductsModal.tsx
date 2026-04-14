@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import MobileModal from "./MobileModal";
-import { Product } from "@/types";
+import { Product, ICategory } from "@/types";
 import Image from "next/image";
 import { useProducts } from "../../hooks/useProducts";
 import { useSettings } from "../../hooks/useSettings";
@@ -22,29 +22,35 @@ export default function MobileProductsModal({
   const { data: products = [], isLoading: loading } = useProducts();
   const { data: settings } = useSettings();
   
-  const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
+  const [activeTab, setActiveTab] = useState<string>("");
 
-  const categoryStatuses = settings?.categoryStatuses || {
-    women: "active",
-    men: "soon",
-    kids: "soon",
-  };
-
-  const tabs = [
-    { id: "women" as const, label: "Женский", soon: categoryStatuses.women === "soon" },
-    { id: "men" as const, label: "Мужской", soon: categoryStatuses.men === "soon" },
-    { id: "kids" as const, label: "Детский", soon: categoryStatuses.kids === "soon" },
+  const categories: ICategory[] = settings?.categories || [
+    { id: "women", label: "Женский", status: "active" },
+    { id: "men", label: "Мужской", status: "soon" },
+    { id: "kids", label: "Детский", status: "soon" },
   ];
 
-  const allSoon = tabs.every((tab) => tab.soon);
+  const tabs = categories.map((cat: ICategory) => ({
+    id: cat.id,
+    label: cat.label,
+    soon: cat.status === "soon",
+  }));
+
+  const allSoon = tabs.every((tab: { soon: boolean }) => tab.soon);
 
   // Auto-select first active tab when settings load
   useEffect(() => {
-    if (settings) {
-      const firstActive = tabs.find((tab) => !tab.soon);
+    if (settings && settings.categories?.length > 0) {
+      const firstActive = settings.categories.find((cat: ICategory) => cat.status === "active");
       if (firstActive) {
         setActiveTab(firstActive.id);
+      } else {
+        // Fallback to first tab if none are active
+        setActiveTab(settings.categories[0].id);
       }
+    } else if (!settings) {
+       // Initial default if settings haven't loaded
+       setActiveTab("women");
     }
   }, [settings]);
 
@@ -53,7 +59,7 @@ export default function MobileProductsModal({
       <div className="px-5 pt-16">
         {/* Tabs */}
         <div className="flex gap-2.5 mb-6">
-          {tabs.map((tab) => (
+          {tabs.map((tab: { id: string; label: string; soon: boolean }) => (
             <button
               key={tab.id}
               onClick={() => !tab.soon && setActiveTab(tab.id)}
@@ -126,9 +132,19 @@ export default function MobileProductsModal({
                         className="object-cover group-active:scale-95 transition-transform duration-200"
                       />
                     </div>
-                    <p className="text-sm text-[#333333] font-medium line-clamp-2">
+                    <p className="text-sm text-[#333333] font-medium line-clamp-1 mb-1">
                       {product.name}
                     </p>
+                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                      <span className={`text-[13px] font-bold ${product.promoPrice ? "text-[#8814B1]" : "text-[#333333]"}`}>
+                        {(product.promoPrice || product.price).toLocaleString()} сум
+                      </span>
+                      {product.promoPrice && (
+                        <span className="text-[11px] text-gray-400 line-through">
+                          {product.price.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ));
               })()}

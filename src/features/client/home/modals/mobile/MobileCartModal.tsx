@@ -136,15 +136,15 @@ export default function MobileCartModal({
                         </button>
                       </div>
 
-                      {/* Price */}
-                      <div className="mt-2">
+                      <div className="mt-2 text-left">
                         <p className="text-[16px]/[20px] text-[#333333]">
                           {(item.price * item.quantity).toLocaleString()} сум
                         </p>
-                        <p className="text-[13px]/[16px] text-[#9F9F9F] line-through">
-                          {(item.price * item.quantity * 1.2).toLocaleString()}{" "}
-                          сум
-                        </p>
+                        {item.oldPrice && item.oldPrice > item.price && (
+                          <p className="text-[13px]/[16px] text-[#9F9F9F] line-through">
+                            {(item.oldPrice * item.quantity).toLocaleString()} сум
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -183,9 +183,11 @@ export default function MobileCartModal({
               <h3 className="text-[22px]/[27px]">Оплата</h3>
               <div className="flex gap-2.5 text-[13px]/[22px]">
                 <span>Товары: {items.length} шт.</span>
-                <span className="text-[#9F9F9F] line-through">
-                  {(total * 1.2).toLocaleString()} сум
-                </span>
+                {items.some(item => item.oldPrice && item.oldPrice > item.price) && (
+                  <span className="text-[#9F9F9F] line-through">
+                    {items.reduce((sum, item) => sum + (item.oldPrice || item.price) * item.quantity, 0).toLocaleString()} сум
+                  </span>
+                )}
               </div>
               <div className="flex gap-2.5 items-center">
                 <span className="text-[13px]/[22px]">Итого:</span>

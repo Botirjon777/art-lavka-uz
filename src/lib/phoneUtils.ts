@@ -51,3 +51,33 @@ export function formatPhoneNumber(digits: string): string {
   // Fallback: just prepend + if it looks like a full number
   return d.startsWith("998") ? "+" + d : d;
 }
+
+/**
+ * Applies an input mask to a phone number string (Uzbekistan format: XX XXX XX XX).
+ * 
+ * @param value The raw input value
+ * @returns A masked string
+ */
+export function applyPhoneMask(value: string): string {
+  // Extract only digits
+  const digits = value.replace(/\D/g, "");
+  
+  // Limit to 9 digits (Uzbekistan local number length)
+  const d = digits.substring(0, 9);
+  
+  let result = "";
+  if (d.length > 0) {
+    result += d.substring(0, 2);
+  }
+  if (d.length > 2) {
+    result += " " + d.substring(2, 5);
+  }
+  if (d.length > 5) {
+    result += " " + d.substring(5, 7);
+  }
+  if (d.length > 7) {
+    result += " " + d.substring(7, 9);
+  }
+  
+  return result;
+}

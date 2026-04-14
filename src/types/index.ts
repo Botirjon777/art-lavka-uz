@@ -16,6 +16,8 @@ export interface ProductInventory {
 export interface ProductVariant {
   size: string;
   price: number;
+  oldPrice?: number;
+  promoPrice?: number;
   stock: number;
   hideExactStock?: boolean;
 }
@@ -33,6 +35,8 @@ export interface Product {
   image: string;
   category: string;
   price: number;
+  oldPrice?: number;
+  promoPrice?: number;
   model: string;
   colors?: ProductColor[];
   sizes?: string[];
@@ -41,6 +45,8 @@ export interface Product {
   description?: string;
   isNew?: boolean;
   sizeTable?: SizeTableEntry[];
+  lastPromoSentAt?: string;
+  updatedAt?: string;
 }
 
 
@@ -81,6 +87,7 @@ export interface CartItem {
   size: string;
   quantity: number;
   price: number;
+  oldPrice?: number;
 }
 
 export interface ConfiguratorState {
@@ -88,6 +95,8 @@ export interface ConfiguratorState {
   selectedColor: string;
   selectedSize: string;
   quantity: number;
+  price?: number;
+  oldPrice?: number;
 }
 
 export type ModalType = "menu" | "cart" | "gallery" | null;
@@ -139,3 +148,39 @@ export type OrderStatus =
   | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type PaymentMethod = "cash" | "payme" | "click";
+
+export interface Publication {
+  _id: string;
+  title: string;
+  content?: string;
+  image?: string;
+  targetUrl: string;
+  views: number;
+  clicks: number;
+  isActive: boolean;
+  type: "news" | "promo" | "social";
+  lastBroadcastAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface ICategory {
+  id: string;
+  label: string;
+  status: "active" | "soon";
+}
+
+export interface ISettings {
+  categories: ICategory[];
+  menu: {
+    delivery: string;
+    payment: string;
+    about: string;
+    telegram: string;
+    email: string;
+    instagramArtists: string;
+    instagramStore: string;
+  };
+  categoryStatuses?: {
+    [key: string]: "active" | "soon";
+  };
+}
