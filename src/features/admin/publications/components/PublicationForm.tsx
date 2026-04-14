@@ -9,6 +9,7 @@ import { createPublication, updatePublication } from "../actions/publications";
 import { uploadFileAction } from "@/features/admin/shared/actions/upload";
 import { Button, Input, Textarea, Dropdown } from "@/components/ui";
 import Image from "next/image";
+import MediaPickerModal from "@/features/admin/shared/components/MediaPickerModal";
 
 interface PublicationFormProps {
   initialData?: Publication;
@@ -22,6 +23,7 @@ export default function PublicationForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 
   // Form State
   const [title, setTitle] = useState(initialData?.title || "");
@@ -180,31 +182,64 @@ export default function PublicationForm({
         <div className="space-y-6">
           {/* Image Upload */}
           <div className="bg-white rounded-[30px] p-8 shadow-sm border border-gray-100 space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-               <FiImage className="text-[#8814B1]" />
-               <h4 className="font-bold text-gray-800">Обложка</h4>
+            <div className="flex items-center justify-between gap-2 mb-2">
+               <div className="flex items-center gap-2">
+                 <FiImage className="text-[#8814B1]" />
+                 <h4 className="font-bold text-gray-800">Обложка</h4>
+               </div>
+               <button
+                 type="button"
+                 onClick={() => setIsMediaPickerOpen(true)}
+                 className="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 bg-purple-50 px-2 py-1 rounded-lg transition-all"
+               >
+                 <FiTrendingUp className="w-3 h-3" />
+                 ИЗ ИСТОРИИ
+               </button>
             </div>
             
             <div className="relative aspect-square bg-gray-50 rounded-[20px] overflow-hidden border-2 border-dashed border-gray-200 flex items-center justify-center group">
               {imageUrl ? (
                 <>
                   <Image src={imageUrl} alt="Preview" fill className="object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <label className="cursor-pointer px-4 py-2 bg-white text-[#8814B1] rounded-lg font-medium text-sm">
-                      {uploading ? "Загрузка..." : "Изменить"}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <label className="cursor-pointer px-3 py-2 bg-white text-[#8814B1] rounded-lg font-medium text-xs">
+                      {uploading ? "..." : "Новое"}
                       <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsMediaPickerOpen(true)}
+                      className="px-3 py-2 bg-[#8814B1] text-white rounded-lg font-medium text-xs shadow-sm hover:bg-[#8814B1]/90 transition-all"
+                    >
+                      История
+                    </button>
                   </div>
                 </>
               ) : (
-                <label className="cursor-pointer flex flex-col items-center gap-2 text-gray-400 hover:text-[#8814B1] transition-colors">
-                  <FiImage className="w-10 h-10" />
-                  <span className="text-sm font-medium">{uploading ? "Загрузка..." : "Загрузить фото"}</span>
-                  <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
-                </label>
+                <div className="flex flex-col items-center gap-4">
+                  <label className="cursor-pointer flex flex-col items-center gap-2 text-gray-400 hover:text-[#8814B1] transition-colors">
+                    <FiImage className="w-10 h-10" />
+                    <span className="text-sm font-medium">{uploading ? "Загрузка..." : "Загрузить фото"}</span>
+                    <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                  </label>
+                  <p className="text-xs text-gray-300">или</p>
+                  <button
+                    type="button"
+                    onClick={() => setIsMediaPickerOpen(true)}
+                    className="text-xs font-bold text-[#8814B1] bg-purple-50 px-4 py-2 rounded-xl border border-purple-100 hover:bg-purple-100 transition-all shadow-sm"
+                  >
+                    Выбрать из истории
+                  </button>
+                </div>
               )}
             </div>
           </div>
+
+          <MediaPickerModal
+            isOpen={isMediaPickerOpen}
+            onClose={() => setIsMediaPickerOpen(false)}
+            onSelect={(url) => setImageUrl(url)}
+          />
 
           {/* Type Selection */}
           <div className="bg-white rounded-[30px] p-8 shadow-sm border border-gray-100">
