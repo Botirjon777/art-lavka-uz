@@ -22,29 +22,35 @@ export default function MobileProductsModal({
   const { data: products = [], isLoading: loading } = useProducts();
   const { data: settings } = useSettings();
   
-  const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
+  const [activeTab, setActiveTab] = useState<string>("");
 
-  const categoryStatuses = settings?.categoryStatuses || {
-    women: "active",
-    men: "soon",
-    kids: "soon",
-  };
-
-  const tabs = [
-    { id: "women" as const, label: "Женский", soon: categoryStatuses.women === "soon" },
-    { id: "men" as const, label: "Мужской", soon: categoryStatuses.men === "soon" },
-    { id: "kids" as const, label: "Детский", soon: categoryStatuses.kids === "soon" },
+  const categories = settings?.categories || [
+    { id: "women", label: "Женский", status: "active" },
+    { id: "men", label: "Мужской", status: "soon" },
+    { id: "kids", label: "Детский", status: "soon" },
   ];
+
+  const tabs = categories.map((cat) => ({
+    id: cat.id,
+    label: cat.label,
+    soon: cat.status === "soon",
+  }));
 
   const allSoon = tabs.every((tab) => tab.soon);
 
   // Auto-select first active tab when settings load
   useEffect(() => {
-    if (settings) {
-      const firstActive = tabs.find((tab) => !tab.soon);
+    if (settings && settings.categories?.length > 0) {
+      const firstActive = settings.categories.find((cat: any) => cat.status === "active");
       if (firstActive) {
         setActiveTab(firstActive.id);
+      } else {
+        // Fallback to first tab if none are active
+        setActiveTab(settings.categories[0].id);
       }
+    } else if (!settings) {
+       // Initial default if settings haven't loaded
+       setActiveTab("women");
     }
   }, [settings]);
 
