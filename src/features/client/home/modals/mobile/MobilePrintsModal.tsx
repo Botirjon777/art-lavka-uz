@@ -10,6 +10,9 @@ interface MobilePrintsModalProps {
   onClose: () => void;
   onSelectPrint: (print: PrintDesign | null) => void;
   selectedPrint: PrintDesign | null;
+  initialPrints?: PrintDesign[];
+  initialLoading?: boolean;
+  printCategories?: { id: string; label: string }[];
 }
 
 export default function MobilePrintsModal({
@@ -17,17 +20,24 @@ export default function MobilePrintsModal({
   onClose,
   onSelectPrint,
   selectedPrint,
+  initialPrints,
+  initialLoading,
+  printCategories = [],
 }: MobilePrintsModalProps) {
+  const categories = [{ id: "all", label: "Все" }, ...printCategories];
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [prints, setPrints] = useState<PrintDesign[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [prints, setPrints] = useState<PrintDesign[]>(initialPrints || []);
+  const [loading, setLoading] = useState(initialLoading ?? true);
 
   useEffect(() => {
-    if (isOpen) {
+    if (initialPrints && initialPrints.length > 0) {
+      setPrints(initialPrints);
+      setLoading(false);
+    } else if (isOpen) {
       fetchPrints();
     }
-  }, [isOpen]);
+  }, [isOpen, initialPrints, initialLoading]);
 
   const fetchPrints = async () => {
     try {
@@ -45,12 +55,7 @@ export default function MobilePrintsModal({
     }
   };
 
-  const categories = [
-    { id: "all", label: "Все" },
-    { id: "national", label: "Национальные" },
-    { id: "stylish", label: "Стильные" },
-    { id: "funny", label: "Прикольные" },
-  ];
+
 
   const filteredPrints = prints.filter((p) => {
     const matchesCategory = activeTab === "all" || p.category === activeTab;

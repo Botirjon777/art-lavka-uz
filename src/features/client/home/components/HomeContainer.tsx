@@ -35,10 +35,25 @@ export default function HomeContainer() {
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [oneClickItem, setOneClickItem] = useState<CartItem | null>(null);
+  const [settings, setSettings] = useState<any>(null);
+  const [prints, setPrints] = useState<PrintDesign[]>([]);
+  const [printsLoading, setPrintsLoading] = useState(true);
+  const [printCategories, setPrintCategories] = useState<{id: string, label: string}[]>([]);
 
   // Fetch products on mount and set up auto-refresh
   useEffect(() => {
-    fetchProducts();
+    const initialize = async () => {
+      setLoading(true);
+      const currentSettings = await fetchSettings();
+      await Promise.all([
+        fetchProducts(currentSettings),
+        fetchPrints(),
+        fetchPrintCategories()
+      ]);
+    };
+
+    initialize();
+    fetchPrints();
 
     // Auto-refresh every 60 seconds (1 minute)
     const interval = setInterval(() => {
@@ -49,25 +64,59 @@ export default function HomeContainer() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch("/api/settings");
+      const data = await response.json();
+      if (data.success) {
+        setSettings(data.data);
+        return data.data;
+      }
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+    }
+    return null;
+  };
+
+  const fetchProducts = async (currentSettings?: any) => {
     try {
       const response = await fetch("/api/products", {
-        cache: "no-store", // Don't cache, always fetch fresh data
+        cache: "no-store",
       });
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {
-        // Normalize and set first product as default
         const normalizedProducts = data.data.map((item: any) => ({
           ...item,
           id: item._id,
         }));
 
-        // If no product selected yet, set the first one
         if (!selectedProduct) {
-          setSelectedProduct(normalizedProducts[0]);
+          const activeSettings = currentSettings || settings;
+          if (activeSettings) {
+            // Find first active category
+            const categoryOrder = ["women", "men", "kids"] as const;
+            const firstActiveCategory = categoryOrder.find(
+              (cat) => activeSettings.categoryStatuses[cat] === "active"
+            );
+
+            if (firstActiveCategory) {
+              const firstProductInCategory = normalizedProducts.find(
+                (p: Product) => p.category === firstActiveCategory
+              );
+              if (firstProductInCategory) {
+                setSelectedProduct(firstProductInCategory);
+              } else {
+                // Fallback to absolute first product if no product matches active category
+                setSelectedProduct(normalizedProducts[0]);
+              }
+            } else {
+              setSelectedProduct(normalizedProducts[0]);
+            }
+          } else {
+            setSelectedProduct(normalizedProducts[0]);
+          }
         } else {
-          // Update the selected product with fresh data if it exists
           const updatedProduct = normalizedProducts.find(
             (p: Product) =>
               p.id === selectedProduct.id || p._id === selectedProduct._id
@@ -85,6 +134,40 @@ export default function HomeContainer() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const fetchPrints = async () => {
+    try {
+      setPrintsLoading(true);
+      const response = await fetch("/api/prints?limit=100", {
+        next: { revalidate: 3600 },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setPrints(data.data.map((item: any) => ({ ...item, id: item._id })));
+      }
+    } catch (error) {
+      console.error("Error fetching prints:", error);
+    } finally {
+      setPrintsLoading(false);
+    }
+  };
+
+  const fetchPrintCategories = async () => {
+    try {
+      const response = await fetch("/api/prints/categories");
+      const data = await response.json();
+      if (data.success) {
+        setPrintCategories(
+          data.data.map((cat: any) => ({
+            id: cat.slug,
+            label: cat.name,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching print categories:", error);
     }
   };
 
@@ -134,6 +217,7 @@ export default function HomeContainer() {
 
   const handleSelectProduct = (product: Product) => {
     setSelectedProduct(product);
+    setActiveModal(null);
   };
 
   const handleCheckout = () => {
@@ -175,14 +259,23 @@ export default function HomeContainer() {
           </div>
         </div>
       ) : !selectedProduct ? (
-        <div className="flex items-center justify-center min-h-[600px]">
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">Товары временно отсутствуют</p>
+        <div className="flex items-center justify-center min-h-[600px] animate-in fade-in duration-1000">
+          <div className="text-center px-4">
+            <div className="mb-6 flex justify-center">
+              <img
+                src="/art-lavka.png"
+                alt="Logo"
+                className="w-48 h-auto opacity-20 grayscale"
+              />
+            </div>
+            <p className="text-gray-400 font-medium mb-6 uppercase tracking-widest text-sm">
+              Товары временно не найдены
+            </p>
             <button
-              onClick={() => setActiveModal("products")}
-              className="px-6 py-3 bg-[#8814B1] text-white rounded-xl hover:bg-[#8814B1]/90 transition-all font-bold"
+              onClick={() => fetchProducts()}
+              className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-all font-bold active:scale-95"
             >
-              Выбрать из каталога
+              Перезагрузить
             </button>
           </div>
         </div>
@@ -194,6 +287,9 @@ export default function HomeContainer() {
               onGalleryClick={() => setActiveModal("gallery")}
               selectedPrint={selectedPrint}
               onPrintSelect={setSelectedPrint}
+              initialPrints={prints}
+              initialLoading={printsLoading}
+              printCategories={printCategories}
             />
 
             <RightConfigurator
@@ -278,6 +374,9 @@ export default function HomeContainer() {
         onClose={() => setActiveModal(null)}
         onSelectPrint={setSelectedPrint}
         selectedPrint={selectedPrint}
+        initialPrints={prints}
+        initialLoading={printsLoading}
+        printCategories={printCategories}
       />
 
       <CheckoutModal

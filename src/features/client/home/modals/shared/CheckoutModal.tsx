@@ -32,6 +32,7 @@ export default function CheckoutModal({
   const [telegramUsername, setTelegramUsername] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Uzbekistan regions
   const uzbekistanRegions = [
@@ -55,17 +56,44 @@ export default function CheckoutModal({
 
   if (!isOpen) return null;
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!customerName.trim()) {
+      newErrors.customerName = "Введите ваше имя";
+    } else if (customerName.trim().length < 2) {
+      newErrors.customerName = "Имя слишком короткое";
+    }
+
+    // Basic Uzbekistan phone regex: +998 followed by 9 digits
+    const phoneRegex = /^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$|^\+998\d{9}$|^998\d{9}$|^\d{9}$/;
+    if (!customerPhone.trim()) {
+      newErrors.customerPhone = "Введите номер телефона";
+    } else if (!phoneRegex.test(customerPhone.replace(/\s/g, ""))) {
+      newErrors.customerPhone = "Неверный формат номера (+998XXXXXXXXX)";
+    }
+
+    if (!region) {
+      newErrors.region = "Выберите область";
+    }
+
+    if (!streetAddress.trim()) {
+      newErrors.streetAddress = "Введите адрес улицы";
+    }
+
+    if (!homeNumber.trim()) {
+      newErrors.homeNumber = "Введите номер дома/квартиры";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !customerName ||
-      !customerPhone ||
-      !region ||
-      !streetAddress ||
-      !homeNumber
-    ) {
-      toast.error("Пожалуйста, заполните все обязательные поля");
+    if (!validateForm()) {
+      toast.error("Пожалуйста, исправьте ошибки в форме");
       return;
     }
 
@@ -169,11 +197,18 @@ export default function CheckoutModal({
               <input
                 type="text"
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                onChange={(e) => {
+                  setCustomerName(e.target.value);
+                  if (errors.customerName) setErrors({ ...errors, customerName: "" });
+                }}
+                className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
+                  errors.customerName ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                }`}
                 placeholder="Например: Алиев Вали"
-                required
               />
+              {errors.customerName && (
+                <p className="text-red-500 text-[11px] mt-1">{errors.customerName}</p>
+              )}
             </div>
 
             <div>
@@ -183,25 +218,35 @@ export default function CheckoutModal({
               <input
                 type="tel"
                 value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                onChange={(e) => {
+                  setCustomerPhone(e.target.value);
+                  if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
+                }}
+                className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
+                  errors.customerPhone ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                }`}
                 placeholder="+998 XX XXX XX XX"
-                required
               />
+              {errors.customerPhone && (
+                <p className="text-red-500 text-[11px] mt-1">{errors.customerPhone}</p>
+              )}
             </div>
 
             {/* Region */}
             <Dropdown
               label="Область/Город"
               value={region}
-              onChange={(value) => setRegion(value)}
+              error={errors.region}
+              onChange={(value) => {
+                setRegion(value);
+                if (errors.region) setErrors({ ...errors, region: "" });
+              }}
               options={uzbekistanRegions.map((r) => ({
                 value: r,
                 label: r,
               }))}
               placeholder="Выберите область"
               buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
-              required
             />
 
             {/* Street Address */}
@@ -212,11 +257,18 @@ export default function CheckoutModal({
               <input
                 type="text"
                 value={streetAddress}
-                onChange={(e) => setStreetAddress(e.target.value)}
-                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                onChange={(e) => {
+                  setStreetAddress(e.target.value);
+                  if (errors.streetAddress) setErrors({ ...errors, streetAddress: "" });
+                }}
+                className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
+                  errors.streetAddress ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                }`}
                 placeholder="Например: улица Амира Темура, дом 15"
-                required
               />
+              {errors.streetAddress && (
+                <p className="text-red-500 text-[11px] mt-1">{errors.streetAddress}</p>
+              )}
             </div>
 
             {/* Home/Apartment Number */}
@@ -227,11 +279,18 @@ export default function CheckoutModal({
               <input
                 type="text"
                 value={homeNumber}
-                onChange={(e) => setHomeNumber(e.target.value)}
-                className="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px]"
+                onChange={(e) => {
+                  setHomeNumber(e.target.value);
+                  if (errors.homeNumber) setErrors({ ...errors, homeNumber: "" });
+                }}
+                className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
+                  errors.homeNumber ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                }`}
                 placeholder="Например: квартира 12"
-                required
               />
+              {errors.homeNumber && (
+                <p className="text-red-500 text-[11px] mt-1">{errors.homeNumber}</p>
+              )}
             </div>
 
             {/* Telegram Username */}
@@ -324,11 +383,18 @@ export default function CheckoutModal({
                 <input
                   type="text"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    if (errors.customerName) setErrors({ ...errors, customerName: "" });
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                    errors.customerName ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                  }`}
                   placeholder="Например: Алиев Вали"
-                  required
                 />
+                {errors.customerName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.customerName}</p>
+                )}
               </div>
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -337,11 +403,18 @@ export default function CheckoutModal({
                 <input
                   type="tel"
                   value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  onChange={(e) => {
+                    setCustomerPhone(e.target.value);
+                    if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                    errors.customerPhone ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                  }`}
                   placeholder="+998 XX XXX XX XX"
-                  required
                 />
+                {errors.customerPhone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.customerPhone}</p>
+                )}
               </div>
             </div>
 
@@ -349,13 +422,16 @@ export default function CheckoutModal({
             <Dropdown
               label="Область/Город"
               value={region}
-              onChange={(value) => setRegion(value)}
+              error={errors.region}
+              onChange={(value) => {
+                setRegion(value);
+                if (errors.region) setErrors({ ...errors, region: "" });
+              }}
               options={uzbekistanRegions.map((r) => ({
                 value: r,
                 label: r,
               }))}
               placeholder="Выберите область"
-              required
             />
 
             {/* Street Address */}
@@ -367,11 +443,18 @@ export default function CheckoutModal({
                 <input
                   type="text"
                   value={streetAddress}
-                  onChange={(e) => setStreetAddress(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  onChange={(e) => {
+                    setStreetAddress(e.target.value);
+                    if (errors.streetAddress) setErrors({ ...errors, streetAddress: "" });
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                    errors.streetAddress ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                  }`}
                   placeholder="Например: улица Амира Темура, дом 15"
-                  required
                 />
+                {errors.streetAddress && (
+                  <p className="text-red-500 text-xs mt-1">{errors.streetAddress}</p>
+                )}
               </div>
               {/* Home/Apartment Number */}
               <div className="flex-1">
@@ -381,11 +464,18 @@ export default function CheckoutModal({
                 <input
                   type="text"
                   value={homeNumber}
-                  onChange={(e) => setHomeNumber(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  onChange={(e) => {
+                    setHomeNumber(e.target.value);
+                    if (errors.homeNumber) setErrors({ ...errors, homeNumber: "" });
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                    errors.homeNumber ? "border-red-500 focus:ring-red-200" : "border-gray-300"
+                  }`}
                   placeholder="Например: квартира 12"
-                  required
                 />
+                {errors.homeNumber && (
+                  <p className="text-red-500 text-xs mt-1">{errors.homeNumber}</p>
+                )}
               </div>
             </div>
 

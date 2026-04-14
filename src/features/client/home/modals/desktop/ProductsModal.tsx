@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "@/components/Modal";
 import { Product } from "@/types";
 import Image from "next/image";
 import Tooltip from "@/components/ui/Tooltip";
 import { CiCircleQuestion } from "react-icons/ci";
 import { useProducts } from "../../hooks/useProducts";
+import { useSettings } from "../../hooks/useSettings";
+import { FiAlertTriangle } from "react-icons/fi";
 
 interface ProductsModalProps {
   isOpen: boolean;
@@ -19,14 +21,34 @@ export default function ProductsModal({
   onClose,
   onSelectProduct,
 }: ProductsModalProps) {
-  const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
   const { data: products = [], isLoading: loading } = useProducts();
+  const { data: settings } = useSettings();
+  
+  const [activeTab, setActiveTab] = useState<"women" | "men" | "kids">("women");
+
+  const categoryStatuses = settings?.categoryStatuses || {
+    women: "active",
+    men: "soon",
+    kids: "soon",
+  };
 
   const tabs = [
-    { id: "women" as const, label: "Женский", soon: false },
-    { id: "men" as const, label: "Мужской", soon: true },
-    { id: "kids" as const, label: "Детский", soon: true },
+    { id: "women" as const, label: "Женский", soon: categoryStatuses.women === "soon" },
+    { id: "men" as const, label: "Мужской", soon: categoryStatuses.men === "soon" },
+    { id: "kids" as const, label: "Детский", soon: categoryStatuses.kids === "soon" },
   ];
+
+  const allSoon = tabs.every((tab) => tab.soon);
+
+  // Auto-select first active tab when settings load
+  useEffect(() => {
+    if (settings) {
+      const firstActive = tabs.find((tab) => !tab.soon);
+      if (firstActive) {
+        setActiveTab(firstActive.id);
+      }
+    }
+  }, [settings]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -37,6 +59,18 @@ export default function ProductsModal({
               <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin"></div>
               <p className="text-[#666666] text-sm">Загрузка продуктов...</p>
             </div>
+          </div>
+        ) : allSoon ? (
+          <div className="flex flex-col items-center justify-center min-h-[500px] text-center px-4">
+            <div className="p-6 bg-purple-50 rounded-full mb-6">
+              <FiAlertTriangle className="w-16 h-16 text-[#8814B1]" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">
+              Извините, продуктов нет
+            </h3>
+            <p className="text-gray-500 max-w-sm mx-auto text-lg">
+              Все категории временно недоступны. Пожалуйста, зайдите позже или следите за обновлениями!
+            </p>
           </div>
         ) : (
           <>
@@ -65,15 +99,23 @@ export default function ProductsModal({
                 </button>
               ))}
             </div>
-
+ 
             {/* Product Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 pb-10">
-              {products.length === 0 ? (
-                <div className="col-span-full text-center py-20">
-                  <p className="text-gray-600">No products available</p>
-                </div>
-              ) : (
-                products.map((product) => (
+              {(() => {
+                const filteredProducts = products.filter(
+                  (product) => product.category === activeTab,
+                );
+                
+                if (filteredProducts.length === 0) {
+                  return (
+                    <div className="col-span-full text-center py-20 bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
+                      <p className="text-gray-400 font-medium">Нет доступных товаров в этой категории</p>
+                    </div>
+                  );
+                }
+
+                return filteredProducts.map((product) => (
                   <div
                     key={product.id}
                     className="group relative flex flex-col items-center"
@@ -110,8 +152,8 @@ export default function ProductsModal({
                       </div>
                     </button>
                   </div>
-                ))
-              )}
+                ));
+              })()}
             </div>
           </>
         )}

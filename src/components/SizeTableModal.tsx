@@ -5,9 +5,12 @@ import MobileModal from "@/features/client/home/modals/mobile/MobileModal";
 import { FiX } from "react-icons/fi";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
+import { SizeTableEntry } from "@/types";
+
 interface SizeTableModalProps {
   isOpen: boolean;
   onClose: () => void;
+  data?: SizeTableEntry[];
 }
 
 const sizeData = [
@@ -22,8 +25,11 @@ const sizeData = [
 export default function SizeTableModal({
   isOpen,
   onClose,
+  data,
 }: SizeTableModalProps) {
   const isMobile = useIsMobile();
+  
+  const displayData = data && data.length > 0 ? data : sizeData;
 
   // Mobile version
   if (isMobile) {
@@ -51,7 +57,7 @@ export default function SizeTableModal({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {sizeData.map((item) => (
+                {displayData.map((item) => (
                   <tr key={item.size} className="hover:bg-purple-50/30">
                     <td className="px-4 py-3 text-sm font-bold text-[#333333]">
                       {item.size}
@@ -115,7 +121,7 @@ export default function SizeTableModal({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {sizeData.map((item) => (
+              {displayData.map((item) => (
                 <tr
                   key={item.size}
                   className="hover:bg-purple-50/30 transition-colors group"

@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 
-// Cache for 1 hour
-export const revalidate = 3600;
+// Disable caching for products to ensure real-time updates
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {

@@ -13,12 +13,19 @@ export interface ProductVariant {
   size: string;
   price: number;
   stock: number;
+  hideExactStock?: boolean;
 }
 
 export interface ProductColor {
   name: string;
   hex: string;
   variants: ProductVariant[];
+}
+
+export interface SizeTableEntry {
+  size: string;
+  width: string;
+  height: string;
 }
 
 export interface IProduct {
@@ -30,6 +37,7 @@ export interface IProduct {
   model: string; // Path to 3D model file
   colors: ProductColor[]; // Available colors with variants
   sizes: string[]; // Available sizes
+  sizeTable?: SizeTableEntry[]; // Per-product size measurements
   stock: number; // Total stock
   active: boolean;
   featured?: boolean;
@@ -76,6 +84,7 @@ const ProductSchema = new Schema<IProduct>(
               size: { type: String, required: true },
               price: { type: Number, required: true, min: 0 },
               stock: { type: Number, required: true, min: 0 },
+              hideExactStock: { type: Boolean, default: false },
             },
           ],
         },
@@ -97,6 +106,10 @@ const ProductSchema = new Schema<IProduct>(
       type: Boolean,
       default: false,
     },
+    sizeTable: {
+      type: [Schema.Types.Mixed],
+      default: [],
+    },
     active: {
       type: Boolean,
       default: true,
@@ -104,8 +117,14 @@ const ProductSchema = new Schema<IProduct>(
   },
   {
     timestamps: true,
+    strict: false,
   }
 );
+
+// Force reload of model in development to pick up schema changes
+if (process.env.NODE_ENV === "development") {
+  delete mongoose.models.Product;
+}
 
 const Product =
   (mongoose.models.Product as Model<IProduct>) ||

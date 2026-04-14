@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useCreatePrint, useUpdatePrint } from "../hooks/useAdminPrints";
 import { useAdminPrintCategories } from "../hooks/useAdminCategories";
+import { uploadFileAction } from "../../shared/actions/upload";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
@@ -35,6 +36,7 @@ export default function PrintForm({
     initialData?.backImage || "",
   );
   const [category, setCategory] = useState(initialData?.category || "");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: categories = [] } = useAdminPrintCategories();
   const createMutation = useCreatePrint();
@@ -63,14 +65,9 @@ export default function PrintForm({
     formData.append("folder", "art-lavka/prints");
 
     try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const data = await uploadFileAction(formData);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (data.success && data.url) {
         setField(data.url);
         toast.success(`${fieldName} успешно загружено`);
       } else {
@@ -87,6 +84,21 @@ export default function PrintForm({
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
+    const name = (formData.get("name") as string) || "";
+    
+    // Validation
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = "Пожалуйста, введите название принта";
+    if (!category) newErrors.category = "Выберите категорию для принта";
+    if (!frontImageUrl) newErrors.imageFront = "Загрузите переднюю сторону принта";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Пожалуйста, заполните обязательные поля");
+      return;
+    }
+
+    setErrors({});
     formData.set("frontImage", frontImageUrl);
     if (backImageUrl) {
       formData.set("backImage", backImageUrl);
@@ -136,6 +148,7 @@ export default function PrintForm({
 
       <form
         onSubmit={handleSubmit}
+        noValidate
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
         <div className="lg:col-span-2 space-y-8">
@@ -156,6 +169,7 @@ export default function PrintForm({
                 required
                 defaultValue={initialData?.name}
                 placeholder="Например: Узбекский узор"
+                error={errors.name}
               />
 
               <div>
@@ -169,6 +183,7 @@ export default function PrintForm({
                   value={category}
                   onChange={setCategory}
                   required
+                  error={errors.category}
                 />
                 <input type="hidden" name="category" value={category} />
               </div>
@@ -192,6 +207,7 @@ export default function PrintForm({
                 </p>
                 <div
                   className={`relative aspect-square rounded-[32px] border-2 border-dashed transition-all overflow-hidden cursor-pointer group ${
+                    errors.imageFront ? "border-red-500 bg-red-50/10" :
                     frontImageUrl
                       ? "border-gray-100"
                       : "border-gray-200 hover:border-[#8814B1] hover:bg-purple-50/30"
@@ -247,6 +263,7 @@ export default function PrintForm({
                     </label>
                   )}
                 </div>
+                {errors.imageFront && <p className="text-[11px] text-red-500 font-bold uppercase mt-2 ml-1">{errors.imageFront}</p>}
               </div>
 
               {/* Back Image */}
@@ -350,7 +367,7 @@ export default function PrintForm({
             </div>
 
             <div className="mt-5 flex items-center gap-3">
-              <Button type="submit" disabled={loading || !frontImageUrl}>
+              <Button type="submit" disabled={loading}>
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : isEditing ? (

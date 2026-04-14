@@ -35,14 +35,20 @@ export default function MobileConfigurator({
   // Get sizes available FOR THE SELECTED COLOR
   const availableVariants = selectedColor.variants || [];
   const productSizes = availableVariants.map(v => v.size);
+  const firstInStockSize = availableVariants.find(v => v.stock > 0)?.size;
 
-  const [selectedSize, setSelectedSize] = useState(productSizes[0] || "");
+  const [selectedSize, setSelectedSize] = useState(
+    firstInStockSize || productSizes[0] || ""
+  );
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
   // Reset selected size when color changes
   useEffect(() => {
-    if (selectedColor.variants.length > 0) {
+    const firstInStock = selectedColor.variants.find(v => v.stock > 0);
+    if (firstInStock) {
+      setSelectedSize(firstInStock.size);
+    } else if (selectedColor.variants.length > 0) {
       setSelectedSize(selectedColor.variants[0].size);
     } else {
       setSelectedSize("");
@@ -133,7 +139,7 @@ export default function MobileConfigurator({
           </div>
           <div className="grid grid-cols-4 gap-2.5">
             {availableVariants.map((v) => {
-              if (v.stock === 0) return null;
+              if (v.stock === 0 || !v.price || v.price === 0) return null;
 
               return (
                 <button
@@ -159,9 +165,9 @@ export default function MobileConfigurator({
           </button>
 
           {/* Stock Info */}
-          {!isOutOfStock && sizeStock < 5 && (
-            <p className="text-orange-600 text-xs mt-5">
-              Осталось всего {sizeStock} шт.
+          {!isOutOfStock && (
+            <p className="text-green-600 text-sm font-medium mt-5 flex items-center gap-1">
+              <span className="text-lg">✓</span> В наличии
             </p>
           )}
         </div>
@@ -217,8 +223,8 @@ export default function MobileConfigurator({
             </button>
 
             {!isOutOfStock && (
-              <span className="text-sm text-[#666666] ml-2">
-                в наличии {sizeStock}
+              <span className="text-sm text-green-600 font-medium ml-2">
+                В наличии
               </span>
             )}
           </div>
@@ -270,6 +276,7 @@ export default function MobileConfigurator({
       <SizeTableModal
         isOpen={isSizeModalOpen}
         onClose={() => setIsSizeModalOpen(false)}
+        data={selectedProduct.sizeTable}
       />
     </div>
   );

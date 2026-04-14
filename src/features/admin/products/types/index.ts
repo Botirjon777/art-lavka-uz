@@ -1,3 +1,9 @@
+export interface SizeTableEntry {
+  size: string;
+  width: string;
+  height: string;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -7,4 +13,7 @@ export interface Product {
   image: string;
   stock: number;
   active: boolean;
+  sizeTable?: SizeTableEntry[];
+  createdAt?: string;
+  updatedAt?: string;
 }
