@@ -1,8 +1,4 @@
-import { config } from "dotenv";
 import { resolve } from "path";
-
-// Load .env.local file
-config({ path: resolve(process.cwd(), ".env.local") });
 
 import dbConnect from "../src/lib/mongodb";
 import Print from "../src/models/Print";
@@ -22,37 +18,37 @@ async function seedPrints() {
       process.exit(0);
     }
 
-    // Create some initial prints from Cloudinary
+    // Create some initial prints from optimized local WebP
     const prints = [
       {
         name: "Bear Ultra",
-        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078229/art-lavka/prints/bear-ultra.png",
+        frontImage: "/prints/compressed/bear-ultra.webp",
         category: "stylish",
         active: true,
       },
       {
         name: "Mickey Mouse",
-        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078255/art-lavka/prints/mickey-ultra.png",
+        frontImage: "/prints/compressed/mickey-ultra.webp",
         category: "stylish",
         active: true,
       },
       {
         name: "Garfield",
-        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078246/art-lavka/prints/garfield-ultra.png",
+        frontImage: "/prints/compressed/garfield-ultra.webp",
         category: "funny",
         active: true,
       },
       {
         name: "Uzbek Pattern",
-        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078286/art-lavka/prints/uzbek-national-front.jpg",
-        backImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078277/art-lavka/prints/uzbek-national-back.jpg",
+        frontImage: "/prints/compressed/uzbek-national-front.webp",
+        backImage: "/prints/compressed/uzbek-national-back.webp",
         category: "national",
         active: true,
       },
       {
         name: "Funny Cat",
-        frontImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078234/art-lavka/prints/cat-front.jpg",
-        backImage: "https://res.cloudinary.com/dwmodrs7i/image/upload/v1776078232/art-lavka/prints/cat-back.jpg",
+        frontImage: "/prints/compressed/cat-front.webp",
+        backImage: "/prints/compressed/cat-back.webp",
         category: "funny",
         active: true,
       },

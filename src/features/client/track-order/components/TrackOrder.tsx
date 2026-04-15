@@ -167,10 +167,18 @@ export default function TrackOrder() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCFE] py-12 px-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[#FDFCFE] py-12 px-6 flex flex-col">
+      <div className="max-w-4xl w-full mx-auto my-auto">
         {/* Header Section */}
-        <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="relative text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
+          <NextLink
+            href="/"
+            className="absolute left-0 top-0 flex items-center gap-2 px-4 py-2 bg-white text-gray-500 border border-gray-100 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-xs active:scale-95 group"
+          >
+            <RiArrowLeftLine size={18} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="hidden sm:inline text-sm">{t.backToHome}</span>
+          </NextLink>
+
           <NextLink href="/" className="inline-block mb-10 transform hover:scale-105 transition-transform">
             <Image
               src="/art-lavka.png"

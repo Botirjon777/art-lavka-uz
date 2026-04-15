@@ -1,7 +1,8 @@
 import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { join, parse } from "path";
 import { existsSync } from "fs";
 import cloudinary from "@/lib/cloudinary";
+import sharp from "sharp";
 
 export interface UploadResult {
   success: boolean;
@@ -76,8 +77,8 @@ export async function uploadToStorage(
 
     // Development: Save to public/uploads directory
     const timestamp = Date.now();
-    const originalName = file.name.replace(/\s+/g, "-");
-    const filename = `${timestamp}-${originalName}`;
+    const originalName = parse(file.name).name.replace(/\s+/g, "-");
+    const filename = `${timestamp}-${originalName}.webp`;
     
     const uploadDir = join(process.cwd(), "public", "uploads");
     

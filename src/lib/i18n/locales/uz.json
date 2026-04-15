@@ -134,5 +134,6 @@
   "errorOrderNotFound": "Buyurtma topilmadi",
   "errorEnterPhone": "Telefon raqamini kiriting",
   "errorOrdersNotFound": "Buyurtmalar topilmadi",
-  "errorLoadOrderDetails": "Buyurtma tafsilotlarini yuklashda xatolik"
+  "errorLoadOrderDetails": "Buyurtma tafsilotlarini yuklashda xatolik",
+  "backToHome": "Asosiy sahifaga"
 }

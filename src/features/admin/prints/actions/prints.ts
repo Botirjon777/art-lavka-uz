@@ -41,9 +41,9 @@ export async function createPrint(formData: FormData) {
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 
-    // Only add backImage if it's provided
+    // Handle backImage - check for null specifically to allow empty strings
     const backImage = formData.get("backImage") as string | null;
-    if (backImage) {
+    if (backImage !== null) {
       printData.backImage = backImage;
     }
 
@@ -68,9 +68,9 @@ export async function updatePrint(id: string, formData: FormData) {
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 
-    // Handle backImage - only include if provided
+    // Handle backImage - check for null specifically to allow clearing with empty string
     const backImage = formData.get("backImage") as string | null;
-    if (backImage) {
+    if (backImage !== null) {
       printData.backImage = backImage;
     }
 

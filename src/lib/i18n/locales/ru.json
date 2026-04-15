@@ -134,5 +134,6 @@
   "errorOrderNotFound": "Заказ не найден",
   "errorEnterPhone": "Введите номер телефона",
   "errorOrdersNotFound": "Заказы не найдены",
-  "errorLoadOrderDetails": "Ошибка при загрузке деталей заказа"
+  "errorLoadOrderDetails": "Ошибка при загрузке деталей заказа",
+  "backToHome": "На главную"
 }

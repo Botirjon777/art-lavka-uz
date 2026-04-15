@@ -134,5 +134,6 @@
   "errorOrderNotFound": "Order not found",
   "errorEnterPhone": "Please enter your phone number",
   "errorOrdersNotFound": "Orders not found",
-  "errorLoadOrderDetails": "Error loading order details"
+  "errorLoadOrderDetails": "Error loading order details",
+  "backToHome": "Back to Home"
 }
