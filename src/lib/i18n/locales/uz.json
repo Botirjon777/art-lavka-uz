@@ -45,6 +45,8 @@
   "phoneNumber": "Telefon raqami",
   "region": "Viloyat/Shahar",
   "regionPlaceholder": "Viloyatni tanlang",
+  "village": "Tuman / Shahar",
+  "villagePlaceholder": "Tuman yoki shaharni tanlang",
   "streetAddress": "Ko'cha manzili",
   "streetAddressPlaceholder": "Masalan: Amir Temur ko'chasi, 15-uy",
   "homeNumber": "Uy/kvartira raqami",

@@ -18,9 +18,12 @@ import { IconType } from "react-icons";
 import { RiTelegram2Line, RiArrowRightSLine, RiArrowLeftLine } from "react-icons/ri";
 import { normalizePhoneNumber, applyPhoneMask } from "@/lib/phoneUtils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { LOCATIONS } from "@/lib/i18n/locations";
 
 export default function TrackOrder() {
   const { t } = useTranslation();
+  const { lang } = useLanguageStore();
   const [orderNumber, setOrderNumber] = useState("");
   const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
@@ -154,6 +157,13 @@ export default function TrackOrder() {
       setError(t.errorLoadOrderDetails);
     }
     setLoading(false);
+  };
+
+  const getTranslatedVillage = (region: string, villageRu: string) => {
+    const districts = LOCATIONS[region as keyof typeof LOCATIONS] || [];
+    const district = districts.find((d) => d.ru === villageRu);
+    if (!district) return villageRu;
+    return district[lang as keyof typeof district] || district.ru;
   };
 
   return (
@@ -432,7 +442,12 @@ export default function TrackOrder() {
                <div className="space-y-8">
                   <div className="bg-gray-900 rounded-[40px] p-10 text-white shadow-2xl">
                      <h4 className="text-xl font-black mb-6">{t.deliveryAddress}</h4>
-                     <p className="text-gray-400 font-bold mb-8 leading-relaxed">{order.customerAddress}</p>
+                     <div className="space-y-1 mb-8">
+                        <p className="text-gray-400 font-bold leading-tight">
+                           {order.region}, {getTranslatedVillage(order.region, order.village)}
+                        </p>
+                        <p className="text-gray-400 font-bold leading-relaxed">{order.customerAddress}</p>
+                     </div>
                      <div className="bg-white/10 rounded-3xl p-6">
                         <p className="text-xs font-black text-purple-400 uppercase tracking-widest mb-2">{t.contactPerson}</p>
                         <p className="font-bold text-white text-lg">{order.customerName}</p>

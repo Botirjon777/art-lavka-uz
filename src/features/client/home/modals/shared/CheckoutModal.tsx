@@ -11,6 +11,7 @@ import { normalizePhoneNumber, applyPhoneMask } from "@/lib/phoneUtils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
+import { LOCATIONS } from "@/lib/i18n/locations";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export default function CheckoutModal({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [region, setRegion] = useState("");
+  const [village, setVillage] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [homeNumber, setHomeNumber] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
@@ -39,8 +41,14 @@ export default function CheckoutModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Use translated regions from locale file
+  // Get regions list from locations data (Russian keys)
+  const regionKeys = Object.keys(LOCATIONS);
+  
+  // Use translated regions from locale file for labels
   const uzbekistanRegions = t.regions as string[];
+  
+  // Get available districts for selected region
+  const availableDistricts = region ? (LOCATIONS[region as keyof typeof LOCATIONS] || []) : [];
 
   const isMobile = useIsMobile();
 
@@ -65,6 +73,10 @@ export default function CheckoutModal({
 
     if (!region) {
       newErrors.region = t.errorRegionRequired;
+    }
+
+    if (!village) {
+      newErrors.village = t.villagePlaceholder;
     }
 
     if (!streetAddress.trim()) {
@@ -120,6 +132,7 @@ export default function CheckoutModal({
         customerName,
         customerPhone: normalizePhoneNumber(customerPhone),
         region,
+        village,
         customerAddress: fullAddress,
         items: orderItems,
         totalAmount,
@@ -133,6 +146,7 @@ export default function CheckoutModal({
         setCustomerName("");
         setCustomerPhone("");
         setRegion("");
+        setVillage("");
         setStreetAddress("");
         setHomeNumber("");
         setTelegramUsername("");
@@ -230,13 +244,32 @@ export default function CheckoutModal({
               error={errors.region}
               onChange={(value) => {
                 setRegion(value);
-                if (errors.region) setErrors({ ...errors, region: "" });
-              }}
-              options={uzbekistanRegions.map((r) => ({
-                value: r,
-                label: r,
+                setVillage(""); // Reset village when region changes
+                if (errors.region) setErrors({ ...errors, region: "", village: "" });
+              } }
+              options={regionKeys.map((key, index) => ({
+                value: key,
+                label: uzbekistanRegions[index] || key,
               }))}
               placeholder={t.regionPlaceholder}
+              buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
+            />
+
+            {/* Village / District */}
+            <Dropdown
+              label={t.village}
+              value={village}
+              error={errors.village}
+              onChange={(value) => {
+                setVillage(value);
+                if (errors.village) setErrors({ ...errors, village: "" });
+              } }
+              options={availableDistricts.map((d) => ({
+                value: d.ru,
+                label: d[lang as keyof typeof d] || d.ru,
+              }))}
+              placeholder={t.villagePlaceholder}
+              disabled={!region}
               buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
             />
 
@@ -412,21 +445,43 @@ export default function CheckoutModal({
               </div>
             </div>
 
-            {/* Region */}
-            <Dropdown
-              label={t.region}
-              value={region}
-              error={errors.region}
-              onChange={(value) => {
-                setRegion(value);
-                if (errors.region) setErrors({ ...errors, region: "" });
-              }}
-              options={uzbekistanRegions.map((r) => ({
-                value: r,
-                label: r,
-              }))}
-              placeholder={t.regionPlaceholder}
-            />
+            {/* Region & Village */}
+            <div className="flex gap-2.5">
+              <div className="flex-1">
+                <Dropdown
+                  label={t.region}
+                  value={region}
+                  error={errors.region}
+                  onChange={(value) => {
+                    setRegion(value);
+                    setVillage(""); // Reset village when region changes
+                    if (errors.region) setErrors({ ...errors, region: "", village: "" });
+                  } }
+                  options={regionKeys.map((key, index) => ({
+                    value: key,
+                    label: uzbekistanRegions[index] || key,
+                  }))}
+                  placeholder={t.regionPlaceholder}
+                />
+              </div>
+              <div className="flex-1">
+                <Dropdown
+                  label={t.village}
+                  value={village}
+                  error={errors.village}
+                  onChange={(value) => {
+                    setVillage(value);
+                    if (errors.village) setErrors({ ...errors, village: "" });
+                  } }
+                  options={availableDistricts.map((d) => ({
+                    value: d.ru,
+                    label: d[lang as keyof typeof d] || d.ru,
+                  }))}
+                  placeholder={t.villagePlaceholder}
+                  disabled={!region}
+                />
+              </div>
+            </div>
 
             {/* Street Address */}
             <div className="flex gap-2.5">

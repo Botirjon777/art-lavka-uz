@@ -45,6 +45,8 @@
   "phoneNumber": "Phone Number",
   "region": "Region/City",
   "regionPlaceholder": "Select a region",
+  "village": "District / City",
+  "villagePlaceholder": "Select a district or city",
   "streetAddress": "Street Address",
   "streetAddressPlaceholder": "E.g.: Amir Temur St., 15",
   "homeNumber": "Apt / House Number",
