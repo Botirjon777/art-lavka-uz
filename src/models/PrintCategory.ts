@@ -4,6 +4,7 @@ export interface IPrintCategory {
   _id: string;
   name: string;
   slug: string;
+  translations?: Record<string, { name: string }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const PrintCategorySchema = new Schema<IPrintCategory>(
       trim: true,
       lowercase: true,
     },
+    translations: { type: Schema.Types.Mixed, default: {} },
   },
   {
     timestamps: true,

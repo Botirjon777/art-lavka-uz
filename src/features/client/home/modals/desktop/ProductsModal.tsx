@@ -9,6 +9,9 @@ import { CiCircleQuestion } from "react-icons/ci";
 import { useProducts } from "../../hooks/useProducts";
 import { useSettings } from "../../hooks/useSettings";
 import { FiAlertTriangle } from "react-icons/fi";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 
 interface ProductsModalProps {
   isOpen: boolean;
@@ -21,6 +24,8 @@ export default function ProductsModal({
   onClose,
   onSelectProduct,
 }: ProductsModalProps) {
+  const { t } = useTranslation();
+  const { lang } = useLanguageStore();
   const { data: products = [], isLoading: loading } = useProducts();
   const { data: settings } = useSettings();
   
@@ -34,7 +39,7 @@ export default function ProductsModal({
 
   const tabs = categories.map((cat: ICategory) => ({
     id: cat.id,
-    label: cat.label,
+    label: getTranslated(cat, lang) || cat.label,
     soon: cat.status === "soon",
   }));
 
@@ -63,7 +68,7 @@ export default function ProductsModal({
           <div className="flex items-center justify-center min-h-[500px]">
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin"></div>
-              <p className="text-[#666666] text-sm">Загрузка продуктов...</p>
+              <p className="text-[#666666] text-sm">...</p>
             </div>
           </div>
         ) : allSoon ? (
@@ -80,9 +85,7 @@ export default function ProductsModal({
           </div>
         ) : (
           <>
-            <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">
-              Выберите продукт
-            </h2>
+            <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">{t.selectProduct}</h2>
 
             {/* Tabs */}
             <div className="flex gap-10 mb-7.5 border-b border-gray-200">
@@ -136,20 +139,20 @@ export default function ProductsModal({
                       <div className="relative w-full aspect-3/4 mb-[10px] overflow-hidden rounded-2xl">
                         <Image
                           src={product.image}
-                          alt={product.name}
+                          alt={getTranslated(product, lang)}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                       </div>
                       <Tooltip
-                        content={product.description || "Нет описания"}
+                        content={getTranslated(product, lang, "description") || t.noDescription}
                         position="top"
                       >
                         <div className="flex flex-col items-center gap-1 group cursor-help">
                           <div className="flex items-center justify-center gap-2">
                             <p className="text-[16px]/[22px] text-[#333333] font-medium group-hover:text-[#8814B1] transition-colors">
-                              {product.name}
+                              {getTranslated(product, lang)}
                             </p>
                             <CiCircleQuestion
                               size={20}
@@ -159,11 +162,11 @@ export default function ProductsModal({
                           {/* Price Display */}
                           <div className="flex items-center gap-2">
                             <span className={`text-[15px] font-semibold ${product.promoPrice ? "text-[#8814B1]" : "text-[#333333]"}`}>
-                              {(product.promoPrice || product.price).toLocaleString()} сум
+                              {(product.promoPrice || product.price).toLocaleString()} {t.currency}
                             </span>
                             {product.promoPrice && (
                               <span className="text-[13px] text-gray-400 line-through">
-                                {product.price.toLocaleString()} сум
+                                {product.price.toLocaleString()} {t.currency}
                               </span>
                             )}
                           </div>

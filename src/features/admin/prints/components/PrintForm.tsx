@@ -16,6 +16,8 @@ import {
 } from "react-icons/fi";
 import { Button, Dropdown, Input } from "@/components/ui";
 import { PrintCategory } from "@/types";
+import type { Lang } from "@/lib/i18n";
+import { LANGUAGES } from "@/lib/i18n";
 
 interface PrintFormProps {
   initialData?: any;
@@ -38,11 +40,35 @@ export default function PrintForm({
   const [category, setCategory] = useState(initialData?.category || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Multilingual name content
+  const [langName, setLangName] = useState<Record<Lang, string>>({
+    ru: initialData?.name || "",
+    en: (initialData as any)?.translations?.en?.name || "",
+    uz: (initialData as any)?.translations?.uz?.name || "",
+  });
+  const [activeLangTab, setActiveLangTab] = useState<Lang>("ru");
+
+  const name = langName[activeLangTab];
+  const setName = (v: string) => setLangName((prev) => ({ ...prev, [activeLangTab]: v }));
+
   const { data: categories = [] } = useAdminPrintCategories();
   const createMutation = useCreatePrint();
   const updateMutation = useUpdatePrint();
 
   const loading = createMutation.isPending || updateMutation.isPending;
+
+  useEffect(() => {
+    if (initialData) {
+      setLangName({
+        ru: initialData.name || "",
+        en: (initialData as any)?.translations?.en?.name || "",
+        uz: (initialData as any)?.translations?.uz?.name || "",
+      });
+      setFrontImageUrl(initialData.frontImage || "");
+      setBackImageUrl(initialData.backImage || "");
+      setCategory(initialData.category || "");
+    }
+  }, [initialData]);
 
   useEffect(() => {
     if (!isEditing && !category && categories.length > 0) {
@@ -84,11 +110,10 @@ export default function PrintForm({
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const name = (formData.get("name") as string) || "";
     
     // Validation
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = "Пожалуйста, введите название принта";
+    if (!langName.ru.trim()) newErrors.name = "Пожалуйста, введите название принта (RU)";
     if (!category) newErrors.category = "Выберите категорию для принта";
     if (!frontImageUrl) newErrors.imageFront = "Загрузите переднюю сторону принта";
 
@@ -99,10 +124,18 @@ export default function PrintForm({
     }
 
     setErrors({});
+    formData.set("name", langName.ru);
     formData.set("frontImage", frontImageUrl);
     if (backImageUrl) {
       formData.set("backImage", backImageUrl);
     }
+
+    // Pass translations
+    formData.set("translations", JSON.stringify({
+      ru: { name: langName.ru },
+      en: { name: langName.en },
+      uz: { name: langName.uz },
+    }));
 
     if (isEditing) {
       updateMutation.mutate(
@@ -161,16 +194,47 @@ export default function PrintForm({
               Основная информация
             </h3>
 
-            <div className="space-y-8">
-              <Input
-                label="Название принта"
-                id="name"
-                name="name"
-                required
-                defaultValue={initialData?.name}
-                placeholder="Например: Узбекский узор"
-                error={errors.name}
-              />
+            <div className="space-y-6">
+              {/* Language Tabs */}
+              <div className="flex border-b border-gray-100 bg-gray-50 rounded-t-xl overflow-hidden">
+                {LANGUAGES.map((l) => {
+                  const hasContent = langName[l.id].trim().length > 0;
+                  return (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setActiveLangTab(l.id)}
+                      className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold transition-all border-b-2 ${
+                        activeLangTab === l.id
+                          ? "border-[#8814B1] text-[#8814B1] bg-white"
+                          : "border-transparent text-gray-400 hover:text-gray-700"
+                      }`}
+                    >
+                      <span>{l.flag}</span>
+                      <span>{l.label}</span>
+                      {hasContent && l.id !== "ru" && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                      )}
+                      {l.id === "ru" && !langName.ru.trim() && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="p-1 space-y-4">
+                <Input
+                  label={`Название принта ${activeLangTab.toUpperCase()}`}
+                  id={`name-${activeLangTab}`}
+                  name="name"
+                  required={activeLangTab === "ru"}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={activeLangTab === "ru" ? "Например: Узбекский узор" : activeLangTab === "en" ? "Example: Uzbek Pattern" : "Masalan: O'zbek naqsh"}
+                  error={activeLangTab === "ru" ? errors.name : undefined}
+                />
+              </div>
 
               <div>
                 <Dropdown

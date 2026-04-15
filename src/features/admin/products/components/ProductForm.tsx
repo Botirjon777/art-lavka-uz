@@ -14,6 +14,8 @@ import SizeTableEditor from "./SizeTableEditor";
 import { SizeTableEntry } from "../types";
 import { ProductInventory } from "@/types";
 import { Button, Input, Textarea, Dropdown } from "@/components/ui";
+import type { Lang } from "@/lib/i18n";
+import { LANGUAGES } from "@/lib/i18n";
 
 interface ProductFormProps {
   initialData?: Product & {
@@ -33,9 +35,10 @@ export default function ProductForm({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   
-  // Form State
-   const [name, setName] = useState(initialData?.name || "");
-  const [description, setDescription] = useState(initialData?.description || "");
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Form State (non-translatable)
   const [model, setModel] = useState(initialData?.model || "");
   const [imageUrl, setImageUrl] = useState(initialData?.image || "");
   const [colors, setColors] = useState<Color[]>(initialData?.colors || []);
@@ -49,14 +52,44 @@ export default function ProductForm({
   const [lastPromoSentAt, setLastPromoSentAt] = useState<string | undefined>(
     initialData?.lastPromoSentAt
   );
-  const [isBroadcasting, setIsBroadcasting] = useState(false);
-  
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Multilingual content (name + description) per language
+  type LangContent = { name: string; description: string };
+  const [langContent, setLangContent] = useState<Record<Lang, LangContent>>({
+    ru: { name: initialData?.name || "", description: initialData?.description || "" },
+    en: {
+      name: (initialData as any)?.translations?.en?.name || "",
+      description: (initialData as any)?.translations?.en?.description || "",
+    },
+    uz: {
+      name: (initialData as any)?.translations?.uz?.name || "",
+      description: (initialData as any)?.translations?.uz?.description || "",
+    },
+  });
+  const [activeLangTab, setActiveLangTab] = useState<Lang>("ru");
+
+  // Convenience shortcuts for the current language tab
+  const name = langContent[activeLangTab].name;
+  const description = langContent[activeLangTab].description;
+
+  const setName = (v: string) =>
+    setLangContent((prev) => ({ ...prev, [activeLangTab]: { ...prev[activeLangTab], name: v } }));
+  const setDescription = (v: string) =>
+    setLangContent((prev) => ({ ...prev, [activeLangTab]: { ...prev[activeLangTab], description: v } }));
 
   useEffect(() => {
      if (initialData) {
-      setName(initialData.name || "");
-      setDescription(initialData.description || "");
+      setLangContent({
+        ru: { name: initialData.name || "", description: initialData.description || "" },
+        en: {
+          name: (initialData as any)?.translations?.en?.name || "",
+          description: (initialData as any)?.translations?.en?.description || "",
+        },
+        uz: {
+          name: (initialData as any)?.translations?.uz?.name || "",
+          description: (initialData as any)?.translations?.uz?.description || "",
+        },
+      });
       setModel(initialData.model || "");
       setImageUrl(initialData.image || "");
       setColors(initialData.colors || []);
@@ -70,8 +103,12 @@ export default function ProductForm({
   }, [initialData]);
 
   const isDirty = 
-    name !== (initialData?.name || "") ||
-    description !== (initialData?.description || "") ||
+    langContent.ru.name !== (initialData?.name || "") ||
+    langContent.ru.description !== (initialData?.description || "") ||
+    langContent.en.name !== ((initialData as any)?.translations?.en?.name || "") ||
+    langContent.en.description !== ((initialData as any)?.translations?.en?.description || "") ||
+    langContent.uz.name !== ((initialData as any)?.translations?.uz?.name || "") ||
+    langContent.uz.description !== ((initialData as any)?.translations?.uz?.description || "") ||
     model !== (initialData?.model || "") ||
     category !== (initialData?.category || "men") ||
     imageUrl !== (initialData?.image || "") ||
@@ -111,10 +148,9 @@ export default function ProductForm({
 
     // Validation
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = "Пожалуйста, введите название товара";
+    if (!langContent.ru.name.trim()) newErrors.name = "Пожалуйста, введите название товара (RU)";
     if (!category) newErrors.category = "Пожалуйста, выберите категорию";
-    if (!imageUrl)
-      newErrors.image = "Пожалуйста, загрузите основное изображение";
+    if (!imageUrl) newErrors.image = "Пожалуйста, загрузите основное изображение";
 
     if (colors.length === 0) {
       newErrors.colors = "Добавьте хотя бы один цвет";
@@ -123,8 +159,7 @@ export default function ProductForm({
         (c) => c.variants && c.variants.length > 0,
       );
       if (!hasVariants) {
-        newErrors.colors =
-          "Добавьте варианты (размер/цена) для выбранных цветов";
+        newErrors.colors = "Добавьте варианты (размер/цена) для выбранных цветов";
       }
     }
 
@@ -136,6 +171,9 @@ export default function ProductForm({
 
     setErrors({});
     setLoading(true);
+    // Base fields use RU content
+    formData.set("name", langContent.ru.name);
+    formData.set("description", langContent.ru.description);
     formData.set("image", imageUrl);
     formData.set("colors", JSON.stringify(colors));
     formData.set("sizeTable", JSON.stringify(sizeTable));
@@ -143,6 +181,12 @@ export default function ProductForm({
     formData.set("active", active.toString());
     formData.set("oldPrice", oldPrice.toString());
     formData.set("promoPrice", promoPrice.toString());
+    // Translations
+    formData.set("translations", JSON.stringify({
+      ru: langContent.ru,
+      en: langContent.en,
+      uz: langContent.uz,
+    }));
 
     try {
       const result =
@@ -271,19 +315,68 @@ export default function ProductForm({
             </div>
           </div>
 
-          {/* Name */}
-          <Input
-            label="Название товара"
-            id="name"
-            name="name"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Футболка овер сайз"
-            error={errors.name}
-          />
-          
-          {/* 3D Model Path */}
+          {/* Multilingual Name + Description */}
+          <div className="border border-gray-100 rounded-xl overflow-hidden">
+            {/* Language Tabs */}
+            <div className="flex border-b border-gray-100 bg-gray-50">
+              {LANGUAGES.map((l) => {
+                const hasContent = langContent[l.id].name.trim().length > 0;
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setActiveLangTab(l.id)}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold transition-all border-b-2 ${
+                      activeLangTab === l.id
+                        ? "border-[#8814B1] text-[#8814B1] bg-white"
+                        : "border-transparent text-gray-400 hover:text-gray-700"
+                    }`}
+                  >
+                    <span>{l.flag}</span>
+                    <span>{l.label}</span>
+                    {hasContent && l.id !== "ru" && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                    )}
+                    {l.id === "ru" && !langContent.ru.name.trim() && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
+                <span>🌐</span>
+                <span>
+                  {activeLangTab === "ru"
+                    ? "Основной язык (обязательно)"
+                    : `Перевод для ${LANGUAGES.find(l => l.id === activeLangTab)?.label} (необязательно)`}
+                </span>
+              </div>
+
+              <Input
+                label={`Название товара ${activeLangTab.toUpperCase()}`}
+                id={`name-${activeLangTab}`}
+                name="name"
+                required={activeLangTab === "ru"}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={activeLangTab === "ru" ? "Футболка овер сайз" : activeLangTab === "en" ? "Oversized T-Shirt" : "Oversize futbolka"}
+                error={activeLangTab === "ru" ? errors?.name : undefined}
+              />
+
+              <Textarea
+                label={`Описание ${activeLangTab.toUpperCase()}`}
+                id={`description-${activeLangTab}`}
+                name="description"
+                rows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={activeLangTab === "ru" ? "Описание продукта..." : activeLangTab === "en" ? "Product description..." : "Mahsulot tavsifi..."}
+              />
+            </div>
+          </div>
           <Input
             label="Путь к 3D модели (.glb)"
             id="model"
@@ -313,17 +406,6 @@ export default function ProductForm({
               placeholder="120000"
             />
           </div>
-
-          {/* Description */}
-          <Textarea
-            label="Описание"
-            id="description"
-            name="description"
-            rows={6}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Описание продукта..."
-          />
 
           {/* Category */}
           <div className="relative">

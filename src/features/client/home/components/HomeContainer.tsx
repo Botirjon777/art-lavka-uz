@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 // Feature Components (now local to home feature)
+import { useTranslation } from "@/hooks/useTranslation";
 import MainLayout from "./shared/MainLayout";
 import LeftSidebar from "./desktop/LeftSidebar";
 import RightConfigurator from "./desktop/RightConfigurator";
@@ -21,9 +22,10 @@ import CheckoutModal from "../modals/shared/CheckoutModal";
 import OrderSuccessModal from "../modals/shared/OrderSuccessModal";
 
 // Shared Types
-import { CartItem, Product, PrintDesign, ConfiguratorState } from "@/types";
+import { CartItem, Product, PrintDesign, ConfiguratorState, PrintCategory } from "@/types";
 
 export default function HomeContainer() {
+  const { t } = useTranslation();
   const [activeModal, setActiveModal] = useState<
     "menu" | "cart" | "gallery" | "products" | "prints" | null
   >(null);
@@ -38,7 +40,7 @@ export default function HomeContainer() {
   const [settings, setSettings] = useState<any>(null);
   const [prints, setPrints] = useState<PrintDesign[]>([]);
   const [printsLoading, setPrintsLoading] = useState(true);
-  const [printCategories, setPrintCategories] = useState<{id: string, label: string}[]>([]);
+  const [printCategories, setPrintCategories] = useState<PrintCategory[]>([]);
   const [hasMultipleProducts, setHasMultipleProducts] = useState(false);
 
   // Fetch products on mount and set up auto-refresh
@@ -130,7 +132,7 @@ export default function HomeContainer() {
     } catch (error) {
       console.error("Error fetching products:", error);
       if (!selectedProduct) {
-        toast.error("Failed to load products");
+        toast.error(t.errorLoadProducts);
       }
     } finally {
       setLoading(false);
@@ -159,12 +161,7 @@ export default function HomeContainer() {
       const response = await fetch("/api/prints/categories");
       const data = await response.json();
       if (data.success) {
-        setPrintCategories(
-          data.data.map((cat: any) => ({
-            id: cat.slug,
-            label: cat.name,
-          }))
-        );
+        setPrintCategories(data.data);
       }
     } catch (error) {
       console.error("Error fetching print categories:", error);
@@ -186,7 +183,7 @@ export default function HomeContainer() {
     };
 
     setCartItems([...cartItems, newItem]);
-    toast.success("Товар добавлен в корзину!");
+    toast.success(t.productAddedToCart);
   };
 
   const handleBuyOneClick = (config: ConfiguratorState) => {
@@ -257,7 +254,7 @@ export default function HomeContainer() {
         <div className="flex items-center justify-center min-h-[600px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
-            <p className="text-gray-600 font-bold uppercase tracking-widest text-xs mt-4">Загрузка витрины...</p>
+            <p className="text-gray-600 font-bold uppercase tracking-widest text-xs mt-4">{t.loadingShowcase}...</p>
           </div>
         </div>
       ) : !selectedProduct ? (
@@ -271,13 +268,13 @@ export default function HomeContainer() {
               />
             </div>
             <p className="text-gray-400 font-medium mb-6 uppercase tracking-widest text-sm">
-              Товары временно не найдены
+              {t.productsNotFound}
             </p>
             <button
               onClick={() => fetchProducts()}
               className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-all font-bold active:scale-95"
             >
-              Перезагрузить
+              {t.reload}
             </button>
           </div>
         </div>

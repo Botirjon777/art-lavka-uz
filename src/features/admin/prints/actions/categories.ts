@@ -61,8 +61,10 @@ export async function createPrintCategory(formData: FormData) {
     
     // Use manual slug if provided, else auto-generate
     const slug = manualSlug?.trim() ? manualSlug.trim().toLowerCase() : slugify(name);
+    const translationsStr = formData.get("translations") as string;
+    const translations = translationsStr ? JSON.parse(translationsStr) : {};
 
-    const category = await PrintCategory.create({ name, slug });
+    const category = await PrintCategory.create({ name, slug, translations });
     revalidatePath("/admin/prints");
     revalidatePath("/admin/prints/categories");
     return { success: true, category: JSON.parse(JSON.stringify(category)) };
@@ -85,10 +87,12 @@ export async function updatePrintCategory(id: string, formData: FormData) {
 
     const oldSlug = oldCategory.slug;
     const slug = manualSlug?.trim() ? manualSlug.trim().toLowerCase() : slugify(name);
+    const translationsStr = formData.get("translations") as string;
+    const translations = translationsStr ? JSON.parse(translationsStr) : {};
 
     const category = await PrintCategory.findByIdAndUpdate(
       id,
-      { name, slug },
+      { name, slug, translations },
       { new: true }
     );
 

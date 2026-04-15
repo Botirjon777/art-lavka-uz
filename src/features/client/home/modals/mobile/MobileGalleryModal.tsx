@@ -5,6 +5,7 @@ import MobileModal from "./MobileModal";
 import { Product } from "@/types";
 import Image from "next/image";
 import { useGallery } from "../../hooks/useGallery";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface GalleryImage {
   _id: string;
@@ -24,19 +25,20 @@ export default function MobileGalleryModal({
   onClose,
   onSelectProduct,
 }: MobileGalleryModalProps) {
+  const { t } = useTranslation();
   const { data: gallery = [], isLoading: loading } = useGallery();
 
   return (
     <MobileModal isOpen={isOpen} onClose={onClose}>
       <div className="px-4 py-4">
         {/* Title */}
-        <h2 className="text-xl font-semibold text-[#333333] mb-6">Галерея</h2>
+        <h2 className="text-xl font-semibold text-[#333333] mb-6">{t.gallery}</h2>
 
         {/* Loading State */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin mb-4"></div>
-            <p className="text-[#666666] text-sm">Загрузка галереи...</p>
+            <p className="text-[#666666] text-sm">{t.loadingGallery}...</p>
           </div>
         ) : (
           <>
@@ -44,7 +46,7 @@ export default function MobileGalleryModal({
             <div className="grid grid-cols-2 gap-4">
               {gallery.length === 0 ? (
                 <div className="col-span-2 text-center py-12">
-                  <p className="text-gray-600">Нет изображений в галерее</p>
+                  <p className="text-gray-600">{t.noGalleryImages}</p>
                 </div>
               ) : (
                 gallery.map((item) => (

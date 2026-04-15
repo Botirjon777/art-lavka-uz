@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "../shared/TShirtScene";
 import SizeTableModal from "@/components/SizeTableModal";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 
 interface RightConfiguratorProps {
   selectedProduct: Product;
@@ -20,6 +23,8 @@ export default function RightConfigurator({
   onBuyOneClick,
   onProductClick,
 }: RightConfiguratorProps) {
+  const { t } = useTranslation();
+  const { lang } = useLanguageStore();
   const productColors = selectedProduct.colors || [];
   const firstAvailableColor = productColors.find((c: ProductColor) =>
     c.variants?.some((v) => v.stock > 0),
@@ -29,7 +34,6 @@ export default function RightConfigurator({
       productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] },
   );
 
-  // Get sizes available FOR THE SELECTED COLOR
   const availableVariants = selectedColor.variants || [];
   const productSizes = availableVariants.map((v) => v.size);
   const firstInStockSize = availableVariants.find((v) => v.stock > 0)?.size;
@@ -42,7 +46,6 @@ export default function RightConfigurator({
 
   const handleColorChange = (color: ProductColor) => {
     setSelectedColor(color);
-    // Find first available size for the NEW color immediately to prevent flickering
     const firstInStock = color.variants?.find((v) => v.stock > 0);
     if (firstInStock) {
       setSelectedSize(firstInStock.size);
@@ -59,29 +62,24 @@ export default function RightConfigurator({
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
 
-  // Pricing logic:
-  // 1. If variant has promoPrice, use it.
-  // 2. If product has promoPrice, use it.
-  // 3. Fallback to regular price.
-  const price = 
-    selectedVariant?.promoPrice || 
-    selectedProduct.promoPrice || 
-    selectedVariant?.price || 
+  const price =
+    selectedVariant?.promoPrice ||
+    selectedProduct.promoPrice ||
+    selectedVariant?.price ||
     selectedProduct.price;
 
-  // Old price logic:
-  // 1. If we are showing a promo price, the old price is the regular price.
-  // 2. If no promo, use the predefined oldPrice.
-  const hasPromo = !!(selectedVariant?.promoPrice || selectedProduct.promoPrice);
-  const oldPrice = hasPromo 
-    ? (selectedVariant?.price || selectedProduct.price)
-    : (selectedVariant?.oldPrice || selectedProduct.oldPrice);
+  const hasPromo = !!(
+    selectedVariant?.promoPrice || selectedProduct.promoPrice
+  );
+  const oldPrice = hasPromo
+    ? selectedVariant?.price || selectedProduct.price
+    : selectedVariant?.oldPrice || selectedProduct.oldPrice;
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
     onAddToCart({
       selectedPrint,
-      selectedColor: selectedColor.name,
+      selectedColor: getTranslated(selectedColor, lang),
       selectedSize,
       quantity,
       price,
@@ -93,7 +91,7 @@ export default function RightConfigurator({
     if (!selectedSize) return;
     onBuyOneClick({
       selectedPrint,
-      selectedColor: selectedColor.name,
+      selectedColor: getTranslated(selectedColor, lang),
       selectedSize,
       quantity,
       price,
@@ -105,15 +103,18 @@ export default function RightConfigurator({
     <div className="flex items-center justify-center">
       <div className="bg-image h-[calc(100vh-160px)] max-h-[886px] overflow-y-auto min-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
         <div className="w-full relative z-10">
-          {/* Content Grid */}
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left - T-shirt 3D Preview */}
             <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] min-w-[300px] md:min-w-[450px]">
               <TShirtScene
                 key={selectedProduct.id}
                 selectedProduct={selectedProduct.model}
-                productName={selectedProduct.name}
-                productDescription={selectedProduct.description}
+                productName={getTranslated(selectedProduct, lang)}
+                productDescription={getTranslated(
+                  selectedProduct,
+                  lang,
+                  "description",
+                )}
                 selectedPrint={selectedPrint}
                 selectedColor={selectedColor.hex}
                 onProductClick={onProductClick}
@@ -121,11 +122,11 @@ export default function RightConfigurator({
             </div>
 
             {/* Right - Configuration Options */}
-            <div className="space-y-[15px]">
+            <div className="space-y-[15px] min-w-[362px]">
               {/* Color Selection */}
               <div>
                 <h3 className="text-[16px]/[22px] text-[#333333] mb-[15px]">
-                  Цвет: {selectedColor.name}
+                  {t.color}: {getTranslated(selectedColor, lang)}
                 </h3>
                 <div className="flex gap-[15px]">
                   {productColors.map((color) => {
@@ -133,22 +134,26 @@ export default function RightConfigurator({
                     return (
                       <button
                         key={color.hex}
-                        onClick={() => hasStock && handleColorChange(color)}
-                        disabled={!hasStock}
-                        className={`w-10 h-10 rounded-full border transition-all ${
+                        onClick={() => handleColorChange(color)}
+                        className={`w-10 h-10 rounded-full border transition-all relative ${
                           selectedColor.hex === color.hex
                             ? "border-white ring ring-[#00C6F1] scale-110"
                             : "border-white"
                         } ${
                           !hasStock
-                            ? "opacity-20 grayscale cursor-not-allowed scale-90"
+                            ? "cursor-pointer scale-90"
                             : "cursor-pointer hover:scale-105"
                         }`}
-                        style={{ backgroundColor: color.hex }}
+                        style={{
+                          backgroundColor: color.hex,
+                          backgroundImage: !hasStock
+                            ? "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
+                            : "none",
+                        }}
                         title={
                           hasStock
-                            ? color.name
-                            : `${color.name} (нет в наличии)`
+                            ? getTranslated(color, lang)
+                            : `${getTranslated(color, lang)} (${t.noStockTooltip})`
                         }
                       />
                     );
@@ -160,33 +165,35 @@ export default function RightConfigurator({
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <p className="text-[16px]/[22px] text-[#333333]">
-                    Размер: {selectedSize}
+                    {t.size}: {selectedSize}
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {availableVariants.map((v) => {
                     const price = v.price || v.promoPrice || v.oldPrice || 0;
                     const isHidden = price === 0 && v.stock === 0;
-                    
                     if (isHidden) return null;
-
                     const isOutOfStock = v.stock === 0;
                     const isActive = selectedSize === v.size;
-
                     return (
                       <button
                         key={v.size}
-                        onClick={() => !isOutOfStock && setSelectedSize(v.size)}
-                        disabled={isOutOfStock}
-                        style={isOutOfStock ? {
-                          backgroundImage: "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
-                        } : {}}
+                        onClick={() => setSelectedSize(v.size)}
+                        disabled={false}
+                        style={
+                          isOutOfStock
+                            ? {
+                                backgroundImage:
+                                  "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)",
+                              }
+                            : {}
+                        }
                         className={`py-2.5 px-3 text-[14px]/[17px] rounded-xl transition-all relative border min-h-[42px] flex items-center justify-center ${
-                          isActive
+                          isActive && !isOutOfStock
                             ? "bg-[#00C6F1] text-white border-[#00C6F1]"
                             : isOutOfStock
-                            ? "bg-gray-50 text-[#9F9F9F] cursor-not-allowed opacity-60 border-gray-100"
-                            : "bg-white text-[#333333] cursor-pointer hover:border-[#00C6F1] border-transparent"
+                              ? `bg-gray-50 text-[#9F9F9F] opacity-60 ${isActive ? "border-[#00C6F1] border-2" : "border-gray-100"}`
+                              : "bg-white text-[#333333] cursor-pointer hover:border-[#00C6F1] border-transparent"
                         }`}
                       >
                         {v.size}
@@ -195,13 +202,11 @@ export default function RightConfigurator({
                   })}
                 </div>
 
-                {/* Stock Info */}
-
                 <button
                   onClick={() => setIsSizeModalOpen(true)}
                   className="text-[16px]/[22px] text-[#333333] hover:text-[#333333]/80 underline mt-[15px] cursor-pointer"
                 >
-                  Таблица размеров
+                  {t.sizeChart}
                 </button>
               </div>
 
@@ -270,10 +275,12 @@ export default function RightConfigurator({
                   </div>
 
                   {!isOutOfStock && (
-                    <span className="text-[14px]/[17px] text-[#333333]">
-                      доступно:{" "}
-                      <span className="inline-block min-w-[2ch] text-center font-medium text-green-600">
-                        В наличии
+                    <span className="text-[14px]/[17px] text-[#333333] flex items-center gap-1">
+                      <span className="inline-block min-w-[85px]">
+                        {t.available}:
+                      </span>
+                      <span className="inline-block min-w-[100px] font-medium text-green-600">
+                        {t.inStock}
                       </span>
                     </span>
                   )}
@@ -283,15 +290,15 @@ export default function RightConfigurator({
               {/* Price */}
               <div className="space-y-[15px]">
                 <p className="text-[16px]/[22px] text-[#333333]">
-                  Цена{" "}
+                  {t.price}{" "}
                   {oldPrice && oldPrice > price && (
                     <span className="line-through text-[18px]/[22px] text-[#9F9F9F]">
-                      {oldPrice.toLocaleString()} сум
+                      {oldPrice.toLocaleString()} {t.currency}
                     </span>
                   )}
                 </p>
                 <p className="text-[25px]/[30px] text-[#333333]">
-                  {price.toLocaleString()} сум
+                  {price.toLocaleString()} {t.currency}
                 </p>
               </div>
 
@@ -300,24 +307,28 @@ export default function RightConfigurator({
                 <button
                   onClick={handleBuyOneClick}
                   disabled={isOutOfStock}
-                  className={`max-w-[240px] px-[35px] py-3.5 rounded-xl transition-colors shadow-md text-[16px]/5 ${
+                  className={`w-full md:max-w-[260px] min-w-[240px] px-8 py-3.5 rounded-xl transition-colors shadow-md text-[16px]/5 ${
                     isOutOfStock
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white cursor-pointer"
                   }`}
                 >
-                  {isOutOfStock ? "Нет в наличии" : "Купить в 1 клик"}
+                  <span className="whitespace-nowrap">
+                    {isOutOfStock ? t.outOfStock : t.buyOneClick}
+                  </span>
                 </button>
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`max-w-[240px] px-[35px] py-3.5 rounded-xl transition-all shadow-md text-[16px]/5 ${
+                  className={`w-full md:max-w-[260px] min-w-[240px] px-8 py-3.5 rounded-xl transition-all shadow-md text-[16px]/5 ${
                     isOutOfStock
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-[#8814B1] hover:bg-[#8814B1]/80 text-white cursor-pointer"
                   }`}
                 >
-                  {isOutOfStock ? "Нет в наличии" : "Добавить в корзину"}
+                  <span className="whitespace-nowrap">
+                    {isOutOfStock ? t.outOfStock : t.addToCart}
+                  </span>
                 </button>
               </div>
             </div>

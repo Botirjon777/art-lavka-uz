@@ -96,6 +96,9 @@ export async function POST(request: Request) {
       // Update both categories and menu
       if (body.categories) settings.categories = body.categories;
       if (body.menu) settings.menu = body.menu;
+      
+      // Explicitly mark as modified for Mixed types if needed, 
+      // though simple assignment usually works for POJOs in Mongoose if schema matches.
       await settings.save();
     } else {
       settings = await Settings.create(body);

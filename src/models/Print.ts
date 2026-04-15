@@ -6,6 +6,11 @@ export interface IPrint {
   backImage?: string;
   category: "national" | "stylish" | "funny" | "all";
   active: boolean;
+  translations?: {
+    en?: { name: string };
+    ru?: { name: string };
+    uz?: { name: string };
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,9 +38,14 @@ const PrintSchema = new Schema<IPrint>(
       type: Boolean,
       default: true,
     },
+    translations: {
+      type: Object,
+      required: false,
+    },
   },
   {
     timestamps: true,
+    strict: false,
   }
 );
 

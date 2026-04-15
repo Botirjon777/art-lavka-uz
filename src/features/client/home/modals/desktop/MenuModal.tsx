@@ -4,8 +4,10 @@ import Image from "next/image";
 import Modal from "@/components/Modal";
 import { RiTelegram2Fill } from "react-icons/ri";
 import { MdOutlineEmail } from "react-icons/md";
-
 import { useSettings } from "@/features/client/home/hooks/useSettings";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -13,6 +15,8 @@ interface MenuModalProps {
 }
 
 export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
+  const { t } = useTranslation();
+  const { lang } = useLanguageStore();
   const { data: settings, isLoading } = useSettings();
 
   if (isLoading || !settings) return null;
@@ -24,18 +28,18 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
       <div className="w-[1500px] max-w-full min-h-[600px]">
         <div className="grid grid-cols-3 gap-6 mb-8">
           {/* Delivery Section */}
-          <section className="bg-white rounded-[20px] p-10 shadow-sm">
-            <h3 className="text-[30px]/[37px] text-[#333333] mb-5">Доставка</h3>
+          <section className="bg-white rounded-[20px] p-10 shadow-sm text-left">
+            <h3 className="text-[30px]/[37px] text-[#333333] mb-5">{t.delivery}</h3>
             <div className="text-[16px]/[22px] text-[#666666] whitespace-pre-wrap">
-              {menu.delivery}
+              {getTranslated(menu, lang, "delivery")}
             </div>
           </section>
 
           {/* Payment Section */}
-          <section className="bg-white rounded-[20px] space-y-5 p-10 shadow-sm">
-            <h3 className="text-[30px]/[37px] text-[#333333]">Оплата</h3>
+          <section className="bg-white rounded-[20px] space-y-5 p-10 shadow-sm text-left">
+            <h3 className="text-[30px]/[37px] text-[#333333]">{t.payment}</h3>
             <div className="text-[16px]/[22px] text-[#666666] whitespace-pre-wrap">
-              {menu.payment}
+              {getTranslated(menu, lang, "payment")}
             </div>
             <div className="flex items-center gap-5">
               <div className="h-25 w-full bg-[#efefef] rounded-xl flex items-center justify-center">
@@ -65,11 +69,8 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
             </div>
           </section>
 
-          {/* Contact Section */}
-          <section className="bg-white rounded-[20px] p-10 shadow-sm">
-            <h3 className="text-[30px]/[37px] text-[#333333] mb-5">
-              Связаться с нами
-            </h3>
+          <section className="bg-white rounded-[20px] p-10 shadow-sm text-left">
+            <h3 className="text-[30px]/[37px] text-[#333333] mb-5">{t.contactUs}</h3>
             <div className="space-y-3">
               <a
                 href={menu.telegram}
@@ -93,7 +94,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
                   <MdOutlineEmail size={18} />
                 </div>
                 <div className="text-[16px]/[22px] text-[#333333]">
-                  <p>Электронная почта</p>
+                  <p>Email</p>
                   <p className="text-[#8814B1]">{menu.email}</p>
                 </div>
               </a>
@@ -101,11 +102,10 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
           </section>
         </div>
 
-        {/* About Us Section */}
-        <section className="bg-white rounded-[20px] p-10 shadow-sm">
-          <h3 className="text-[30px]/[37px] text-[#333333] mb-5">О нас</h3>
+        <section className="bg-white rounded-[20px] p-10 shadow-sm text-left">
+          <h3 className="text-[30px]/[37px] text-[#333333] mb-5">{t.aboutUs}</h3>
           <div className="space-y-5 text-[16px]/[22px] text-[#666666] whitespace-pre-wrap">
-            {menu.about}
+            {getTranslated(menu, lang, "about")}
             <div className="space-y-3 pt-4 border-t border-gray-50">
               <a
                 href={menu.instagramArtists}
@@ -123,7 +123,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
                   </svg>
                 </div>
                 <div className="text-[16px]/[22px] text-[#333333]">
-                  <p>Художники:</p>
+                  <p>{t.artists}:</p>
                   <p className="text-[#8814B1] truncate max-w-[400px]">
                     {menu.instagramArtists}
                   </p>

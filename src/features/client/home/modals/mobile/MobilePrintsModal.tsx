@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react";
 import MobileModal from "./MobileModal";
-import { PrintDesign } from "@/types";
+import { PrintDesign, PrintCategory } from "@/types";
 import Image from "next/image";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 
 interface MobilePrintsModalProps {
   isOpen: boolean;
@@ -12,7 +15,7 @@ interface MobilePrintsModalProps {
   selectedPrint: PrintDesign | null;
   initialPrints?: PrintDesign[];
   initialLoading?: boolean;
-  printCategories?: { id: string; label: string }[];
+  printCategories?: PrintCategory[];
 }
 
 export default function MobilePrintsModal({
@@ -24,7 +27,15 @@ export default function MobilePrintsModal({
   initialLoading,
   printCategories = [],
 }: MobilePrintsModalProps) {
-  const categories = [{ id: "all", label: "Все" }, ...printCategories];
+  const { t } = useTranslation();
+  const { lang } = useLanguageStore();
+  const categories = [
+    { id: "all", label: t.all },
+    ...printCategories.map(cat => ({
+      id: cat.slug,
+      label: getTranslated(cat, lang)
+    }))
+  ];
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prints, setPrints] = useState<PrintDesign[]>(initialPrints || []);
@@ -59,7 +70,8 @@ export default function MobilePrintsModal({
 
   const filteredPrints = prints.filter((p) => {
     const matchesCategory = activeTab === "all" || p.category === activeTab;
-    const matchesSearch = p.name
+    const translatedName = getTranslated(p, lang);
+    const matchesSearch = translatedName
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -89,7 +101,7 @@ export default function MobilePrintsModal({
         <div className="mb-4 px-5">
           <input
             type="text"
-            placeholder="Поиск принтов..."
+            placeholder={t.searchPrints}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-11 bg-white rounded-lg px-4 border border-gray-200 focus:border-[#8814B1] outline-none transition-all text-sm"
@@ -100,7 +112,7 @@ export default function MobilePrintsModal({
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 px-5">
             <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin mb-4"></div>
-            <p className="text-[#666666] text-sm">Загрузка принтов...</p>
+            <p className="text-[#666666] text-sm">{t.loadingPrints}...</p>
           </div>
         ) : (
           <>
@@ -120,14 +132,14 @@ export default function MobilePrintsModal({
               >
                 <div className="bg-white h-[85%] w-[85%] rounded-xl shadow-sm flex items-center justify-center">
                   <span className="text-xs text-gray-500 text-center font-medium px-2">
-                    Без принта
+                    {t.noPrint}
                   </span>
                 </div>
               </button>
 
               {filteredPrints.length === 0 ? (
                 <div className="col-span-3 text-center py-12">
-                  <p className="text-gray-600 text-sm">Принты не найдены</p>
+                  <p className="text-gray-600 text-sm">{t.noPrintsFound}</p>
                 </div>
               ) : (
                 filteredPrints.map((print) => (
@@ -147,7 +159,7 @@ export default function MobilePrintsModal({
                     <div className="relative bg-white h-[85%] w-[85%] rounded-xl overflow-hidden shadow-sm">
                       <Image
                         src={print.frontImage}
-                        alt={print.name}
+                        alt={getTranslated(print, lang)}
                         fill
                         className="object-contain p-2"
                       />

@@ -26,6 +26,12 @@ export interface ProductColor {
   name: string;
   hex: string;
   variants: ProductVariant[];
+  translations?: Record<string, { name: string }>;
+}
+
+export interface Translation {
+  name: string;
+  description?: string;
 }
 
 export interface Product {
@@ -46,6 +52,7 @@ export interface Product {
   isNew?: boolean;
   sizeTable?: SizeTableEntry[];
   lastPromoSentAt?: string;
+  translations?: Record<string, Translation>;
   updatedAt?: string;
 }
 
@@ -55,6 +62,7 @@ export interface PrintCategory {
   name: string;
   slug: string;
   printCount: number;
+  translations?: Record<string, { name: string }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,6 +74,7 @@ export interface Print {
   backImage?: string;
   category: string;
   active: boolean;
+  translations?: Record<string, Translation>;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,6 +86,7 @@ export interface PrintDesign {
   frontImage: string;
   backImage?: string;
   category: string;
+  translations?: Record<string, Translation>;
 }
 
 export interface CartItem {
@@ -167,6 +177,7 @@ export interface ICategory {
   id: string;
   label: string;
   status: "active" | "soon";
+  translations?: Record<string, { label: string }>;
 }
 
 export interface ISettings {
@@ -179,6 +190,7 @@ export interface ISettings {
     email: string;
     instagramArtists: string;
     instagramStore: string;
+    translations?: Record<string, { delivery?: string; payment?: string; about?: string }>;
   };
   categoryStatuses?: {
     [key: string]: "active" | "soon";
