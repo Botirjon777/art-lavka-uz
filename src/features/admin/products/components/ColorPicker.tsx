@@ -53,7 +53,17 @@ export default function ColorPicker({
     null,
   );
 
-  const commonSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+  // Sizes State
+  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+  const [newSize, setNewSize] = useState("");
+
+  // Initialize sizes from defaults + existing data
+  useEffect(() => {
+    const defaultSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+    const existingSizes = colors.flatMap(c => (c.variants || []).map(v => v.size));
+    const combined = Array.from(new Set([...defaultSizes, ...existingSizes]));
+    setAvailableSizes(combined);
+  }, []);
 
   // Sync local variants and names when modal opens
   useEffect(() => {
@@ -104,12 +114,18 @@ export default function ColorPicker({
   ) => {
     setLocalVariants((prev) => {
       const existingIndex = prev.findIndex((v) => v.size === size);
+      
+      // Clean numeric inputs if value is a string
+      let processedValue = value;
+      if (typeof value === "string" && field !== "hideExactStock") {
+        processedValue = value.replace(/[^0-9]/g, "");
+      }
 
       if (existingIndex > -1) {
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          [field]: field === "hideExactStock" ? value : Number(value),
+          [field]: field === "hideExactStock" ? processedValue : Number(processedValue),
         };
         return updated;
       } else {
@@ -117,12 +133,12 @@ export default function ColorPicker({
           ...prev,
           {
             size,
-            price: field === "price" ? Number(value) : Number(value) || 0,
-            oldPrice: field === "oldPrice" ? Number(value) : 0,
-            promoPrice: field === "promoPrice" ? Number(value) : 0,
-            stock: field === "stock" ? Number(value) : 0,
+            price: field === "price" ? Number(processedValue) : Number(processedValue) || 0,
+            oldPrice: field === "oldPrice" ? Number(processedValue) : 0,
+            promoPrice: field === "promoPrice" ? Number(processedValue) : 0,
+            stock: field === "stock" ? Number(processedValue) : 0,
             hideExactStock:
-              field === "hideExactStock" ? (value as boolean) : false,
+              field === "hideExactStock" ? (processedValue as boolean) : false,
           },
         ];
       }
@@ -158,6 +174,34 @@ export default function ColorPicker({
     );
     onChange(updatedColors);
     setSelectedColorIndex(null);
+  };
+
+  const handleAddSize = () => {
+    const trimmed = newSize.trim().toUpperCase();
+    if (!trimmed) return;
+    if (availableSizes.includes(trimmed)) {
+      alert("Этот размер уже существует");
+      return;
+    }
+    setAvailableSizes([...availableSizes, trimmed]);
+    setNewSize("");
+  };
+
+  const handleRemoveSize = (sizeToRemove: string) => {
+    if (!confirm(`Удалить размер ${sizeToRemove} для ВСЕХ цветов этого продукта?`)) return;
+    
+    // 1. Remove from available list
+    setAvailableSizes(availableSizes.filter(s => s !== sizeToRemove));
+    
+    // 2. Remove from global state (all colors)
+    const updatedColors = colors.map(color => ({
+      ...color,
+      variants: color.variants.filter(v => v.size !== sizeToRemove)
+    }));
+    onChange(updatedColors);
+    
+    // 3. Remove from local modal state if open
+    setLocalVariants(prev => prev.filter(v => v.size !== sizeToRemove));
   };
 
   const removeVariant = (colorIndex: number, variantIndex: number) => {
@@ -414,9 +458,31 @@ export default function ColorPicker({
               </div>
 
               {/* Modal Content */}
-              <div className="p-8 space-y-4 max-h-[70vh] overflow-y-auto scrollbar-hide">
+              <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-hide">
+                {/* Add Custom Size UI */}
+                <div className="flex items-center gap-4 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] mb-2 px-1">Добавить размер</label>
+                    <input 
+                      type="text" 
+                      value={newSize}
+                      onChange={(e) => setNewSize(e.target.value)}
+                      placeholder="Напр: XXXL"
+                      className="w-full px-4 py-2.5 bg-white border border-purple-100 rounded-xl focus:ring-2 focus:ring-[#8814B1] outline-none font-bold text-gray-700"
+                      onKeyDown={(e) => e.key === "Enter" && handleAddSize()}
+                    />
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={handleAddSize}
+                    className="mt-6 p-3 bg-[#8814B1] text-white rounded-xl hover:shadow-lg transition-all"
+                  >
+                    <FiPlus className="w-5 h-5" />
+                  </button>
+                </div>
+
                 <div className="space-y-3">
-                  {commonSizes.map((size) => {
+                  {availableSizes.map((size) => {
                     const variant = localVariants.find(
                       (v) => v.size === size,
                     ) || {
@@ -446,6 +512,13 @@ export default function ColorPicker({
                           >
                             {size}
                           </div>
+                          <button 
+                            type="button"
+                            onClick={() => handleRemoveSize(size)}
+                            className="mt-2 text-[10px] font-bold text-red-300 hover:text-red-500 transition-colors uppercase tracking-widest"
+                          >
+                            Удалить
+                          </button>
                         </div>
 
                         {/* Inputs (9 cols) */}
@@ -456,7 +529,7 @@ export default function ColorPicker({
                             </label>
                             <div className="relative">
                               <input
-                                type="number"
+                                type="text"
                                 value={variant.oldPrice || ""}
                                 onChange={(e) =>
                                   handleLocalVariantChange(
@@ -480,7 +553,7 @@ export default function ColorPicker({
                             </label>
                             <div className="relative">
                               <input
-                                type="number"
+                                type="text"
                                 value={variant.promoPrice || ""}
                                 onChange={(e) =>
                                   handleLocalVariantChange(
@@ -503,7 +576,7 @@ export default function ColorPicker({
                               В НАЛИЧИИ (ШТ)
                             </label>
                             <input
-                              type="number"
+                              type="text"
                               value={variant.stock || ""}
                               onChange={(e) =>
                                 handleLocalVariantChange(

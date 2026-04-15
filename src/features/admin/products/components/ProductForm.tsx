@@ -389,20 +389,26 @@ export default function ProductForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Общая оригинальная цена"
-              type="number"
+              type="text"
               id="oldPrice"
               name="oldPrice"
               value={oldPrice || ""}
-              onChange={(e) => setOldPrice(Number(e.target.value))}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, "");
+                setOldPrice(Number(val));
+              }}
               placeholder="150000"
             />
             <Input
               label="Общая промо цена"
-              type="number"
+              type="text"
               id="promoPrice"
               name="promoPrice"
               value={promoPrice || ""}
-              onChange={(e) => setPromoPrice(Number(e.target.value))}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, "");
+                setPromoPrice(Number(val));
+              }}
               placeholder="120000"
             />
           </div>
