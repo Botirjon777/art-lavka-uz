@@ -51,10 +51,25 @@ export async function createProduct(formData: FormData) {
       }
     });
 
+    // Logic: Automatically derive base prices from variants
+    let minOldPrice = Infinity;
+    let minPromoPrice = Infinity;
+
+    colors.forEach((color: any) => {
+      color.variants?.forEach((v: any) => {
+        if (v.oldPrice && v.oldPrice < minOldPrice) minOldPrice = v.oldPrice;
+        if (v.promoPrice && v.promoPrice > 0 && v.promoPrice < minPromoPrice) {
+          minPromoPrice = v.promoPrice;
+        }
+      });
+    });
+
+    const finalOldPrice = minOldPrice === Infinity ? 0 : minOldPrice;
+    const finalPromoPrice = minPromoPrice === Infinity ? 0 : minPromoPrice;
+
     const productData = {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
-      price: Number(formData.get("price")),
       category: formData.get("category") as string,
       image: formData.get("image") as string,
       model: formData.get("model") as string,
@@ -63,28 +78,11 @@ export async function createProduct(formData: FormData) {
       stock: totalStock,
       active: formData.get("active") === "true",
       sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
-      oldPrice: Number(formData.get("oldPrice")) || 0,
-      promoPrice: Number(formData.get("promoPrice")) || 0,
+      oldPrice: finalOldPrice,
+      promoPrice: finalPromoPrice,
+      price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
-
-    // Logic: Active price is promoPrice if exists, otherwise oldPrice
-    if (productData.promoPrice && productData.promoPrice > 0) {
-      productData.price = productData.promoPrice;
-    } else {
-      productData.price = productData.oldPrice;
-    }
-
-    // Use minimum variant price if provided price is invalid
-    if (!productData.price || isNaN(productData.price)) {
-      let minPrice = Infinity;
-      colors.forEach((c: any) => {
-        c.variants?.forEach((v: any) => {
-          if (v.price && v.price < minPrice) minPrice = v.price;
-        });
-      });
-      if (minPrice !== Infinity) productData.price = minPrice;
-    }
 
     const product = await Product.create(productData);
     
@@ -117,10 +115,25 @@ export async function updateProduct(id: string, formData: FormData) {
       }
     });
 
+    // Logic: Automatically derive base prices from variants
+    let minOldPrice = Infinity;
+    let minPromoPrice = Infinity;
+
+    colors.forEach((color: any) => {
+      color.variants?.forEach((v: any) => {
+        if (v.oldPrice && v.oldPrice < minOldPrice) minOldPrice = v.oldPrice;
+        if (v.promoPrice && v.promoPrice > 0 && v.promoPrice < minPromoPrice) {
+          minPromoPrice = v.promoPrice;
+        }
+      });
+    });
+
+    const finalOldPrice = minOldPrice === Infinity ? 0 : minOldPrice;
+    const finalPromoPrice = minPromoPrice === Infinity ? 0 : minPromoPrice;
+
     const productData = {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
-      price: Number(formData.get("price")),
       category: formData.get("category") as string,
       image: formData.get("image") as string,
       model: formData.get("model") as string,
@@ -129,28 +142,11 @@ export async function updateProduct(id: string, formData: FormData) {
       stock: totalStock,
       active: formData.get("active") === "true",
       sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
-      oldPrice: Number(formData.get("oldPrice")) || 0,
-      promoPrice: Number(formData.get("promoPrice")) || 0,
+      oldPrice: finalOldPrice,
+      promoPrice: finalPromoPrice,
+      price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
-
-    // Logic: Active price is promoPrice if exists, otherwise oldPrice
-    if (productData.promoPrice && productData.promoPrice > 0) {
-      productData.price = productData.promoPrice;
-    } else {
-      productData.price = productData.oldPrice;
-    }
-
-    // Use minimum variant price if provided price is invalid
-    if (!productData.price || isNaN(productData.price)) {
-      let minPrice = Infinity;
-      colors.forEach((c: any) => {
-        c.variants?.forEach((v: any) => {
-          if (v.price && v.price < minPrice) minPrice = v.price;
-        });
-      });
-      if (minPrice !== Infinity) productData.price = minPrice;
-    }
 
     const product = await Product.findByIdAndUpdate(id, productData, {
       new: true,
