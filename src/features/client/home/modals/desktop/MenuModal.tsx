@@ -6,7 +6,6 @@ import { RiTelegram2Fill } from "react-icons/ri";
 import { MdOutlineEmail } from "react-icons/md";
 import { useSettings } from "@/features/client/home/hooks/useSettings";
 import { useTranslation } from "@/hooks/useTranslation";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
 
@@ -27,9 +26,6 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="w-[1500px] max-w-full min-h-[600px]">
-        <div className="flex justify-end mb-4">
-          <LanguageSwitcher />
-        </div>
         <div className="grid grid-cols-3 gap-6 mb-8">
           {/* Delivery Section */}
           <section className="bg-white rounded-[20px] p-10 shadow-sm text-left">

@@ -4,6 +4,7 @@ import Modal from "./Modal";
 import MobileModal from "@/features/client/home/modals/mobile/MobileModal";
 import { FiX } from "react-icons/fi";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useTranslation } from "@/hooks/useTranslation";
 
 import { SizeTableEntry } from "@/types";
 
@@ -28,6 +29,7 @@ export default function SizeTableModal({
   data,
 }: SizeTableModalProps) {
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
   
   const displayData = data && data.length > 0 ? data : sizeData;
 
@@ -37,7 +39,7 @@ export default function SizeTableModal({
       <MobileModal isOpen={isOpen} onClose={onClose}>
         <div className="px-4 py-4">
           <h2 className="text-xl font-semibold text-[#333333] mb-6">
-            Таблица размеров
+            {t.sizeChart}
           </h2>
 
           {/* Size Table */}
@@ -46,13 +48,13 @@ export default function SizeTableModal({
               <thead>
                 <tr className="bg-gray-50">
                   <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">
-                    Размер
+                    {t.size}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">
-                    Ширина
+                    {t.width}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">
-                    Высота
+                    {t.height}
                   </th>
                 </tr>
               </thead>
@@ -63,10 +65,10 @@ export default function SizeTableModal({
                       {item.size}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {item.width} см
+                      {item.width} {t.pcs ? (t.pcs === "шт" || t.pcs === "dona" ? "см" : "cm") : "cm"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {item.height} см
+                      {item.height} {t.pcs ? (t.pcs === "шт" || t.pcs === "dona" ? "см" : "cm") : "cm"}
                     </td>
                   </tr>
                 ))}
@@ -77,10 +79,9 @@ export default function SizeTableModal({
           {/* Info Box */}
           <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
             <p className="text-sm text-purple-800">
-              <span className="font-bold block mb-2">Как измерить:</span>
+              <span className="font-bold block mb-2">{t.howToMeasure}:</span>
               <span className="opacity-80">
-                Ширина измеряется под рукавами, высота — от высшей точки плеча
-                до низа изделия. Допуск по размерам ±2 см.
+                {t.howToMeasureDesc}
               </span>
             </p>
           </div>
@@ -95,7 +96,7 @@ export default function SizeTableModal({
       <div className="w-[600px] max-w-full">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-[30px]/[37px] text-[#333333] font-bold">
-            Таблица размеров
+            {t.sizeChart}
           </h2>
           <button
             onClick={onClose}
@@ -110,13 +111,13 @@ export default function SizeTableModal({
             <thead>
               <tr className="bg-gray-50/50">
                 <th className="px-6 py-4 text-[14px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                  Размер
+                  {t.size}
                 </th>
                 <th className="px-6 py-4 text-[14px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                  Ширина (см)
+                  {t.width} (см)
                 </th>
                 <th className="px-6 py-4 text-[14px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                  Высота (см)
+                  {t.height} (см)
                 </th>
               </tr>
             </thead>
@@ -143,10 +144,9 @@ export default function SizeTableModal({
 
         <div className="mt-8 p-6 bg-purple-50 rounded-2xl border border-purple-100">
           <p className="text-[14px]/[20px] text-purple-800">
-            <span className="font-bold mr-1 block mb-1">Как измерить:</span>
+            <span className="font-bold mr-1 block mb-1">{t.howToMeasure}:</span>
             <span className="opacity-80">
-              Ширина измеряется под рукавами, высота — от высшей точки плеча до
-              низа изделия. Допуск по размерам ±2 см.
+              {t.howToMeasureDesc}
             </span>
           </p>
         </div>

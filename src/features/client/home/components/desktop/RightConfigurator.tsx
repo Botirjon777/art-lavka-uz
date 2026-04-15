@@ -68,16 +68,18 @@ export default function RightConfigurator({
     selectedVariant?.price ||
     selectedProduct.price;
 
-  const hasPromo = !!(selectedVariant?.promoPrice || selectedProduct.promoPrice);
+  const hasPromo = !!(
+    selectedVariant?.promoPrice || selectedProduct.promoPrice
+  );
   const oldPrice = hasPromo
-    ? (selectedVariant?.price || selectedProduct.price)
-    : (selectedVariant?.oldPrice || selectedProduct.oldPrice);
+    ? selectedVariant?.price || selectedProduct.price
+    : selectedVariant?.oldPrice || selectedProduct.oldPrice;
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
     onAddToCart({
       selectedPrint,
-      selectedColor: selectedColor.name,
+      selectedColor: getTranslated(selectedColor, lang),
       selectedSize,
       quantity,
       price,
@@ -89,7 +91,7 @@ export default function RightConfigurator({
     if (!selectedSize) return;
     onBuyOneClick({
       selectedPrint,
-      selectedColor: selectedColor.name,
+      selectedColor: getTranslated(selectedColor, lang),
       selectedSize,
       quantity,
       price,
@@ -108,7 +110,11 @@ export default function RightConfigurator({
                 key={selectedProduct.id}
                 selectedProduct={selectedProduct.model}
                 productName={getTranslated(selectedProduct, lang)}
-                productDescription={getTranslated(selectedProduct, lang, "description")}
+                productDescription={getTranslated(
+                  selectedProduct,
+                  lang,
+                  "description",
+                )}
                 selectedPrint={selectedPrint}
                 selectedColor={selectedColor.hex}
                 onProductClick={onProductClick}
@@ -116,11 +122,11 @@ export default function RightConfigurator({
             </div>
 
             {/* Right - Configuration Options */}
-            <div className="space-y-[15px]">
+            <div className="space-y-[15px] min-w-[362px]">
               {/* Color Selection */}
               <div>
                 <h3 className="text-[16px]/[22px] text-[#333333] mb-[15px]">
-                  {t.color}: {selectedColor.name}
+                  {t.color}: {getTranslated(selectedColor, lang)}
                 </h3>
                 <div className="flex gap-[15px]">
                   {productColors.map((color) => {
@@ -128,22 +134,26 @@ export default function RightConfigurator({
                     return (
                       <button
                         key={color.hex}
-                        onClick={() => hasStock && handleColorChange(color)}
-                        disabled={!hasStock}
-                        className={`w-10 h-10 rounded-full border transition-all ${
+                        onClick={() => handleColorChange(color)}
+                        className={`w-10 h-10 rounded-full border transition-all relative ${
                           selectedColor.hex === color.hex
                             ? "border-white ring ring-[#00C6F1] scale-110"
                             : "border-white"
                         } ${
                           !hasStock
-                            ? "opacity-20 grayscale cursor-not-allowed scale-90"
+                            ? "cursor-pointer scale-90"
                             : "cursor-pointer hover:scale-105"
                         }`}
-                        style={{ backgroundColor: color.hex }}
+                        style={{
+                          backgroundColor: color.hex,
+                          backgroundImage: !hasStock
+                            ? "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
+                            : "none",
+                        }}
                         title={
                           hasStock
-                            ? color.name
-                            : `${color.name} (${t.noStockTooltip})`
+                            ? getTranslated(color, lang)
+                            : `${getTranslated(color, lang)} (${t.noStockTooltip})`
                         }
                       />
                     );
@@ -168,17 +178,22 @@ export default function RightConfigurator({
                     return (
                       <button
                         key={v.size}
-                        onClick={() => !isOutOfStock && setSelectedSize(v.size)}
-                        disabled={isOutOfStock}
-                        style={isOutOfStock ? {
-                          backgroundImage: "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
-                        } : {}}
+                        onClick={() => setSelectedSize(v.size)}
+                        disabled={false}
+                        style={
+                          isOutOfStock
+                            ? {
+                                backgroundImage:
+                                  "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)",
+                              }
+                            : {}
+                        }
                         className={`py-2.5 px-3 text-[14px]/[17px] rounded-xl transition-all relative border min-h-[42px] flex items-center justify-center ${
-                          isActive
+                          isActive && !isOutOfStock
                             ? "bg-[#00C6F1] text-white border-[#00C6F1]"
                             : isOutOfStock
-                            ? "bg-gray-50 text-[#9F9F9F] cursor-not-allowed opacity-60 border-gray-100"
-                            : "bg-white text-[#333333] cursor-pointer hover:border-[#00C6F1] border-transparent"
+                              ? `bg-gray-50 text-[#9F9F9F] opacity-60 ${isActive ? "border-[#00C6F1] border-2" : "border-gray-100"}`
+                              : "bg-white text-[#333333] cursor-pointer hover:border-[#00C6F1] border-transparent"
                         }`}
                       >
                         {v.size}
@@ -204,8 +219,18 @@ export default function RightConfigurator({
                       disabled={quantity <= 1}
                       className="w-10 h-10 flex items-center cursor-pointer justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M20 12H4"
+                        />
                       </svg>
                     </button>
 
@@ -227,20 +252,34 @@ export default function RightConfigurator({
                     />
 
                     <button
-                      onClick={() => setQuantity(Math.min(sizeStock, quantity + 1))}
+                      onClick={() =>
+                        setQuantity(Math.min(sizeStock, quantity + 1))
+                      }
                       disabled={quantity >= sizeStock}
                       className="w-10 h-10 cursor-pointer flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                     </button>
                   </div>
 
                   {!isOutOfStock && (
-                    <span className="text-[14px]/[17px] text-[#333333]">
-                      {t.available}:{" "}
-                      <span className="inline-block min-w-[2ch] text-center font-medium text-green-600">
+                    <span className="text-[14px]/[17px] text-[#333333] flex items-center gap-1">
+                      <span className="inline-block min-w-[85px]">
+                        {t.available}:
+                      </span>
+                      <span className="inline-block min-w-[100px] font-medium text-green-600">
                         {t.inStock}
                       </span>
                     </span>
@@ -268,24 +307,28 @@ export default function RightConfigurator({
                 <button
                   onClick={handleBuyOneClick}
                   disabled={isOutOfStock}
-                  className={`max-w-[240px] px-[35px] py-3.5 rounded-xl transition-colors shadow-md text-[16px]/5 ${
+                  className={`w-full md:max-w-[260px] min-w-[240px] px-8 py-3.5 rounded-xl transition-colors shadow-md text-[16px]/5 ${
                     isOutOfStock
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-[#00C6F1] hover:bg-[#00C6F1]/80 text-white cursor-pointer"
                   }`}
                 >
-                  {isOutOfStock ? t.outOfStock : t.buyOneClick}
+                  <span className="whitespace-nowrap">
+                    {isOutOfStock ? t.outOfStock : t.buyOneClick}
+                  </span>
                 </button>
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`max-w-[240px] px-[35px] py-3.5 rounded-xl transition-all shadow-md text-[16px]/5 ${
+                  className={`w-full md:max-w-[260px] min-w-[240px] px-8 py-3.5 rounded-xl transition-all shadow-md text-[16px]/5 ${
                     isOutOfStock
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-[#8814B1] hover:bg-[#8814B1]/80 text-white cursor-pointer"
                   }`}
                 >
-                  {isOutOfStock ? t.outOfStock : t.addToCart}
+                  <span className="whitespace-nowrap">
+                    {isOutOfStock ? t.outOfStock : t.addToCart}
+                  </span>
                 </button>
               </div>
             </div>

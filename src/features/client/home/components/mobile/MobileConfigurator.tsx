@@ -78,7 +78,7 @@ export default function MobileConfigurator({
     if (!selectedSize) return;
     onAddToCart({
       selectedPrint,
-      selectedColor: selectedColor.name,
+      selectedColor: getTranslated(selectedColor, lang),
       selectedSize,
       quantity,
       price,
@@ -90,7 +90,7 @@ export default function MobileConfigurator({
     if (!selectedSize) return;
     onBuyOneClick({
       selectedPrint,
-      selectedColor: selectedColor.name,
+      selectedColor: getTranslated(selectedColor, lang),
       selectedSize,
       quantity,
       price,
@@ -121,7 +121,7 @@ export default function MobileConfigurator({
         {/* Color Selection */}
         <div>
           <h3 className="text-[13px]/[16px] text-[#333333] mb-3">
-            {t.color}: {selectedColor.name}
+            {t.color}: {getTranslated(selectedColor, lang)}
           </h3>
           <div className="flex gap-3">
             {productColors.map((color) => {
@@ -129,19 +129,27 @@ export default function MobileConfigurator({
               return (
                 <button
                   key={color.hex}
-                  onClick={() => hasStock && handleColorChange(color)}
-                  disabled={!hasStock}
-                  className={`w-10 h-10 rounded-full border-2 transition-all ${
+                  onClick={() => handleColorChange(color)}
+                  className={`w-10 h-10 rounded-full border-2 transition-all relative ${
                     selectedColor.hex === color.hex
                       ? "border-[#00C6F1] ring-2 ring-[#00C6F1]/30 scale-110"
                       : "border-gray-300"
                   } ${
                     !hasStock
-                      ? "opacity-20 grayscale cursor-not-allowed scale-90"
+                      ? "cursor-pointer scale-90"
                       : "active:scale-95"
                   }`}
-                  style={{ backgroundColor: color.hex }}
-                  title={hasStock ? color.name : `${color.name} (${t.noStockTooltip})`}
+                  style={{
+                    backgroundColor: color.hex,
+                    backgroundImage: !hasStock
+                      ? "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
+                      : "none",
+                  }}
+                  title={
+                    hasStock
+                      ? getTranslated(color, lang)
+                      : `${getTranslated(color, lang)} (${t.noStockTooltip})`
+                  }
                 />
               );
             })}
@@ -165,17 +173,17 @@ export default function MobileConfigurator({
               return (
                 <button
                   key={v.size}
-                  onClick={() => !isOutOfStock && setSelectedSize(v.size)}
-                  disabled={isOutOfStock}
+                  onClick={() => setSelectedSize(v.size)}
+                  disabled={false}
                   style={isOutOfStock ? {
                     backgroundImage: "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
                   } : {}}
                   className={`py-[5px] text-[13px]/[16px] rounded-[5px] shadow-sm transition-all relative border min-h-[32px] flex items-center justify-center ${
-                    isActive
+                    isActive && !isOutOfStock
                       ? "bg-[#00C6F1] text-white border-[#00C6F1]"
                       : isOutOfStock
-                      ? "bg-gray-100 text-[#9F9F9F] cursor-not-allowed opacity-60 border-gray-100"
-                      : "bg-white text-[#333333] border-transparent active:scale-95"
+                        ? `bg-gray-100 text-[#9F9F9F] opacity-60 ${isActive ? "border-[#00C6F1] border-2" : "border-gray-100"}`
+                        : "bg-white text-[#333333] border-transparent active:scale-95"
                   }`}
                 >
                   {v.size}
@@ -193,7 +201,8 @@ export default function MobileConfigurator({
 
           {!isOutOfStock && (
             <p className="text-green-600 text-sm font-medium mt-5 flex items-center gap-1">
-              <span className="text-lg">✓</span> {t.inStock}
+              <span className="text-lg">✓</span> 
+              <span className="inline-block min-w-[100px]">{t.inStock}</span>
             </p>
           )}
         </div>
@@ -229,7 +238,7 @@ export default function MobileConfigurator({
             </button>
 
             {!isOutOfStock && (
-              <span className="text-sm text-green-600 font-medium ml-2">
+              <span className="text-sm text-green-600 font-medium ml-2 inline-block min-w-[100px]">
                 {t.inStock}
               </span>
             )}

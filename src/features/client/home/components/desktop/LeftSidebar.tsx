@@ -29,13 +29,13 @@ export default function LeftSidebar({
 }: LeftSidebarProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
-  
+
   const categories = [
     { id: "all", label: t.all },
-    ...printCategories.map(cat => ({
+    ...printCategories.map((cat) => ({
       id: cat.slug,
-      label: getTranslated(cat, lang)
-    }))
+      label: getTranslated(cat, lang),
+    })),
   ];
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -80,22 +80,25 @@ export default function LeftSidebar({
 
   return (
     <div className="w-full max-w-[558px] h-auto md:h-[calc(100vh-160px)] md:max-h-[886px] px-3 md:px-6 flex flex-col shrink-0">
-      {/* Logo + Language Switcher */}
-      <div className="mb-4 hidden md:flex justify-between items-center gap-4 shrink-0">
-        <Image
-          src="/art-lavka.png"
-          alt="ART LAVKA.UZ"
-          width={262}
-          height={99}
-          className="object-contain"
-        />
-        <div className="flex flex-col items-end gap-2">
+      {/* Logo + Language Dropdown + Gallery Button */}
+      <div className="mb-10 hidden md:flex items-center justify-between gap-4 shrink-0">
+        <div className="shrink-0 w-[220px]">
+          <Image
+            src="/art-lavka.png"
+            alt="ART LAVKA.UZ"
+            width={220}
+            height={83}
+            className="object-contain"
+            priority
+          />
+        </div>
+        <div className="flex items-center gap-3 justify-end min-w-[240px]">
           <LanguageSwitcher />
           <Button
             variant="primary"
-            size="lg"
+            size="md"
             onClick={onGalleryClick}
-            className="whitespace-nowrap"
+            className="whitespace-nowrap h-[46px] px-6 rounded-xl! shadow-sm hover:shadow-md min-w-[180px]"
           >
             {t.gallery}
           </Button>

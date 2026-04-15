@@ -8,7 +8,6 @@ import { MdOutlineEmail } from "react-icons/md";
 import Link from "next/link";
 import { useSettings } from "@/features/client/home/hooks/useSettings";
 import { useTranslation } from "@/hooks/useTranslation";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
 
@@ -269,9 +268,6 @@ export default function MobileMenuModal({
           >
             {t.gallery}
           </button>
-        </div>
-        <div className="flex justify-center pt-1">
-          <LanguageSwitcher />
         </div>
       </div>
     </MobileModal>

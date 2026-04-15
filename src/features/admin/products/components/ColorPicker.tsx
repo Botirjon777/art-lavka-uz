@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { FiPlus, FiX } from "react-icons/fi";
 import { ProductVariant } from "@/types";
+import { LANGUAGES, Lang } from "@/lib/i18n";
 
 export interface Color {
   name: string;
   hex: string;
   variants: ProductVariant[];
+  translations?: Record<string, { name: string }>;
 }
 
 interface ColorPickerProps {
@@ -25,7 +27,12 @@ export default function ColorPicker({
   onPreview,
   error,
 }: ColorPickerProps) {
-  const [colorName, setColorName] = useState("");
+  const [colorNames, setColorNames] = useState<Record<Lang, string>>({
+    ru: "",
+    en: "",
+    uz: "",
+  });
+  const [activeLangTab, setActiveLangTab] = useState<Lang>("ru");
   const [colorHex, setColorHex] = useState("#000000");
 
   // Variant Modal State
@@ -33,6 +40,12 @@ export default function ColorPicker({
     null,
   );
   const [localVariants, setLocalVariants] = useState<ProductVariant[]>([]);
+  const [localColorNames, setLocalColorNames] = useState<Record<Lang, string>>({
+    ru: "",
+    en: "",
+    uz: "",
+  });
+  const [localActiveLangTab, setLocalActiveLangTab] = useState<Lang>("ru");
 
   // Deletion State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -42,10 +55,17 @@ export default function ColorPicker({
 
   const commonSizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
-  // Sync local variants when modal opens
+  // Sync local variants and names when modal opens
   useEffect(() => {
     if (selectedColorIndex !== null) {
-      setLocalVariants(colors[selectedColorIndex].variants || []);
+      const color = colors[selectedColorIndex];
+      setLocalVariants(color.variants || []);
+      setLocalColorNames({
+        ru: color.name || "",
+        en: color.translations?.en?.name || "",
+        uz: color.translations?.uz?.name || "",
+      });
+      setLocalActiveLangTab("ru");
     }
   }, [selectedColorIndex, colors]);
 
@@ -56,19 +76,24 @@ export default function ColorPicker({
   };
 
   const addColor = () => {
-    if (!colorName.trim()) {
-      alert("Пожалуйста, введите название цвета");
+    if (!colorNames.ru.trim()) {
+      alert("Пожалуйста, введите название цвета (RU)");
       return;
     }
 
     const newColor: Color = {
-      name: colorName.trim(),
+      name: colorNames.ru.trim(),
       hex: colorHex,
       variants: [],
+      translations: {
+        ru: { name: colorNames.ru.trim() },
+        en: { name: colorNames.en.trim() },
+        uz: { name: colorNames.uz.trim() },
+      },
     };
 
     onChange([...colors, newColor]);
-    setColorName("");
+    setColorNames({ ru: "", en: "", uz: "" });
     setColorHex("#000000");
   };
 
@@ -118,7 +143,18 @@ export default function ColorPicker({
       }));
 
     const updatedColors = colors.map((c, i) =>
-      i === selectedColorIndex ? { ...c, variants: validVariants } : c
+      i === selectedColorIndex
+        ? {
+            ...c,
+            name: localColorNames.ru.trim(),
+            variants: validVariants,
+            translations: {
+              ru: { name: localColorNames.ru.trim() },
+              en: { name: localColorNames.en.trim() },
+              uz: { name: localColorNames.uz.trim() },
+            },
+          }
+        : c,
     );
     onChange(updatedColors);
     setSelectedColorIndex(null);
@@ -152,19 +188,49 @@ export default function ColorPicker({
         <div className="border-2 border-gray-200 rounded-xl p-4 space-y-3 bg-white">
           <h4 className="font-medium text-gray-700">Добавить цвет</h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Color Name Input */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                Название цвета
-              </label>
-              <input
-                type="text"
-                value={colorName}
-                onChange={(e) => setColorName(e.target.value)}
-                placeholder="Например: Белый, Черный"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+            {/* Color Name Input with Tabs */}
+            <div className="space-y-2">
+              <div className="flex border-b border-gray-100 bg-gray-50 rounded-t-lg overflow-hidden">
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setActiveLangTab(l.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold transition-all border-b-2 ${
+                      activeLangTab === l.id
+                        ? "border-[#8814B1] text-[#8814B1] bg-white"
+                        : "border-transparent text-gray-400 hover:text-gray-700"
+                    }`}
+                  >
+                    <span>{l.flag}</span>
+                    <span>{l.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="p-3 border border-t-0 border-gray-100 rounded-b-lg space-y-2">
+                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-wider">
+                  Название ({activeLangTab.toUpperCase()})
+                </label>
+                <input
+                  type="text"
+                  value={colorNames[activeLangTab]}
+                  onChange={(e) =>
+                    setColorNames((prev) => ({
+                      ...prev,
+                      [activeLangTab]: e.target.value,
+                    }))
+                  }
+                  placeholder={
+                    activeLangTab === "ru"
+                      ? "Напр: Черный"
+                      : activeLangTab === "en"
+                      ? "E.g.: Black"
+                      : "Masalan: Qora"
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8814B1] focus:border-transparent outline-none text-sm font-bold"
+                />
+              </div>
             </div>
 
             {/* Hex Color Input with Picker */}
@@ -296,16 +362,46 @@ export default function ColorPicker({
                     className="w-10 h-10 rounded-xl border-2 border-white shadow-sm"
                     style={{ backgroundColor: colors[selectedColorIndex].hex }}
                   />
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-800">
-                      Настройка вариантов
+                      Настройка цвета и вариантов
                     </h3>
-                    <p className="text-sm text-gray-500">
-                      Цвет:{" "}
-                      <span className="font-semibold text-gray-700">
-                        {colors[selectedColorIndex].name}
+                    
+                    {/* Language Tabs for Edit */}
+                    <div className="flex border-b border-gray-200 mt-4 mb-2">
+                      {LANGUAGES.map((l) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => setLocalActiveLangTab(l.id)}
+                          className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold transition-all border-b-2 ${
+                            localActiveLangTab === l.id
+                              ? "border-[#8814B1] text-[#8814B1] bg-white"
+                              : "border-transparent text-gray-400 hover:text-gray-700"
+                          }`}
+                        >
+                          <span>{l.flag}</span>
+                          <span>{l.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={localColorNames[localActiveLangTab]}
+                        onChange={(e) =>
+                          setLocalColorNames((prev) => ({
+                            ...prev,
+                            [localActiveLangTab]: e.target.value,
+                          }))
+                        }
+                        placeholder={`Название на ${localActiveLangTab.toUpperCase()}`}
+                        className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8814B1] outline-none font-bold text-gray-800"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-300 font-bold uppercase">
+                        Название цвета ({localActiveLangTab})
                       </span>
-                    </p>
+                    </div>
                   </div>
                 </div>
                 <button

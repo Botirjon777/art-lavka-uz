@@ -26,6 +26,7 @@ export interface ProductColor {
   name: string;
   hex: string;
   variants: ProductVariant[];
+  translations?: Record<string, { name: string }>;
 }
 
 export interface Translation {
