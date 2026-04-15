@@ -2,9 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { PrintDesign } from "@/types";
+import { PrintDesign, PrintCategory } from "@/types";
 import { SidebarPrintSkeleton } from "@/components/LoadingSkeleton";
 import { Button } from "@/components/ui";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 
 interface LeftSidebarProps {
   onGalleryClick: () => void;
@@ -12,12 +16,8 @@ interface LeftSidebarProps {
   onPrintSelect: (print: PrintDesign | null) => void;
   initialPrints?: PrintDesign[];
   initialLoading?: boolean;
-  printCategories?: { id: string; label: string }[];
+  printCategories?: PrintCategory[];
 }
-
-const DEFAULT_CATEGORIES = [
-  { id: "all", label: "Все" },
-];
 
 export default function LeftSidebar({
   onGalleryClick,
@@ -27,7 +27,16 @@ export default function LeftSidebar({
   initialLoading,
   printCategories = [],
 }: LeftSidebarProps) {
-  const categories = [...DEFAULT_CATEGORIES, ...printCategories];
+  const { t } = useTranslation();
+  const { lang } = useLanguageStore();
+  
+  const categories = [
+    { id: "all", label: t.all },
+    ...printCategories.map(cat => ({
+      id: cat.slug,
+      label: getTranslated(cat, lang)
+    }))
+  ];
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [prints, setPrints] = useState<PrintDesign[]>(initialPrints || []);
@@ -46,7 +55,7 @@ export default function LeftSidebar({
     try {
       setLoading(true);
       const response = await fetch("/api/prints?limit=100", {
-        next: { revalidate: 3600 }, // Cache for 1 hour
+        next: { revalidate: 3600 },
       });
       const data = await response.json();
       if (data.success) {
@@ -62,7 +71,8 @@ export default function LeftSidebar({
   const filteredPrints = prints.filter((p) => {
     const matchesCategory =
       selectedCategory === "all" || p.category === selectedCategory;
-    const matchesSearch = p.name
+    const translatedName = getTranslated(p, lang);
+    const matchesSearch = translatedName
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -70,8 +80,8 @@ export default function LeftSidebar({
 
   return (
     <div className="w-full max-w-[558px] h-auto md:h-[calc(100vh-160px)] md:max-h-[886px] px-3 md:px-6 flex flex-col shrink-0">
-      {/* Logo */}
-      <div className="mb-4 hidden md:flex justify-between items-center gap-6 shrink-0">
+      {/* Logo + Language Switcher */}
+      <div className="mb-4 hidden md:flex justify-between items-center gap-4 shrink-0">
         <Image
           src="/art-lavka.png"
           alt="ART LAVKA.UZ"
@@ -79,14 +89,17 @@ export default function LeftSidebar({
           height={99}
           className="object-contain"
         />
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={onGalleryClick}
-          className="whitespace-nowrap"
-        >
-          Фото Галерея
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          <LanguageSwitcher />
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={onGalleryClick}
+            className="whitespace-nowrap"
+          >
+            {t.gallery}
+          </Button>
+        </div>
       </div>
 
       {/* Track Order Button */}
@@ -95,14 +108,14 @@ export default function LeftSidebar({
           href="/track-order"
           className="block w-full py-3 px-6 bg-linear-to-r from-[#8814B1] to-[#a01dc4] hover:from-[#8814B1]/90 hover:to-[#a01dc4]/90 text-center text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
         >
-          Отследить заказ
+          {t.trackOrder}
         </a>
       </div>
 
       {/* Print Selection */}
       <div className="flex-1 flex flex-col">
         <h3 className="text-[30px]/[37px] text-[#333333] mb-7.5 shrink-0">
-          Выберите принт
+          {t.selectPrint}
         </h3>
 
         {/* Category Tabs */}
@@ -126,7 +139,7 @@ export default function LeftSidebar({
         <div className="mb-8 shrink-0">
           <input
             type="text"
-            placeholder="Поиск принтов..."
+            placeholder={t.searchPrints}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-[50px] bg-white rounded-lg px-4 border border-gray-100 focus:border-[#8814B1] outline-none transition-all shadow-sm"
@@ -153,7 +166,7 @@ export default function LeftSidebar({
             >
               <div className="bg-white h-[90%] w-[90%] rounded-[26px] shadow-lg flex items-center justify-center">
                 <span className="text-xs text-gray-500 text-center font-medium">
-                  Без принта
+                  {t.noPrint}
                 </span>
               </div>
             </button>
@@ -175,7 +188,7 @@ export default function LeftSidebar({
                   <div className="relative bg-white h-[90%] w-[90%] rounded-[26px] overflow-hidden shadow-lg">
                     <Image
                       src={print.frontImage}
-                      alt={print.name}
+                      alt={getTranslated(print, lang)}
                       fill
                       className="object-contain p-3"
                     />

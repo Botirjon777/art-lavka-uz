@@ -7,6 +7,9 @@ import Image from "next/image";
 import { useProducts } from "../../hooks/useProducts";
 import { useSettings } from "../../hooks/useSettings";
 import { FiAlertTriangle } from "react-icons/fi";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 
 interface MobileProductsModalProps {
   isOpen: boolean;
@@ -19,6 +22,8 @@ export default function MobileProductsModal({
   onClose,
   onSelectProduct,
 }: MobileProductsModalProps) {
+  const { t } = useTranslation();
+  const { lang } = useLanguageStore();
   const { data: products = [], isLoading: loading } = useProducts();
   const { data: settings } = useSettings();
   
@@ -32,7 +37,7 @@ export default function MobileProductsModal({
 
   const tabs = categories.map((cat: ICategory) => ({
     id: cat.id,
-    label: cat.label,
+    label: getTranslated(cat, lang) || cat.label,
     soon: cat.status === "soon",
   }));
 
@@ -127,17 +132,17 @@ export default function MobileProductsModal({
                     <div className="relative w-full aspect-3/4 mb-2 overflow-hidden">
                       <Image
                         src={product.image}
-                        alt={product.name}
+                        alt={getTranslated(product, lang)}
                         fill
                         className="object-cover group-active:scale-95 transition-transform duration-200"
                       />
                     </div>
                     <p className="text-sm text-[#333333] font-medium line-clamp-1 mb-1">
-                      {product.name}
+                      {getTranslated(product, lang)}
                     </p>
                     <div className="flex items-center justify-center gap-1.5 flex-wrap">
                       <span className={`text-[13px] font-bold ${product.promoPrice ? "text-[#8814B1]" : "text-[#333333]"}`}>
-                        {(product.promoPrice || product.price).toLocaleString()} сум
+                        {(product.promoPrice || product.price).toLocaleString()} {t.currency}
                       </span>
                       {product.promoPrice && (
                         <span className="text-[11px] text-gray-400 line-through">

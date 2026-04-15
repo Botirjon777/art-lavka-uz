@@ -30,6 +30,11 @@ export interface SizeTableEntry {
   height: string;
 }
 
+export interface ProductTranslation {
+  name: string;
+  description?: string;
+}
+
 export interface IProduct {
   name: string;
   description?: string;
@@ -46,6 +51,11 @@ export interface IProduct {
   active: boolean;
   featured?: boolean;
   lastPromoSentAt?: Date;
+  translations?: {
+    en?: ProductTranslation;
+    ru?: ProductTranslation;
+    uz?: ProductTranslation;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

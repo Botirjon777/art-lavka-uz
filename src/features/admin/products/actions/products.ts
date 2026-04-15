@@ -65,6 +65,7 @@ export async function createProduct(formData: FormData) {
       sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
       oldPrice: Number(formData.get("oldPrice")) || 0,
       promoPrice: Number(formData.get("promoPrice")) || 0,
+      translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 
     // Logic: Active price is promoPrice if exists, otherwise oldPrice
@@ -130,6 +131,7 @@ export async function updateProduct(id: string, formData: FormData) {
       sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
       oldPrice: Number(formData.get("oldPrice")) || 0,
       promoPrice: Number(formData.get("promoPrice")) || 0,
+      translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 
     // Logic: Active price is promoPrice if exists, otherwise oldPrice

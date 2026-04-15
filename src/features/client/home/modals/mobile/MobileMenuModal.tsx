@@ -6,8 +6,11 @@ import MobileModal from "./MobileModal";
 import { RiTelegram2Fill } from "react-icons/ri";
 import { MdOutlineEmail } from "react-icons/md";
 import Link from "next/link";
-
 import { useSettings } from "@/features/client/home/hooks/useSettings";
+import { useTranslation } from "@/hooks/useTranslation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 
 interface MobileMenuModalProps {
   isOpen: boolean;
@@ -20,6 +23,8 @@ export default function MobileMenuModal({
   onClose,
   onGalleryClick,
 }: MobileMenuModalProps) {
+  const { t } = useTranslation();
+  const { lang } = useLanguageStore();
   const [openSection, setOpenSection] = useState<string | null>("delivery");
   const { data: settings, isLoading } = useSettings();
 
@@ -39,7 +44,7 @@ export default function MobileMenuModal({
           onClick={() => toggleSection("delivery")}
           className="w-full bg-white shadow-md rounded-xl flex items-center justify-between px-5 py-2.5 text-left"
         >
-          <h3 className="text-[22px]/[27px] text-[#333333]">Доставка</h3>
+          <h3 className="text-[22px]/[27px] text-[#333333]">{t.delivery}</h3>
           <svg
             className={`w-5 h-5 text-gray-500 transition-transform ${
               openSection === "delivery" ? "rotate-180" : ""
@@ -58,7 +63,7 @@ export default function MobileMenuModal({
         </button>
         {openSection === "delivery" && (
           <div className="pb-5 text-[14px] text-[#666666] leading-relaxed whitespace-pre-wrap px-1">
-            {menu.delivery}
+            {getTranslated(menu, lang, "delivery")}
           </div>
         )}
 
@@ -67,7 +72,7 @@ export default function MobileMenuModal({
           onClick={() => toggleSection("payment")}
           className="w-full bg-white shadow-md rounded-xl flex items-center justify-between px-5 py-2.5 text-left"
         >
-          <h3 className="text-[22px]/[27px] text-[#333333]">Оплата</h3>
+          <h3 className="text-[22px]/[27px] text-[#333333]">{t.payment}</h3>
           <svg
             className={`w-5 h-5 text-gray-500 transition-transform ${
               openSection === "payment" ? "rotate-180" : ""
@@ -87,7 +92,7 @@ export default function MobileMenuModal({
         {openSection === "payment" && (
           <div className="pb-5 space-y-4 px-1">
             <p className="text-[14px]/[17px] text-[#333333] whitespace-pre-wrap">
-              {menu.payment}
+              {getTranslated(menu, lang, "payment")}
             </p>
             <div className="flex items-center gap-2.5">
               <div className="flex-1 h-21 bg-[#efefef] rounded-lg flex items-center justify-center">
@@ -123,9 +128,7 @@ export default function MobileMenuModal({
           onClick={() => toggleSection("contact")}
           className="w-full bg-white shadow-md rounded-xl flex items-center justify-between px-5 py-2.5 text-left"
         >
-          <h3 className="text-[22px]/[27px] text-[#333333]">
-            Связаться с нами
-          </h3>
+          <h3 className="text-[22px]/[27px] text-[#333333]">{t.contactUs}</h3>
           <svg
             className={`w-5 h-5 text-gray-500 transition-transform ${
               openSection === "contact" ? "rotate-180" : ""
@@ -166,7 +169,7 @@ export default function MobileMenuModal({
                 <MdOutlineEmail size={18} />
               </div>
               <div className="text-sm">
-                <p className="text-[#333333] font-medium">Электронная почта</p>
+                <p className="text-[#333333] font-medium">Email</p>
                 <p className="text-[#8814B1]">{menu.email}</p>
               </div>
             </a>
@@ -178,7 +181,7 @@ export default function MobileMenuModal({
           onClick={() => toggleSection("about")}
           className="w-full bg-white shadow-md rounded-xl flex items-center justify-between px-5 py-2.5 text-left"
         >
-          <h3 className="text-[22px]/[27px] text-[#333333]">О нас</h3>
+          <h3 className="text-[22px]/[27px] text-[#333333]">{t.aboutUs}</h3>
           <svg
             className={`w-5 h-5 text-gray-500 transition-transform ${
               openSection === "about" ? "rotate-180" : ""
@@ -198,7 +201,7 @@ export default function MobileMenuModal({
         {openSection === "about" && (
           <div className="pb-5 space-y-4 px-1">
             <div className="text-[14px]/[17px] text-[#333333] leading-relaxed whitespace-pre-wrap">
-              {menu.about}
+              {getTranslated(menu, lang, "about")}
             </div>
 
             <div className="space-y-3 pt-2">
@@ -218,7 +221,7 @@ export default function MobileMenuModal({
                   </svg>
                 </div>
                 <div className="text-sm">
-                  <p className="text-[#333333]">Художники:</p>
+                  <p className="text-[#333333]">{t.artists}:</p>
                   <p className="text-[#8814B1] text-[14px]/[17px] break-all">
                     {menu.instagramArtists}
                   </p>
@@ -257,15 +260,18 @@ export default function MobileMenuModal({
             href="/track-order"
             className="block w-full py-2.5 px-5 bg-linear-to-r from-[#8814B1] to-[#a01dc4] hover:from-[#8814B1]/90 hover:to-[#a01dc4]/90 text-center text-white rounded-xl transition-all shadow-lg text-[14px]/[17px]"
           >
-            Отследить заказ
+            {t.trackOrder}
           </Link>
           {/* Gallery Button */}
           <button
             onClick={onGalleryClick}
             className="block w-full py-2.5 px-5 bg-[#8814B1] hover:bg-[#8814B1]/90 text-center text-white rounded-xl transition-all shadow-lg text-[14px]/[17px]"
           >
-            Фото Галерея
+            {t.gallery}
           </button>
+        </div>
+        <div className="flex justify-center pt-1">
+          <LanguageSwitcher />
         </div>
       </div>
     </MobileModal>

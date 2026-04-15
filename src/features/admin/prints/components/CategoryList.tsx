@@ -19,6 +19,7 @@ import { Button, Input } from "@/components/ui";
 import Modal from "@/components/Modal";
 import { PrintCategory } from "@/types";
 import Loader from "@/components/Loader";
+import { LANGUAGES, Lang } from "@/lib/i18n";
 
 export default function CategoryList() {
   const { data: categories = [], isLoading: loading } =
@@ -32,20 +33,31 @@ export default function CategoryList() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [name, setName] = useState("");
+  const [langName, setLangName] = useState<Record<string, string>>({
+    ru: "",
+    en: "",
+    uz: "",
+  });
+  const [activeLangTab, setActiveLangTab] = useState<Lang>("ru");
   const [slug, setSlug] = useState("");
+
+  const name = langName[activeLangTab];
+  const setName = (v: string) => setLangName((prev) => ({ ...prev, [activeLangTab]: v }));
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-
     const formData = new FormData();
-    formData.append("name", name);
+    formData.append("name", langName.ru);
     formData.append("slug", slug);
+    formData.append("translations", JSON.stringify({
+      ru: { name: langName.ru },
+      en: { name: langName.en },
+      uz: { name: langName.uz },
+    }));
 
     createMutation.mutate(formData, {
       onSuccess: () => {
-        setName("");
+        setLangName({ ru: "", en: "", uz: "" });
         setSlug("");
         setIsCreateOpen(false);
       },
@@ -54,17 +66,22 @@ export default function CategoryList() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !selectedCategory) return;
+    if (!langName.ru.trim() || !selectedCategory) return;
 
     const formData = new FormData();
-    formData.append("name", name);
+    formData.append("name", langName.ru);
     formData.append("slug", slug);
+    formData.append("translations", JSON.stringify({
+      ru: { name: langName.ru },
+      en: { name: langName.en },
+      uz: { name: langName.uz },
+    }));
 
     updateMutation.mutate(
       { id: selectedCategory._id, formData },
       {
         onSuccess: () => {
-          setName("");
+          setLangName({ ru: "", en: "", uz: "" });
           setSlug("");
           setSelectedCategory(null);
           setIsEditOpen(false);
@@ -86,7 +103,11 @@ export default function CategoryList() {
 
   const openEdit = (cat: any) => {
     setSelectedCategory(cat);
-    setName(cat.name);
+    setLangName({
+      ru: cat.name || "",
+      en: cat.translations?.en?.name || "",
+      uz: cat.translations?.uz?.name || "",
+    });
     setSlug(cat.slug || "");
     setIsEditOpen(true);
   };
@@ -114,7 +135,7 @@ export default function CategoryList() {
         </div>
         <Button
           onClick={() => {
-            setName("");
+            setLangName({ ru: "", en: "", uz: "" });
             setIsCreateOpen(true);
           }}
           className="flex items-center gap-2"
@@ -234,14 +255,35 @@ export default function CategoryList() {
           </div>
 
           <form onSubmit={handleCreate} className="space-y-8">
-            <Input
-              label="Название (Rus/Uzb)"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Напр: Прикольные"
-              required
-              autoFocus
-            />
+            <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <div className="flex border-b border-gray-100 bg-gray-50">
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setActiveLangTab(l.id)}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold transition-all border-b-2 ${
+                      activeLangTab === l.id
+                        ? "border-[#8814B1] text-[#8814B1] bg-white"
+                        : "border-transparent text-gray-400 hover:text-gray-700"
+                    }`}
+                  >
+                    <span>{l.flag}</span>
+                    <span>{l.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="p-4">
+                <Input
+                  label={`Название ${activeLangTab.toUpperCase()}`}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={activeLangTab === "ru" ? "Напр: Прикольные" : activeLangTab === "en" ? "Example: Abstract" : "Masalan: Naqshlar"}
+                  required={activeLangTab === "ru"}
+                  autoFocus={activeLangTab === "ru"}
+                />
+              </div>
+            </div>
             <Input
               label="Slug (URL)"
               value={slug}
@@ -290,13 +332,34 @@ export default function CategoryList() {
           </div>
 
           <form onSubmit={handleUpdate} className="space-y-8">
-            <Input
-              label="Новое название"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoFocus
-            />
+            <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <div className="flex border-b border-gray-100 bg-gray-50">
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => setActiveLangTab(l.id)}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold transition-all border-b-2 ${
+                      activeLangTab === l.id
+                        ? "border-[#8814B1] text-[#8814B1] bg-white"
+                        : "border-transparent text-gray-400 hover:text-gray-700"
+                    }`}
+                  >
+                    <span>{l.flag}</span>
+                    <span>{l.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="p-4">
+                <Input
+                  label={`Название ${activeLangTab.toUpperCase()}`}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required={activeLangTab === "ru"}
+                  autoFocus={activeLangTab === "ru"}
+                />
+              </div>
+            </div>
             <Input
               label="Slug (URL)"
               value={slug}

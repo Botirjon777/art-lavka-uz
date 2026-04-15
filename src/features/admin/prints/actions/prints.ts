@@ -38,6 +38,7 @@ export async function createPrint(formData: FormData) {
       frontImage: formData.get("frontImage") as string,
       category: formData.get("category") as string,
       active: formData.get("active") === "true",
+      translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 
     // Only add backImage if it's provided
@@ -64,6 +65,7 @@ export async function updatePrint(id: string, formData: FormData) {
       frontImage: formData.get("frontImage") as string,
       category: formData.get("category") as string,
       active: formData.get("active") === "true",
+      translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 
     // Handle backImage - only include if provided

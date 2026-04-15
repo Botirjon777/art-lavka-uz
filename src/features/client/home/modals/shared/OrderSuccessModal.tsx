@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { RiTelegram2Fill } from "react-icons/ri";
 import { TbSitemap } from "react-icons/tb";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface OrderSuccessModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export default function OrderSuccessModal({
   onClose,
   orderNumber,
 }: OrderSuccessModalProps) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -53,16 +55,15 @@ export default function OrderSuccessModal({
         {/* Success Message */}
         <div className="text-center mb-8">
           <h2 className="text-2xl font-black text-[#333333] mb-3 tracking-tight">
-            Заказ успешно оформлен!
+            {t.orderSuccess}
           </h2>
           <p className="text-gray-500 text-sm leading-relaxed mb-6 px-4">
-            Спасибо, что выбрали нас! Мы скоро свяжемся с вами для подтверждения
-            заказа.
+            {t.orderSuccessDesc}
           </p>
 
           <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex flex-col items-center justify-center">
             <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">
-              Номер заказа
+              {t.orderNumber}
             </p>
             <p className="text-2xl font-black text-[#00C6F1]">{orderNumber}</p>
           </div>
@@ -73,7 +74,7 @@ export default function OrderSuccessModal({
           <div className="flex items-center gap-2 mb-2">
             <div className="h-px bg-gray-100 flex-1" />
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-              Отслеживание
+              {t.tracking}
             </p>
             <div className="h-px bg-gray-100 flex-1" />
           </div>
@@ -86,8 +87,8 @@ export default function OrderSuccessModal({
               <div className="flex items-center gap-3">
                 <TbSitemap size={18} />
                 <span className="text-sm font-bold text-gray-700">
-                  На сайте
-                </span>
+                    {t.trackOnSite}
+                  </span>
               </div>
               <svg
                 className="w-4 h-4 text-gray-300 group-hover:text-[#00C6F1] transition-colors"
@@ -114,7 +115,7 @@ export default function OrderSuccessModal({
                 <RiTelegram2Fill size={18} className="text-[#0088cc]" />
 
                 <span className="text-sm font-bold text-[#0088cc]">
-                  Через Telegram
+                  {t.trackViaTelegram}
                 </span>
               </div>
               <svg
@@ -139,7 +140,7 @@ export default function OrderSuccessModal({
           onClick={onClose}
           className="w-full cursor-pointer px-6 py-4 bg-[#00C6F1] text-white rounded-2xl hover:bg-[#00C6F1]/90 transition-all font-black text-sm uppercase tracking-widest shadow-lg shadow-[#00C6F1]/30 active:scale-[0.98]"
         >
-          Продолжить покупки
+          {t.continueShopping}
         </button>
       </div>
     </div>
