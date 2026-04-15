@@ -126,9 +126,7 @@ export default function PrintForm({
     setErrors({});
     formData.set("name", langName.ru);
     formData.set("frontImage", frontImageUrl);
-    if (backImageUrl) {
-      formData.set("backImage", backImageUrl);
-    }
+    formData.set("backImage", backImageUrl || "");
 
     // Pass translations
     formData.set("translations", JSON.stringify({
@@ -435,7 +433,7 @@ export default function PrintForm({
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : isEditing ? (
-                  "Синхронизировать"
+                  "Сохранить"
                 ) : (
                   "Запустить в тираж"
                 )}

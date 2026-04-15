@@ -1,8 +1,4 @@
-import { config } from "dotenv";
 import { resolve } from "path";
-
-// Load .env.local file
-config({ path: resolve(process.cwd(), ".env.local") });
 
 import dbConnect from "../src/lib/mongodb";
 import Product from "../src/models/Product";

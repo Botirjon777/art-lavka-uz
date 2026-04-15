@@ -238,6 +238,14 @@ export default function OrderDetail() {
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
+                  Район / Город
+                </label>
+                <p className="font-bold text-gray-900 text-lg">
+                  {order.village}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
                   Адрес
                 </label>
                 <p className="font-bold text-gray-900 text-lg leading-snug">

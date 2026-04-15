@@ -160,8 +160,10 @@ export default function PrintList() {
                       print.category}
                   </span>
                   <div className="flex -space-x-2">
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-200" />
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" />
+                    <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-200" title="Передняя часть" />
+                    {print.backImage && (
+                      <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" title="Задняя часть" />
+                    )}
                   </div>
                 </div>
               </div>

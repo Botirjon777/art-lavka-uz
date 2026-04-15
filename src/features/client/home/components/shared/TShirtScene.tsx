@@ -1,195 +1,20 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Suspense, useState } from "react";
+import { Canvas } from "@react-three/fiber";
 import {
   OrbitControls,
-  useGLTF,
   Environment,
-  Decal,
   Html,
 } from "@react-three/drei";
-import * as THREE from "three";
 import { PrintDesign } from "@/types";
 import Loader from "@/components/Loader";
 import { AiFillQuestionCircle } from "react-icons/ai";
-import { TbRotate3D } from "react-icons/tb";
 import { Tooltip } from "@/components/ui";
 import { useIsMobile } from "@/hooks/useIsMobile";
-
-// Global texture cache to prevent re-loading and re-uploading to GPU
-const textureCache: { [url: string]: THREE.Texture } = {};
-
-interface TShirtModelProps {
-  selectedPrint: PrintDesign | null;
-  selectedColor: string;
-  selectedProduct?: string;
-  modelScale?: number;
-  modelPosition?: [number, number, number];
-}
-
-function TShirtModel({
-  selectedPrint,
-  selectedColor,
-  selectedProduct,
-  modelScale = 1.5,
-  modelPosition = [0, -1, 0],
-}: TShirtModelProps) {
-  const { scene } = useGLTF(selectedProduct || "/model/compressed/base.glb");
-  const groupRef = useRef<THREE.Group>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [frontTexture, setFrontTexture] = useState<THREE.Texture | null>(null);
-  const [backTexture, setBackTexture] = useState<THREE.Texture | null>(null);
-  const [isLoadingTextures, setIsLoadingTextures] = useState(false);
-
-  // Load front and back textures
-  useEffect(() => {
-    if (!selectedPrint) {
-      setFrontTexture(null);
-      setBackTexture(null);
-      setIsLoadingTextures(false);
-      return;
-    }
-
-    const loadTexture = (
-      url: string,
-      setTexture: (t: THREE.Texture) => void,
-    ): Promise<void> => {
-      if (textureCache[url]) {
-        setTexture(textureCache[url]);
-        return Promise.resolve();
-      }
-
-      return new Promise((resolve) => {
-        const loader = new THREE.TextureLoader();
-        loader.load(url, (loadedTexture) => {
-          loadedTexture.flipY = false;
-          loadedTexture.colorSpace = THREE.SRGBColorSpace;
-          loadedTexture.needsUpdate = true;
-          textureCache[url] = loadedTexture;
-          setTexture(loadedTexture);
-          resolve();
-        });
-      });
-    };
-
-    setIsLoadingTextures(true);
-
-    const tasks = [loadTexture(selectedPrint.frontImage, setFrontTexture)];
-    if (selectedPrint.backImage) {
-      tasks.push(loadTexture(selectedPrint.backImage, setBackTexture));
-    } else {
-      setBackTexture(null);
-    }
-
-    Promise.all(tasks).finally(() => {
-      setIsLoadingTextures(false);
-    });
-  }, [selectedPrint]);
-
-  // Find and store mesh reference only once
-  useEffect(() => {
-    if (meshRef.current || !scene) return;
-
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh && !meshRef.current) {
-        meshRef.current = child;
-      }
-    });
-  }, [scene]);
-
-  // Update material color when selection changes (without reloading model)
-  useEffect(() => {
-    if (!meshRef.current) return;
-
-    // selectedColor is now a hex code, use it directly
-    meshRef.current.material = new THREE.MeshStandardMaterial({
-      color: selectedColor || "#FFFFFF",
-      roughness: 0.8,
-      metalness: 0.1,
-    });
-  }, [selectedPrint, selectedColor]);
-
-  // Gentle rotation animation
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y =
-        Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
-    }
-  });
-
-  return (
-    <>
-      <group ref={groupRef} position={modelPosition} scale={modelScale}>
-        <primitive object={scene} />
-        {selectedPrint && meshRef.current && (
-          <>
-            {/* Front print */}
-            {frontTexture && (
-              <Decal
-                position={[-0.05, 0.9, 0.6]}
-                rotation={[0, Math.PI, Math.PI]}
-                scale={0.9}
-                mesh={meshRef as React.RefObject<THREE.Mesh>}
-              >
-                <meshStandardMaterial
-                  map={frontTexture}
-                  transparent
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.8}
-                />
-              </Decal>
-            )}
-
-            {/* Back print - only render if backImage exists */}
-            {backTexture && (
-              <Decal
-                position={[-0.05, 0.9, -0.6]}
-                rotation={[0, 0, Math.PI]}
-                scale={0.9}
-                mesh={meshRef as React.RefObject<THREE.Mesh>}
-              >
-                <meshStandardMaterial
-                  map={backTexture}
-                  transparent
-                  polygonOffset
-                  polygonOffsetFactor={-1}
-                  roughness={0.8}
-                />
-              </Decal>
-            )}
-          </>
-        )}
-      </group>
-
-      {/* Loading overlay */}
-      {isLoadingTextures && (
-        <Html center>
-          <div className="flex flex-col items-center gap-2 bg-white/90 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-2 h-2 bg-[#00C6F1] rounded-full animate-bounce"
-                style={{ animationDelay: "0ms" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-[#00C6F1] rounded-full animate-bounce"
-                style={{ animationDelay: "150ms" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-[#00C6F1] rounded-full animate-bounce"
-                style={{ animationDelay: "300ms" }}
-              ></div>
-            </div>
-            <p className="text-sm font-medium text-[#333333]">
-              Наносим принт...
-            </p>
-          </div>
-        </Html>
-      )}
-    </>
-  );
-}
+import { LuMaximize } from "react-icons/lu";
+import FullscreenViewer from "./FullscreenViewer";
+import { TShirtModel } from "./TShirtModel";
 
 interface TShirtSceneProps {
   selectedProduct?: string;
@@ -219,6 +44,8 @@ export default function TShirtScene({
   cameraPosition = [0, 0, 5],
 }: TShirtSceneProps) {
   const isMobile = useIsMobile();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   return (
     <div className="w-full h-full min-h-[400px] relative overflow-hidden">
       <Canvas
@@ -272,6 +99,25 @@ export default function TShirtScene({
           />
         </Suspense>
       </Canvas>
+
+      {/* Zoom Button */}
+      <button
+        onClick={() => setIsFullscreen(true)}
+        className="absolute top-4 right-4 z-10 p-3 bg-white/80 backdrop-blur-sm rounded-full text-[#333333] hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-lg group"
+        title="Развернуть"
+      >
+        <LuMaximize size={22} className="group-hover:text-[#00C6F1]" />
+      </button>
+
+      {isFullscreen && (
+        <FullscreenViewer
+          isOpen={isFullscreen}
+          onClose={() => setIsFullscreen(false)}
+          selectedProduct={selectedProduct}
+          selectedPrint={selectedPrint}
+          selectedColor={selectedColor}
+        />
+      )}
 
       {showUI && (
         <>
@@ -336,5 +182,3 @@ export default function TShirtScene({
     </div>
   );
 }
-
-useGLTF.preload("/model/compressed/base.glb");

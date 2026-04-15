@@ -118,6 +118,7 @@ export interface Order {
   customerName: string;
   customerPhone: string;
   region: string;
+  village: string;
   customerAddress: string;
   items: OrderItem[];
   totalAmount: number;

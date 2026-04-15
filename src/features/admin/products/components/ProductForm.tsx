@@ -47,8 +47,6 @@ export default function ProductForm({
   const [sizeTable, setSizeTable] = useState<SizeTableEntry[]>(
     initialData?.sizeTable || [],
   );
-  const [oldPrice, setOldPrice] = useState(initialData?.oldPrice || 0);
-  const [promoPrice, setPromoPrice] = useState(initialData?.promoPrice || 0);
   const [lastPromoSentAt, setLastPromoSentAt] = useState<string | undefined>(
     initialData?.lastPromoSentAt
   );
@@ -96,8 +94,6 @@ export default function ProductForm({
       setCategory(initialData.category || "men");
       setActive(initialData.active ?? true);
       setSizeTable(initialData.sizeTable || []);
-      setOldPrice(initialData.oldPrice || 0);
-      setPromoPrice(initialData.promoPrice || 0);
       setLastPromoSentAt(initialData.lastPromoSentAt);
     }
   }, [initialData]);
@@ -113,8 +109,6 @@ export default function ProductForm({
     category !== (initialData?.category || "men") ||
     imageUrl !== (initialData?.image || "") ||
     active !== (initialData?.active ?? true) ||
-    oldPrice !== (initialData?.oldPrice || 0) ||
-    promoPrice !== (initialData?.promoPrice || 0) ||
     JSON.stringify(sizeTable) !== JSON.stringify(initialData?.sizeTable || []) ||
     JSON.stringify(colors) !== JSON.stringify(initialData?.colors || []);
 
@@ -179,8 +173,6 @@ export default function ProductForm({
     formData.set("sizeTable", JSON.stringify(sizeTable));
     formData.set("model", model);
     formData.set("active", active.toString());
-    formData.set("oldPrice", oldPrice.toString());
-    formData.set("promoPrice", promoPrice.toString());
     // Translations
     formData.set("translations", JSON.stringify({
       ru: langContent.ru,
@@ -386,27 +378,6 @@ export default function ProductForm({
             placeholder="/model/compressed/base.glb"
           />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Общая оригинальная цена"
-              type="number"
-              id="oldPrice"
-              name="oldPrice"
-              value={oldPrice || ""}
-              onChange={(e) => setOldPrice(Number(e.target.value))}
-              placeholder="150000"
-            />
-            <Input
-              label="Общая промо цена"
-              type="number"
-              id="promoPrice"
-              name="promoPrice"
-              value={promoPrice || ""}
-              onChange={(e) => setPromoPrice(Number(e.target.value))}
-              placeholder="120000"
-            />
-          </div>
-
           {/* Category */}
           <div className="relative">
             <Dropdown

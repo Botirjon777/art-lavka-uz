@@ -45,6 +45,8 @@
   "phoneNumber": "Phone Number",
   "region": "Region/City",
   "regionPlaceholder": "Select a region",
+  "village": "District / City",
+  "villagePlaceholder": "Select a district or city",
   "streetAddress": "Street Address",
   "streetAddressPlaceholder": "E.g.: Amir Temur St., 15",
   "homeNumber": "Apt / House Number",
@@ -132,5 +134,6 @@
   "errorOrderNotFound": "Order not found",
   "errorEnterPhone": "Please enter your phone number",
   "errorOrdersNotFound": "Orders not found",
-  "errorLoadOrderDetails": "Error loading order details"
+  "errorLoadOrderDetails": "Error loading order details",
+  "backToHome": "Back to Home"
 }

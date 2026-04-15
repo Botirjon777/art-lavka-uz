@@ -45,6 +45,8 @@
   "phoneNumber": "Номер телефона",
   "region": "Область/Город",
   "regionPlaceholder": "Выберите область",
+  "village": "Район / Город",
+  "villagePlaceholder": "Выберите район или город",
   "streetAddress": "Адрес улицы",
   "streetAddressPlaceholder": "Например: улица Амира Темура, дом 15",
   "homeNumber": "Номер дома/квартиры",
@@ -132,5 +134,6 @@
   "errorOrderNotFound": "Заказ не найден",
   "errorEnterPhone": "Введите номер телефона",
   "errorOrdersNotFound": "Заказы не найдены",
-  "errorLoadOrderDetails": "Ошибка при загрузке деталей заказа"
+  "errorLoadOrderDetails": "Ошибка при загрузке деталей заказа",
+  "backToHome": "На главную"
 }

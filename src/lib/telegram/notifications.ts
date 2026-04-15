@@ -265,6 +265,7 @@ function formatOrderNotification(order: any): string {
   message += `Имя: ${escapeHTML(order.customerName)}\n`;
   message += `Телефон: ${escapeHTML(order.customerPhone)}\n`;
   message += `Регион: ${escapeHTML(order.region)}\n`;
+  message += `Район/Город: ${escapeHTML(order.village)}\n`;
   message += `Адрес: ${escapeHTML(order.customerAddress)}\n\n`;
 
   message += `🛍️ <b>Товары:</b>\n`;

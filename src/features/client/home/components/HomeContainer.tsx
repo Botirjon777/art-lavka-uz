@@ -22,7 +22,13 @@ import CheckoutModal from "../modals/shared/CheckoutModal";
 import OrderSuccessModal from "../modals/shared/OrderSuccessModal";
 
 // Shared Types
-import { CartItem, Product, PrintDesign, ConfiguratorState, PrintCategory } from "@/types";
+import {
+  CartItem,
+  Product,
+  PrintDesign,
+  ConfiguratorState,
+  PrintCategory,
+} from "@/types";
 
 export default function HomeContainer() {
   const { t } = useTranslation();
@@ -51,7 +57,7 @@ export default function HomeContainer() {
       await Promise.all([
         fetchProducts(currentSettings),
         fetchPrints(),
-        fetchPrintCategories()
+        fetchPrintCategories(),
       ]);
     };
 
@@ -101,12 +107,12 @@ export default function HomeContainer() {
           if (activeSettings) {
             const categoryOrder = ["women", "men", "kids"] as const;
             const firstActiveCategory = categoryOrder.find(
-              (cat) => activeSettings.categoryStatuses?.[cat] === "active"
+              (cat) => activeSettings.categoryStatuses?.[cat] === "active",
             );
 
             if (firstActiveCategory) {
               const match = normalizedProducts.find(
-                (p: Product) => p.category === firstActiveCategory
+                (p: Product) => p.category === firstActiveCategory,
               );
               if (match) {
                 setSelectedProduct(match);
@@ -122,7 +128,7 @@ export default function HomeContainer() {
         } else {
           const updated = normalizedProducts.find(
             (p: Product) =>
-              p.id === selectedProduct.id || p._id === selectedProduct._id
+              p.id === selectedProduct.id || p._id === selectedProduct._id,
           );
           if (updated) {
             setSelectedProduct(updated);
@@ -138,7 +144,7 @@ export default function HomeContainer() {
       setLoading(false);
     }
   };
-  
+
   const fetchPrints = async () => {
     try {
       setPrintsLoading(true);
@@ -206,7 +212,7 @@ export default function HomeContainer() {
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
     setCartItems(
-      cartItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+      cartItems.map((item) => (item.id === id ? { ...item, quantity } : item)),
     );
   };
 
@@ -239,7 +245,7 @@ export default function HomeContainer() {
 
   const totalAmount = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
   return (
@@ -254,7 +260,9 @@ export default function HomeContainer() {
         <div className="flex items-center justify-center min-h-[600px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
-            <p className="text-gray-600 font-bold uppercase tracking-widest text-xs mt-4">{t.loadingShowcase}...</p>
+            <p className="text-gray-600 font-bold uppercase tracking-widest text-xs mt-4">
+              {t.loadingShowcase}...
+            </p>
           </div>
         </div>
       ) : !selectedProduct ? (
@@ -296,7 +304,11 @@ export default function HomeContainer() {
               selectedPrint={selectedPrint}
               onAddToCart={handleAddToCart}
               onBuyOneClick={handleBuyOneClick}
-              onProductClick={hasMultipleProducts ? () => setActiveModal("products") : undefined}
+              onProductClick={
+                hasMultipleProducts
+                  ? () => setActiveModal("products")
+                  : undefined
+              }
             />
           </div>
 
@@ -307,7 +319,11 @@ export default function HomeContainer() {
               selectedPrint={selectedPrint}
               onAddToCart={handleAddToCart}
               onBuyOneClick={handleBuyOneClick}
-              onProductClick={hasMultipleProducts ? () => setActiveModal("products") : undefined}
+              onProductClick={
+                hasMultipleProducts
+                  ? () => setActiveModal("products")
+                  : undefined
+              }
               onPrintClick={() => setActiveModal("prints")}
             />
           </div>
