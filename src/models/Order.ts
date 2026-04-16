@@ -6,6 +6,9 @@ export interface IOrder {
   customerPhone: string;
   region: string;
   village: string;
+  deliveryMethod: "door" | "pickup";
+  branch?: string;
+  deliveryPrice: number;
   customerAddress: string;
   items: {
     product: {
@@ -67,6 +70,19 @@ const OrderSchema = new Schema<IOrder>(
       type: String,
       required: true,
       trim: true,
+    },
+    deliveryMethod: {
+      type: String,
+      enum: ["door", "pickup"],
+      required: true,
+    },
+    branch: {
+      type: String,
+    },
+    deliveryPrice: {
+      type: Number,
+      required: true,
+      default: 0,
     },
     customerAddress: {
       type: String,

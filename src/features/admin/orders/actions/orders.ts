@@ -16,6 +16,9 @@ export async function createOrder(orderData: {
   customerPhone: string;
   region: string;
   village: string;
+  deliveryMethod: string;
+  branch?: string;
+  deliveryPrice: number;
   customerAddress: string;
   items: any[];
   totalAmount: number;

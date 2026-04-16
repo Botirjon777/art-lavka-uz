@@ -6,9 +6,15 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  showBackgroundImage?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, children }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+  showBackgroundImage = true,
+}: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       // Get scrollbar width before hiding overflow
@@ -32,15 +38,19 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute left-1/2 top-1/2 z-50 hidden md:block">
+    <div className="fixed inset-0 z-50 hidden md:flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
 
       {/* Modal Content */}
-      <div className="relative bg-white rounded-[30px] shadow-2xl w-fit max-w-[98vw] max-h-[95vh] overflow-auto animate-slide-in-top bg-image z-10">
+      <div
+        className={`relative z-10 w-fit max-w-[98vw] max-h-[95vh] animate-modal-enter overflow-auto rounded-[30px] bg-white shadow-2xl ${
+          showBackgroundImage ? "bg-image" : ""
+        }`}
+      >
         <div className="p-10">{children}</div>
       </div>
     </div>
