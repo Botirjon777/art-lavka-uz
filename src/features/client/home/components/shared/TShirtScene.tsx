@@ -2,11 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import {
-  OrbitControls,
-  Environment,
-  Html,
-} from "@react-three/drei";
+import { OrbitControls, Environment, Html } from "@react-three/drei";
 import { PrintDesign } from "@/types";
 import Loader from "@/components/Loader";
 import { AiFillQuestionCircle } from "react-icons/ai";
@@ -15,6 +11,9 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { LuMaximize } from "react-icons/lu";
 import FullscreenViewer from "./FullscreenViewer";
 import { TShirtModel } from "./TShirtModel";
+import Modal from "@/components/Modal";
+import MobileModal from "@/features/client/home/modals/mobile/MobileModal";
+import { FiX } from "react-icons/fi";
 
 interface TShirtSceneProps {
   selectedProduct?: string;
@@ -45,6 +44,7 @@ export default function TShirtScene({
 }: TShirtSceneProps) {
   const isMobile = useIsMobile();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDescModalOpen, setIsDescModalOpen] = useState(false);
 
   return (
     <div className="w-full h-full min-h-[400px] relative overflow-hidden">
@@ -121,19 +121,85 @@ export default function TShirtScene({
 
       {showUI && (
         <>
+          {/* Modals for product description */}
+          {isMobile ? (
+            <MobileModal
+              isOpen={isDescModalOpen}
+              onClose={() => setIsDescModalOpen(false)}
+              title={productName}
+            >
+              <div className="flex flex-col h-full bg-white">
+                <div className="px-6 py-4 flex-1">
+                  <div className="inline-block px-3 py-1 bg-[#8814B1]/10 rounded-full mb-4">
+                    <span className="text-[12px] font-bold text-[#8814B1] uppercase tracking-wider">
+                      Oписание товара
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-[#333333] mb-6">
+                    {productName}
+                  </h2>
+                  <div className="prose prose-sm max-w-none text-[#666666] leading-relaxed text-[15px]">
+                    {productDescription || "Нет описания."}
+                  </div>
+                </div>
+              </div>
+            </MobileModal>
+          ) : (
+            <Modal
+              isOpen={isDescModalOpen}
+              onClose={() => setIsDescModalOpen(false)}
+              showBackgroundImage={false}
+            >
+              <div className="w-[600px] max-w-full">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="space-y-2">
+                    <div className="inline-block px-3 py-1 bg-[#8814B1]/10 rounded-full">
+                      <span className="text-[12px] font-bold text-[#8814B1] uppercase tracking-wider">
+                        Oписание товара
+                      </span>
+                    </div>
+                    <h2 className="text-[32px]/[40px] font-bold text-[#333333]">
+                      {productName}
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => setIsDescModalOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
+                    <FiX size={28} />
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute -left-6 top-0 bottom-0 w-1 bg-linear-to-b from-[#8814B1] to-[#00C6F1] rounded-full opacity-20" />
+                  <div className="text-[17px]/[28px] text-[#555555] whitespace-pre-wrap font-medium">
+                    {productDescription || "Нет описания."}
+                  </div>
+                </div>
+
+                <div className="mt-10 pt-6 border-t border-gray-100 flex justify-end">
+                  <button
+                    onClick={() => setIsDescModalOpen(false)}
+                    className="px-8 py-3 bg-[#333333] text-white rounded-xl hover:bg-[#333333]/90 transition-all font-medium cursor-pointer"
+                  >
+                    Закрыть
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          )}
+
           {isMobile && (
             <div className="absolute w-full bottom-0 left-0">
               {/* Product Name */}
               <div className="px-4 py-3 text-center flex justify-center">
-                <Tooltip content={productDescription} position="top">
-                  <div className="text-[13px]/[16px] text-[#333333] flex items-center gap-2 cursor-help">
-                    {productName}
-                    <AiFillQuestionCircle
-                      size={18}
-                      className="text-[#666666]"
-                    />
-                  </div>
-                </Tooltip>
+                <div
+                  onClick={() => setIsDescModalOpen(true)}
+                  className="text-[13px]/[16px] text-[#333333] flex items-center gap-2 cursor-pointer"
+                >
+                  {productName}
+                  <AiFillQuestionCircle size={18} className="text-[#666666]" />
+                </div>
               </div>
 
               {/* Buttons */}
@@ -158,15 +224,16 @@ export default function TShirtScene({
 
           {!isMobile && (
             <div className="hidden xl:flex absolute w-full bottom-4 left-1/2 transform -translate-x-1/2 flex-col items-center gap-5">
-              <Tooltip content={productDescription} position="top">
-                <div className="text-[16px]/[20px] underline text-[#333333] flex items-center gap-[5px] cursor-help">
-                  {productName}{" "}
-                  <AiFillQuestionCircle
-                    size={20}
-                    className="text-gray-400 group-hover:text-white"
-                  />
-                </div>
-              </Tooltip>
+              <div
+                onClick={() => setIsDescModalOpen(true)}
+                className="text-[16px]/[20px] underline text-[#333333] flex items-center gap-[5px] cursor-pointer"
+              >
+                {productName}{" "}
+                <AiFillQuestionCircle
+                  size={20}
+                  className="text-gray-400 group-hover:text-white"
+                />
+              </div>
               {onProductClick && (
                 <button
                   onClick={onProductClick}

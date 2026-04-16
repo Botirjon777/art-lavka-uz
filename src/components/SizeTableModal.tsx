@@ -92,7 +92,7 @@ export default function SizeTableModal({
 
   // Desktop version
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} showBackgroundImage={false}>
       <div className="w-[600px] max-w-full">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-[30px]/[37px] text-[#333333] font-bold">
