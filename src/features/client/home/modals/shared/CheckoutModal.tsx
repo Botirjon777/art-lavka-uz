@@ -308,7 +308,7 @@ export default function CheckoutModal({
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod("door")}
-                  className={`py-2.5 px-3 rounded-xl border text-[13px]/[16px] transition-all ${
+                  className={`flex-1 h-[42px] px-3 rounded-xl border text-[13px]/[16px] transition-all flex items-center justify-center ${
                     deliveryMethod === "door"
                       ? "bg-[#8814B1] text-white border-[#8814B1] shadow-md"
                       : "bg-white text-[#333333] border-gray-200"
@@ -321,7 +321,7 @@ export default function CheckoutModal({
                   onClick={() => {
                     setDeliveryMethod("pickup");
                   }}
-                  className={`py-2.5 px-3 rounded-xl border text-[13px]/[16px] transition-all ${
+                  className={`flex-1 h-[42px] px-3 rounded-xl border text-[13px]/[16px] transition-all flex items-center justify-center ${
                     deliveryMethod === "pickup"
                       ? "bg-[#8814B1] text-white border-[#8814B1] shadow-md"
                       : "bg-white text-[#333333] border-gray-200"
@@ -501,27 +501,27 @@ export default function CheckoutModal({
   // Desktop version
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[30px] w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-        <div className="p-8">
+      <div className="bg-white rounded-[30px] w-full max-w-5xl max-h-[95vh] overflow-y-auto">
+        <div className="p-5">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[30px]/[37px] text-[#333333] font-medium">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-[22px]/[28px] text-[#333333] font-medium">
               {t.checkoutTitle}
             </h2>
             <button
               onClick={onClose}
-              className="text-[#666666] hover:text-[#8814B1] text-[30px]/[37px] cursor-pointer"
+              className="text-[#666666] hover:text-[#8814B1] text-[24px]/[30px] cursor-pointer"
             >
               ×
             </button>
           </div>
 
           {/* Order Summary */}
-          <div className="mb-6 p-6 bg-white shadow-lg rounded-2xl border border-gray-100">
-            <h3 className="text-[20px]/[24px] font-bold mb-4">
+          <div className="mb-3 p-4 bg-white shadow-lg rounded-2xl border border-gray-100">
+            <h3 className="text-[18px]/[22px] font-bold mb-2">
               {t.orderSummary}
             </h3>
-            <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-[16px]/[20px]">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[14px]/[18px]">
               <div className="flex justify-between items-center text-[#666666]">
                 <span>{t.itemsTotal}:</span>
                 <span className="font-medium text-[#333333]">
@@ -537,8 +537,8 @@ export default function CheckoutModal({
                   {deliveryPrice.toLocaleString()} {t.currency}
                 </span>
               </div>
-              <div className="col-span-2 h-px bg-gray-100 my-2" />
-              <div className="col-span-2 flex justify-between items-center text-[24px]/[30px] font-bold text-[#00C6F1]">
+              <div className="col-span-2 h-px bg-gray-100 my-1" />
+              <div className="col-span-2 flex justify-between items-center text-[20px]/[26px] font-bold text-[#00C6F1]">
                 <span>{t.total}:</span>
                 <span>
                   {finalTotal.toLocaleString()} {t.currency}
@@ -548,10 +548,10 @@ export default function CheckoutModal({
           </div>
 
           {/* Customer Information Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t.fullName} <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -562,7 +562,7 @@ export default function CheckoutModal({
                     if (errors.customerName)
                       setErrors({ ...errors, customerName: "" });
                   }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                  className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
                     errors.customerName
                       ? "border-red-500 focus:ring-red-200"
                       : "border-gray-300"
@@ -570,17 +570,17 @@ export default function CheckoutModal({
                   placeholder={t.fullNamePlaceholder}
                 />
                 {errors.customerName && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 text-[10px] mt-0.5">
                     {errors.customerName}
                   </p>
                 )}
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t.phoneNumber} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">
                     +998
                   </span>
                   <input
@@ -591,16 +591,16 @@ export default function CheckoutModal({
                       if (errors.customerPhone)
                         setErrors({ ...errors, customerPhone: "" });
                     }}
-                    className={`w-full pl-15 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
-                      errors.customerPhone
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-300"
-                    }`}
+                  className={`w-full h-[42px] pl-13 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
+                    errors.customerPhone
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-gray-300"
+                  }`}
                     placeholder="XX XXX XX XX"
                   />
                 </div>
                 {errors.customerPhone && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 text-[10px] mt-0.5">
                     {errors.customerPhone}
                   </p>
                 )}
@@ -609,16 +609,16 @@ export default function CheckoutModal({
 
             {/* Delivery Method Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t.deliveryMethod} <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-4">
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod("door")}
-                  className={`flex-1 py-4 px-6 rounded-xl border-2 transition-all font-medium text-[16px] cursor-pointer ${
+                  className={`flex-1 h-[42px] px-4 rounded-xl border-2 transition-all font-medium text-sm cursor-pointer flex items-center justify-center ${
                     deliveryMethod === "door"
-                      ? "bg-[#00C6F1] text-white border-[#00C6F1] shadow-lg scale-[1.02]"
+                      ? "bg-[#00C6F1] text-white border-[#00C6F1] shadow-lg"
                       : "bg-white text-[#333333] border-gray-100 hover:border-[#00C6F1]"
                   }`}
                 >
@@ -627,9 +627,9 @@ export default function CheckoutModal({
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod("pickup")}
-                  className={`flex-1 py-4 px-6 rounded-xl border-2 transition-all font-medium text-[16px] cursor-pointer ${
+                  className={`flex-1 h-[42px] px-4 rounded-xl border-2 transition-all font-medium text-sm cursor-pointer flex items-center justify-center ${
                     deliveryMethod === "pickup"
-                      ? "bg-[#00C6F1] text-white border-[#00C6F1] shadow-lg scale-[1.02]"
+                      ? "bg-[#00C6F1] text-white border-[#00C6F1] shadow-lg"
                       : "bg-white text-[#333333] border-gray-100 hover:border-[#00C6F1]"
                   }`}
                 >
@@ -657,6 +657,7 @@ export default function CheckoutModal({
                     label: uzbekistanRegions[index] || key,
                   }))}
                   placeholder={t.regionPlaceholder}
+                  buttonClassName="h-[42px] px-3 py-2 text-sm"
                 />
               </div>
               <div className="flex-1">
@@ -676,6 +677,7 @@ export default function CheckoutModal({
                   }))}
                   placeholder={t.villagePlaceholder}
                   disabled={!region}
+                  buttonClassName="h-[42px] px-3 py-2 text-sm"
                 />
               </div>
             </div>
@@ -702,14 +704,15 @@ export default function CheckoutModal({
                     }))}
                     placeholder={t.selectBranch}
                     disabled={!village}
+                    buttonClassName="h-[42px] px-3 py-2 text-sm"
                   />
                 </div>
                 {selectedBranch && (
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t.streetAddress}
                     </label>
-                    <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 h-[50px] flex items-center">
+                    <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 text-sm h-[40px] flex items-center">
                       {selectedBranch.address}
                     </div>
                   </div>
@@ -718,7 +721,7 @@ export default function CheckoutModal({
             ) : (
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t.streetAddress} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -729,7 +732,7 @@ export default function CheckoutModal({
                       if (errors.streetAddress)
                         setErrors({ ...errors, streetAddress: "" });
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                    className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
                       errors.streetAddress
                         ? "border-red-500 focus:ring-red-200"
                         : "border-gray-300"
@@ -737,13 +740,13 @@ export default function CheckoutModal({
                     placeholder={t.streetAddressPlaceholder}
                   />
                   {errors.streetAddress && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="text-red-500 text-[10px] mt-0.5">
                       {errors.streetAddress}
                     </p>
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t.homeNumber} <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -754,7 +757,7 @@ export default function CheckoutModal({
                       if (errors.homeNumber)
                         setErrors({ ...errors, homeNumber: "" });
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] ${
+                    className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
                       errors.homeNumber
                         ? "border-red-500 focus:ring-red-200"
                         : "border-gray-300"
@@ -762,7 +765,7 @@ export default function CheckoutModal({
                     placeholder={t.homeNumberPlaceholder}
                   />
                   {errors.homeNumber && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="text-red-500 text-[10px] mt-0.5">
                       {errors.homeNumber}
                     </p>
                   )}
@@ -772,43 +775,43 @@ export default function CheckoutModal({
 
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t.telegramUsername}
                 </label>
                 <input
                   type="text"
                   value={telegramUsername}
                   onChange={(e) => setTelegramUsername(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm"
                   placeholder="@username"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t.notes}
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] resize-none text-sm"
                   rows={1}
                   placeholder={t.notesPlaceholder}
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium cursor-pointer"
+                className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium cursor-pointer text-sm"
                 disabled={isSubmitting}
               >
                 {t.cancel}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="flex-1 px-4 py-2 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? t.submitting : t.submit}
