@@ -16,6 +16,7 @@ export interface Product {
   stock: number;
   active: boolean;
   lastPromoSentAt?: string;
+  weight?: number;
   sizeTable?: SizeTableEntry[];
   createdAt?: string;
   updatedAt?: string;

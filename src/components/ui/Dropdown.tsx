@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export interface DropdownOption {
   value: string;
@@ -21,6 +22,7 @@ export interface DropdownProps {
   className?: string;
   buttonClassName?: string;
   id?: string;
+  name?: string;
 }
 
 export default function Dropdown({
@@ -36,29 +38,60 @@ export default function Dropdown({
   className = "",
   buttonClassName = "",
   id,
+  name,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const dropdownId =
-    id || `dropdown-${Math.random().toString(36).substr(2, 9)}`;
+  const dropdownId = React.useMemo(() => 
+    id || `dropdown-${Math.random().toString(36).substr(2, 9)}`,
+    [id]
+  );
 
   // Find the selected option
   const selectedOption = options.find((opt) => opt.value === value);
 
-  // Close dropdown when clicking outside
+  // Update position coordinates
+  const updateCoords = () => {
+    if (dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  };
+
+  // Close dropdown when clicking outside and handle portal positioning
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
+        // Check if click was inside the portal menu
+        const portalMenu = document.getElementById(`${dropdownId}-menu`);
+        if (portalMenu && portalMenu.contains(event.target as Node)) {
+          return;
+        }
         setIsOpen(false);
       }
     };
 
+    if (isOpen) {
+      updateCoords();
+      window.addEventListener("scroll", updateCoords, true);
+      window.addEventListener("resize", updateCoords);
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", updateCoords, true);
+      window.removeEventListener("resize", updateCoords);
+    };
+  }, [isOpen, dropdownId]);
 
   const handleSelect = (optionValue: string) => {
     if (!disabled) {
@@ -103,6 +136,9 @@ export default function Dropdown({
       )}
 
       <div ref={dropdownRef} className="relative">
+        {name && (
+          <input type="hidden" name={name} value={value} />
+        )}
         {/* Dropdown Button */}
         <button
           type="button"
@@ -144,9 +180,17 @@ export default function Dropdown({
           </svg>
         </button>
 
-        {/* Dropdown Menu */}
-        {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        {/* Dropdown Menu Portaled to Body */}
+        {isOpen && !disabled && typeof document !== 'undefined' && createPortal(
+          <div 
+            id={`${dropdownId}-menu`}
+            className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+            style={{
+              top: coords.top + 8,
+              left: coords.left,
+              width: coords.width,
+            }}
+          >
             {options.length === 0 ? (
               <div className="px-4 py-3 text-sm text-gray-500 text-center">
                 No options available
@@ -195,9 +239,11 @@ export default function Dropdown({
                 </button>
               ))
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
+
 
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
 

@@ -234,8 +234,13 @@ export default function HomeContainer() {
     setOrderNumber(orderNum);
     setShowCheckout(false);
     setShowOrderSuccess(true);
-    setCartItems([]); // Clear cart
-    setOneClickItem(null); // Clear one-click state
+    
+    // Only clear the main cart if this WASN'T a one-click purchase
+    if (!oneClickItem) {
+      setCartItems([]);
+    }
+    
+    setOneClickItem(null); // Always clear the one-click state
   };
 
   const handleCloseOrderSuccess = () => {

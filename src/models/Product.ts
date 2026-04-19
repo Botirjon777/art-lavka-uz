@@ -51,6 +51,7 @@ export interface IProduct {
   active: boolean;
   featured?: boolean;
   lastPromoSentAt?: Date;
+  weight?: number; // Weight in kg
   translations?: {
     en?: ProductTranslation;
     ru?: ProductTranslation;
@@ -138,6 +139,11 @@ const ProductSchema = new Schema<IProduct>(
     active: {
       type: Boolean,
       default: true,
+    },
+    weight: {
+      type: Number,
+      default: 0.5, // Default 500g
+      min: 0,
     },
     lastPromoSentAt: {
       type: Date,

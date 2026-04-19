@@ -200,7 +200,7 @@ export default function PublicationForm({
             <div className="relative aspect-square bg-gray-50 rounded-[20px] overflow-hidden border-2 border-dashed border-gray-200 flex items-center justify-center group">
               {imageUrl ? (
                 <>
-                  <Image src={imageUrl} alt="Preview" fill className="object-cover" />
+                  <Image src={imageUrl} alt="Preview" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <label className="cursor-pointer px-3 py-2 bg-white text-[#8814B1] rounded-lg font-medium text-xs">
                       {uploading ? "..." : "Новое"}

@@ -56,6 +56,7 @@ export default function MobileGalleryModal({
                         src={item.image}
                         alt={item.name}
                         fill
+                        sizes="(max-width: 768px) 50vw, 250px"
                         className="object-cover group-active:scale-95 transition-transform duration-200"
                       />
                     </div>
