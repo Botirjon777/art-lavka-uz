@@ -81,6 +81,7 @@ export async function createProduct(formData: FormData) {
       oldPrice: finalOldPrice,
       promoPrice: finalPromoPrice,
       price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
+      weight: parseFloat(formData.get("weight") as string) || 0.5,
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 
@@ -145,6 +146,7 @@ export async function updateProduct(id: string, formData: FormData) {
       oldPrice: finalOldPrice,
       promoPrice: finalPromoPrice,
       price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
+      weight: parseFloat(formData.get("weight") as string) || 0.5,
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
 

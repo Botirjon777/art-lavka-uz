@@ -111,7 +111,7 @@ export default function PublicationList() {
                 {/* Image or Icon Preview */}
                 <div className="w-full md:w-32 h-32 bg-gray-50 rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center border border-gray-50">
                   {pub.image ? (
-                    <Image src={pub.image} alt={pub.title} fill className="object-cover" />
+                    <Image src={pub.image} alt={pub.title} fill sizes="(max-width: 768px) 100vw, 128px" className="object-cover" />
                   ) : (
                     <FiSend className="w-10 h-10 text-purple-200" />
                   )}

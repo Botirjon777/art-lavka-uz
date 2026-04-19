@@ -3,6 +3,25 @@ export const DELIVERY_PRICES = {
   pickup: 15000,
 } as const;
 
+/**
+ * Calculates delivery price based on weight and method.
+ * Door: 30k base (<1kg) + 10k per additional kg (rounded up)
+ * Pickup: 15k Fixed
+ */
+export function calculateDeliveryPrice(totalWeight: number, method: "door" | "pickup"): number {
+  if (method === "pickup") {
+    return DELIVERY_PRICES.pickup;
+  }
+
+  const basePrice = DELIVERY_PRICES.door;
+  if (totalWeight <= 1) {
+    return basePrice;
+  }
+
+  const extraWeight = Math.ceil(totalWeight - 1);
+  return basePrice + (extraWeight * 10000);
+}
+
 export interface DeliveryBranch {
   id: string;
   name: string;

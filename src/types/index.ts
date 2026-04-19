@@ -51,6 +51,7 @@ export interface Product {
   description?: string;
   isNew?: boolean;
   sizeTable?: SizeTableEntry[];
+  weight?: number;
   lastPromoSentAt?: string;
   translations?: Record<string, Translation>;
   updatedAt?: string;
@@ -179,6 +180,23 @@ export interface ICategory {
   label: string;
   status: "active" | "soon";
   translations?: Record<string, { label: string }>;
+}
+
+export interface Promotion {
+  _id: string;
+  name: string;
+  type: "global" | "targeted";
+  conditionType: "min_items" | "min_amount" | "product_selected";
+  conditionValue: any;
+  discountType: "percentage" | "fixed" | "free_delivery";
+  discountValue: number;
+  isActive: boolean;
+  startDate: string;
+  endDate: string;
+  description?: string;
+  translations?: Record<string, { name: string; description?: string }>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ISettings {

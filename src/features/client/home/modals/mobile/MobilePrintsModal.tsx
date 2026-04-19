@@ -157,12 +157,13 @@ export default function MobilePrintsModal({
                     }`}
                   >
                     <div className="relative bg-white h-[85%] w-[85%] rounded-xl overflow-hidden shadow-sm">
-                      <Image
-                        src={print.frontImage}
-                        alt={getTranslated(print, lang)}
-                        fill
-                        className="object-contain p-2"
-                      />
+                        <Image
+                          src={print.frontImage}
+                          alt={getTranslated(print, lang)}
+                          fill
+                          sizes="(max-width: 768px) 33vw, 120px"
+                          className="object-contain p-2"
+                        />
                     </div>
                   </button>
                 ))

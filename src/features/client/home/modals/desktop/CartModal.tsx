@@ -69,6 +69,7 @@ export default function CartModal({
                       src={item.product.image}
                       alt={getTranslated(item.product, lang)}
                       fill
+                      sizes="80px"
                       className="object-cover"
                     />
                   </div>

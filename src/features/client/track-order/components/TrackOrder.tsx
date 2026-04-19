@@ -406,7 +406,7 @@ export default function TrackOrder() {
                     {order.items.map((item, index) => (
                       <div key={index} className="flex items-center gap-5 p-4 bg-gray-50/50 rounded-3xl group border border-gray-50">
                         <div className="relative w-20 h-20 bg-white rounded-2xl overflow-hidden shrink-0 border border-gray-100 group-hover:scale-105 transition-transform">
-                          <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
+                          <Image src={item.product.image} alt={item.product.name} fill sizes="80px" className="object-cover" />
                         </div>
                         <div className="flex-1">
                           <p className="font-black text-gray-900 leading-tight mb-1">{item.product.name}</p>
@@ -418,12 +418,13 @@ export default function TrackOrder() {
                           {item.print && (
                             <div className="mt-2 flex items-center gap-2">
                               <div className="relative w-8 h-8 bg-white rounded-lg overflow-hidden border border-purple-100 shadow-xs shrink-0">
-                                <Image
-                                  src={item.print.frontImage}
-                                  alt={item.print.name}
-                                  fill
-                                  className="object-contain p-0.5"
-                                />
+                                  <Image
+                                    src={item.print.frontImage}
+                                    alt={item.print.name}
+                                    fill
+                                    sizes="32px"
+                                    className="object-contain p-0.5"
+                                  />
                               </div>
                               <p className="text-[10px] font-black text-[#8814B1] uppercase tracking-tight">
                                 {t.design}: {item.print.name}

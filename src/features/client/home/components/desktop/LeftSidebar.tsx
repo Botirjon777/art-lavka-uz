@@ -193,6 +193,7 @@ export default function LeftSidebar({
                       src={print.frontImage}
                       alt={getTranslated(print, lang)}
                       fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 150px"
                       className="object-contain p-3"
                     />
                   </div>

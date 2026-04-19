@@ -50,6 +50,7 @@ export default function ProductForm({
   const [lastPromoSentAt, setLastPromoSentAt] = useState<string | undefined>(
     initialData?.lastPromoSentAt
   );
+  const [weight, setWeight] = useState(initialData?.weight || 0.5);
 
   // Multilingual content (name + description) per language
   type LangContent = { name: string; description: string };
@@ -95,6 +96,7 @@ export default function ProductForm({
       setActive(initialData.active ?? true);
       setSizeTable(initialData.sizeTable || []);
       setLastPromoSentAt(initialData.lastPromoSentAt);
+      setWeight(initialData.weight || 0.5);
     }
   }, [initialData]);
 
@@ -109,6 +111,7 @@ export default function ProductForm({
     category !== (initialData?.category || "men") ||
     imageUrl !== (initialData?.image || "") ||
     active !== (initialData?.active ?? true) ||
+    weight !== (initialData?.weight || 0.5) ||
     JSON.stringify(sizeTable) !== JSON.stringify(initialData?.sizeTable || []) ||
     JSON.stringify(colors) !== JSON.stringify(initialData?.colors || []);
 
@@ -173,6 +176,7 @@ export default function ProductForm({
     formData.set("sizeTable", JSON.stringify(sizeTable));
     formData.set("model", model);
     formData.set("active", active.toString());
+    formData.set("weight", weight.toString());
     // Translations
     formData.set("translations", JSON.stringify({
       ru: langContent.ru,
@@ -378,21 +382,33 @@ export default function ProductForm({
             placeholder="/model/compressed/base.glb"
           />
           
-          {/* Category */}
-          <div className="relative">
-            <Dropdown
-              label="Категория"
-              options={[
-                { value: "women", label: "Женское" },
-                { value: "men", label: "Мужское" },
-                { value: "kids", label: "Детское" },
-              ]}
-              value={category}
-              onChange={setCategory}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <Dropdown
+                label="Категория"
+                options={[
+                  { value: "women", label: "Женское" },
+                  { value: "men", label: "Мужское" },
+                  { value: "kids", label: "Детское" },
+                ]}
+                value={category}
+                onChange={setCategory}
+                required
+                error={errors.category}
+              />
+              <input type="hidden" name="category" value={category} />
+            </div>
+
+            <Input
+              label="Вес товара (кг)"
+              id="weight"
+              name="weight"
+              type="number"
+              step="0.1"
+              value={weight}
+              onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
               required
-              error={errors.category}
             />
-            <input type="hidden" name="category" value={category} />
           </div>
 
           {/* Size Table Configuration */}

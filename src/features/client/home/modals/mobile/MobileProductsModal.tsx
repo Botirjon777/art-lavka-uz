@@ -134,6 +134,7 @@ export default function MobileProductsModal({
                         src={product.image}
                         alt={getTranslated(product, lang)}
                         fill
+                        sizes="(max-width: 768px) 50vw, 200px"
                         className="object-cover group-active:scale-95 transition-transform duration-200"
                       />
                     </div>

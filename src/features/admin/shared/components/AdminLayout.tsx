@@ -13,6 +13,7 @@ import {
   FiShoppingCart,
   FiSettings,
   FiTrendingUp,
+  FiTag,
 } from "react-icons/fi";
 import Loader from "@/components/Loader";
 
@@ -36,6 +37,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: "Принты", href: "/admin/prints", icon: FiImage },
     { name: "Галерея", href: "/admin/gallery", icon: FiGrid },
     { name: "Публикации", href: "/admin/publications", icon: FiTrendingUp },
+    { name: "Промоакции", href: "/admin/promotions", icon: FiTag },
     { name: "Настройки", href: "/admin/settings", icon: FiSettings },
   ];
 

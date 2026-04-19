@@ -14,9 +14,11 @@ import { getTranslated } from "@/lib/i18n/utils";
 import { LOCATIONS } from "@/lib/i18n/locations";
 import {
   DELIVERY_PRICES,
+  calculateDeliveryPrice,
   getBranches,
   DeliveryBranch,
 } from "@/lib/deliveryData";
+import { usePromotions } from "@/features/client/home/hooks/usePromotions";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -68,8 +70,51 @@ export default function CheckoutModal({
   // Get branches for current location if in pickup mode
   const branches = region && village ? getBranches(region, village) : [];
 
-  const deliveryPrice = DELIVERY_PRICES[deliveryMethod];
-  const finalTotal = totalAmount + deliveryPrice;
+  const totalWeight = items.reduce((sum, item) => sum + (item.product.weight || 0.5) * item.quantity, 0);
+  const { data: activePromotions = [] } = usePromotions();
+  
+  let currentDeliveryPrice = calculateDeliveryPrice(totalWeight, deliveryMethod);
+  let productsDiscount = 0;
+
+  // Apply Promotions
+  activePromotions.forEach(promo => {
+    if (promo.type === 'global') {
+      const conditionMet = 
+        (promo.conditionType === 'min_items' && items.reduce((sum, item) => sum + item.quantity, 0) >= promo.conditionValue) ||
+        (promo.conditionType === 'min_amount' && totalAmount >= promo.conditionValue);
+      
+      if (conditionMet) {
+        if (promo.discountType === 'free_delivery') {
+          currentDeliveryPrice = 0;
+        } else if (promo.discountType === 'percentage') {
+          productsDiscount += (totalAmount * (promo.discountValue / 100));
+        } else if (promo.discountType === 'fixed') {
+          productsDiscount += promo.discountValue;
+        }
+      }
+    } else if (promo.type === 'targeted' && promo.conditionType === 'product_selected') {
+      // Find items in cart that match the targeted product list
+      const targetedProducts = Array.isArray(promo.conditionValue) ? promo.conditionValue : [];
+      items.forEach(item => {
+        const productId = (item.product._id || item.product.id || "").toString();
+        if (targetedProducts.includes(productId)) {
+          if (promo.discountType === 'percentage') {
+            productsDiscount += (item.price * item.quantity * (promo.discountValue / 100));
+          } else if (promo.discountType === 'fixed') {
+            // Fixed discount per targeted item instance or total? Usually per item instance for targeted.
+            productsDiscount += promo.discountValue * item.quantity;
+          }
+          // Note: free_delivery from a targeted promo is handled if at least one item matches
+          if (promo.discountType === 'free_delivery') {
+             currentDeliveryPrice = 0;
+          }
+        }
+      });
+    }
+  });
+
+  const finalTotal = Math.max(0, totalAmount - productsDiscount) + currentDeliveryPrice;
+  const totalDiscount = productsDiscount;
 
   const isMobile = useIsMobile();
 
@@ -156,7 +201,7 @@ export default function CheckoutModal({
         village,
         deliveryMethod,
         branch: selectedBranch?.name,
-        deliveryPrice,
+        deliveryPrice: currentDeliveryPrice,
         customerAddress:
           deliveryMethod === "door"
             ? `${streetAddress}, ${homeNumber}`
@@ -227,9 +272,21 @@ export default function CheckoutModal({
                   {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
                 </span>
                 <span className="font-medium text-[#333333]">
-                  {deliveryPrice.toLocaleString()} {t.currency}
+                  {currentDeliveryPrice === 0 ? (
+                    <span className="text-green-600 font-bold whitespace-nowrap">Бесплатно</span>
+                  ) : (
+                    `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
+                  )}
                 </span>
               </div>
+              {totalDiscount > 0 && (
+                <div className="flex justify-between items-center text-green-600 font-bold mb-1">
+                  <span>Скидка по акции:</span>
+                  <span>
+                    -{totalDiscount.toLocaleString()} {t.currency}
+                  </span>
+                </div>
+              )}
               <div className="h-px bg-gray-100 my-1" />
               <div className="flex justify-between items-center text-[16px]/[20px] font-bold text-[#8814B1]">
                 <span>{t.total}:</span>
@@ -534,9 +591,21 @@ export default function CheckoutModal({
                   {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
                 </span>
                 <span className="font-medium text-[#333333]">
-                  {deliveryPrice.toLocaleString()} {t.currency}
+                   {currentDeliveryPrice === 0 ? (
+                    <span className="text-green-600 font-bold whitespace-nowrap">Бесплатно</span>
+                  ) : (
+                    `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
+                  )}
                 </span>
               </div>
+              {totalDiscount > 0 && (
+                <div className="flex justify-between items-center text-green-600 font-bold mb-1">
+                  <span>Скидка по акции:</span>
+                  <span>
+                    -{totalDiscount.toLocaleString()} {t.currency}
+                  </span>
+                </div>
+              )}
               <div className="col-span-2 h-px bg-gray-100 my-1" />
               <div className="col-span-2 flex justify-between items-center text-[20px]/[26px] font-bold text-[#00C6F1]">
                 <span>{t.total}:</span>

@@ -49,7 +49,7 @@ export default function MobileCartModal({
                 <div key={item.id} className="bg-white rounded-xl p-2.5 shadow-lg relative">
                   <div className="flex gap-3">
                     <div className="relative w-20 h-20 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-                      <Image src={item.product.image} alt={getTranslated(item.product, lang)} fill className="object-cover" />
+                      <Image src={item.product.image} alt={getTranslated(item.product, lang)} fill sizes="80px" className="object-cover" />
                     </div>
 
                     <div className="flex-1 flex flex-col justify-between">
