@@ -216,3 +216,14 @@ export interface ISettings {
     [key: string]: "active" | "soon";
   };
 }
+
+export interface Office {
+  _id: string;
+  region: string;
+  district: string;
+  name: string;
+  address: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

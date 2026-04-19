@@ -20,9 +20,9 @@ import {
 } from "@/lib/deliveryData";
 import { usePromotions } from "@/features/client/home/hooks/usePromotions";
 import { calculateBTSDelivery } from "@/lib/deliveryDataBTS";
-import btsOffices from "@/lib/btsOffices.json";
+// import btsOffices from "@/lib/btsOffices.json"; // Removed static import
 import PromotionNudge from "../../components/PromotionNudge";
-import { Promotion } from "@/types";
+import { Promotion, Office } from "@/types";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -54,6 +54,9 @@ export default function CheckoutModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Offices State
+  const [allOffices, setAllOffices] = useState<Office[]>([]);
+
   // Nudge State
   const [showNudge, setShowNudge] = useState(false);
   const [nearMissPromo, setNearMissPromo] = useState<Promotion | null>(null);
@@ -67,6 +70,22 @@ export default function CheckoutModal({
     null,
   );
 
+  // Load dynamic offices
+  useEffect(() => {
+    const fetchOffices = async () => {
+      try {
+        const response = await fetch("/api/offices");
+        const data = await response.json();
+        if (data.success) {
+          setAllOffices(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch offices:", err);
+      }
+    };
+    fetchOffices();
+  }, []);
+
   // Get regions list from locations data (Russian keys)
   const regionKeys = Object.keys(LOCATIONS);
 
@@ -79,8 +98,8 @@ export default function CheckoutModal({
     : [];
 
   // Filter BTS branches based on selected region
-  const branches = region ? btsOffices.filter(office => office.region === region).map((office, idx) => ({
-    id: `bts-${idx}`,
+  const branches = region ? allOffices.filter(office => office.region === region).map((office, idx) => ({
+    id: office._id,
     name: office.name,
     address: office.address
   })) : [];
