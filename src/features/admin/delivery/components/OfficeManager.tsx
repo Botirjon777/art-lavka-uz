@@ -316,6 +316,7 @@ export default function OfficeManager() {
 
 function OfficeForm({ office, onClose, onSaved }: { office: Office | null, onClose: () => void, onSaved: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState(office?.region || "город Ташкент");
   const regionKeys = Object.keys(LOCATIONS);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -358,7 +359,8 @@ function OfficeForm({ office, onClose, onSaved }: { office: Office | null, onClo
                    <Dropdown 
                      label="Регион"
                      options={regionKeys.map(r => ({ value: r, label: r }))}
-                     value={office?.region || "город Ташкент"}
+                     value={selectedRegion}
+                     onChange={(val) => setSelectedRegion(val)}
                      name="region"
                    />
                 </div>

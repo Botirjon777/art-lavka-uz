@@ -22,6 +22,7 @@ export interface DropdownProps {
   className?: string;
   buttonClassName?: string;
   id?: string;
+  name?: string;
 }
 
 export default function Dropdown({
@@ -37,6 +38,7 @@ export default function Dropdown({
   className = "",
   buttonClassName = "",
   id,
+  name,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
@@ -134,6 +136,9 @@ export default function Dropdown({
       )}
 
       <div ref={dropdownRef} className="relative">
+        {name && (
+          <input type="hidden" name={name} value={value} />
+        )}
         {/* Dropdown Button */}
         <button
           type="button"
