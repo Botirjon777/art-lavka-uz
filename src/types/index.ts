@@ -195,6 +195,7 @@ export interface Promotion {
   endDate: string;
   description?: string;
   translations?: Record<string, { name: string; description?: string }>;
+  selectedRegions: string[];
   createdAt: string;
   updatedAt: string;
 }

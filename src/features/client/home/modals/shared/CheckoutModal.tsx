@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CartItem } from "@/types";
 import { createOrder } from "@/features/admin/orders/actions/orders";
 import toast from "react-hot-toast";
@@ -19,6 +19,10 @@ import {
   DeliveryBranch,
 } from "@/lib/deliveryData";
 import { usePromotions } from "@/features/client/home/hooks/usePromotions";
+import { calculateBTSDelivery } from "@/lib/deliveryDataBTS";
+import btsOffices from "@/lib/btsOffices.json";
+import PromotionNudge from "../../components/PromotionNudge";
+import { Promotion } from "@/types";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -37,6 +41,8 @@ export default function CheckoutModal({
 }: CheckoutModalProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
+  
+  // Checkout State
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [region, setRegion] = useState("");
@@ -47,6 +53,11 @@ export default function CheckoutModal({
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Nudge State
+  const [showNudge, setShowNudge] = useState(false);
+  const [nearMissPromo, setNearMissPromo] = useState<Promotion | null>(null);
+  const [hasShownNudgeForRegion, setHasShownNudgeForRegion] = useState<string | null>(null);
 
   // Delivery State
   const [deliveryMethod, setDeliveryMethod] = useState<"door" | "pickup">(
@@ -67,24 +78,66 @@ export default function CheckoutModal({
     ? LOCATIONS[region as keyof typeof LOCATIONS] || []
     : [];
 
-  // Get branches for current location if in pickup mode
-  const branches = region && village ? getBranches(region, village) : [];
+  // Filter BTS branches based on selected region
+  const branches = region ? btsOffices.filter(office => office.region === region).map((office, idx) => ({
+    id: `bts-${idx}`,
+    name: office.name,
+    address: office.address
+  })) : [];
 
   const totalWeight = items.reduce((sum, item) => sum + (item.product.weight || 0.5) * item.quantity, 0);
   const { data: activePromotions = [] } = usePromotions();
   
-  let currentDeliveryPrice = calculateDeliveryPrice(totalWeight, deliveryMethod);
+  // Nudge Detection Effect
+  useEffect(() => {
+    if (!region || !activePromotions.length || hasShownNudgeForRegion === region) return;
+
+    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+
+    const nearMiss = activePromotions.find(promo => {
+      // Must be free delivery
+      if (promo.discountType !== 'free_delivery') return false;
+      
+      // Must be eligible for region
+      const isRegionEligible = !promo.selectedRegions || 
+                              promo.selectedRegions.length === 0 || 
+                              promo.selectedRegions.includes(region);
+      if (!isRegionEligible) return false;
+
+      // Only nudge for item-count based promotions
+      if (promo.conditionType !== 'min_items') return false;
+
+      const target = parseInt(promo.conditionValue) || 0;
+      
+      // We nudge if user has at least 2 items but hasn't reached the target yet
+      // If they have equal to or more than target, they already have free delivery!
+      return target > 1 && itemCount >= 2 && itemCount < target;
+    });
+
+    if (nearMiss) {
+      setNearMissPromo(nearMiss);
+      setShowNudge(true);
+      setHasShownNudgeForRegion(region);
+    }
+  }, [region, activePromotions, items, hasShownNudgeForRegion]);
+
+  let currentDeliveryPrice = calculateBTSDelivery(region, village, totalWeight, deliveryMethod);
   let productsDiscount = 0;
 
   // Apply Promotions
   activePromotions.forEach(promo => {
+    // Check if current region is eligible for this promo (if regions are specified)
+    const isRegionEligible = !promo.selectedRegions || 
+                            promo.selectedRegions.length === 0 || 
+                            promo.selectedRegions.includes(region);
+
     if (promo.type === 'global') {
       const conditionMet = 
         (promo.conditionType === 'min_items' && items.reduce((sum, item) => sum + item.quantity, 0) >= promo.conditionValue) ||
         (promo.conditionType === 'min_amount' && totalAmount >= promo.conditionValue);
       
       if (conditionMet) {
-        if (promo.discountType === 'free_delivery') {
+        if (promo.discountType === 'free_delivery' && isRegionEligible) {
           currentDeliveryPrice = 0;
         } else if (promo.discountType === 'percentage') {
           productsDiscount += (totalAmount * (promo.discountValue / 100));
@@ -95,21 +148,24 @@ export default function CheckoutModal({
     } else if (promo.type === 'targeted' && promo.conditionType === 'product_selected') {
       // Find items in cart that match the targeted product list
       const targetedProducts = Array.isArray(promo.conditionValue) ? promo.conditionValue : [];
+      let hasTargetedProduct = false;
+      
       items.forEach(item => {
         const productId = (item.product._id || item.product.id || "").toString();
         if (targetedProducts.includes(productId)) {
+          hasTargetedProduct = true;
           if (promo.discountType === 'percentage') {
             productsDiscount += (item.price * item.quantity * (promo.discountValue / 100));
           } else if (promo.discountType === 'fixed') {
-            // Fixed discount per targeted item instance or total? Usually per item instance for targeted.
             productsDiscount += promo.discountValue * item.quantity;
-          }
-          // Note: free_delivery from a targeted promo is handled if at least one item matches
-          if (promo.discountType === 'free_delivery') {
-             currentDeliveryPrice = 0;
           }
         }
       });
+
+      // Targeted free delivery also respects region
+      if (hasTargetedProduct && promo.discountType === 'free_delivery' && isRegionEligible) {
+        currentDeliveryPrice = 0;
+      }
     }
   });
 
@@ -246,7 +302,16 @@ export default function CheckoutModal({
   if (isMobile) {
     return (
       <MobileModal isOpen={isOpen} onClose={onClose}>
-        <div className="p-2.5">
+        <div className="p-2.5 relative">
+          {showNudge && nearMissPromo && (
+            <PromotionNudge
+              promotion={nearMissPromo}
+              currentCount={items.reduce((sum, item) => sum + item.quantity, 0)}
+              region={region}
+              onContinue={() => setShowNudge(false)}
+              onShopMore={onClose}
+            />
+          )}
           {/* Header */}
           <div className="mb-5">
             <h2 className="text-[22px]/[27px] text-[#333333] font-bold">
@@ -558,7 +623,16 @@ export default function CheckoutModal({
   // Desktop version
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[30px] w-full max-w-5xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-white rounded-[30px] w-full max-w-5xl max-h-[95vh] overflow-y-auto relative">
+        {showNudge && nearMissPromo && (
+          <PromotionNudge
+            promotion={nearMissPromo}
+            currentCount={items.reduce((sum, item) => sum + item.quantity, 0)}
+            region={region}
+            onContinue={() => setShowNudge(false)}
+            onShopMore={onClose}
+          />
+        )}
         <div className="p-5">
           {/* Header */}
           <div className="flex justify-between items-center mb-3">
@@ -781,7 +855,7 @@ export default function CheckoutModal({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t.streetAddress}
                     </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 text-sm h-[40px] flex items-center">
+                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600 text-sm h-[42px] flex items-center">
                       {selectedBranch.address}
                     </div>
                   </div>
@@ -851,7 +925,7 @@ export default function CheckoutModal({
                   type="text"
                   value={telegramUsername}
                   onChange={(e) => setTelegramUsername(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm"
+                  className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm"
                   placeholder="@username"
                 />
               </div>
@@ -862,7 +936,7 @@ export default function CheckoutModal({
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] resize-none text-sm"
+                  className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] resize-none text-sm"
                   rows={1}
                   placeholder={t.notesPlaceholder}
                 />
@@ -873,14 +947,14 @@ export default function CheckoutModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium cursor-pointer text-sm"
+                className="flex-1 h-[42px] px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium cursor-pointer text-sm"
                 disabled={isSubmitting}
               >
                 {t.cancel}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+                className="flex-1 h-[42px] px-4 py-2 bg-[#00C6F1] text-white rounded-lg hover:bg-[#00C6F1]/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? t.submitting : t.submit}

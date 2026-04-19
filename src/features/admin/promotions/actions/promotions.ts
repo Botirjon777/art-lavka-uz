@@ -43,6 +43,7 @@ export async function createPromotion(formData: FormData) {
       endDate: new Date(formData.get("endDate") as string),
       description: formData.get("description") as string,
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
+      selectedRegions: JSON.parse((formData.get("selectedRegions") as string) || "[]"),
     };
 
     const promotion = await Promotion.create(data);
@@ -70,6 +71,7 @@ export async function updatePromotion(id: string, formData: FormData) {
       endDate: new Date(formData.get("endDate") as string),
       description: formData.get("description") as string,
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
+      selectedRegions: JSON.parse((formData.get("selectedRegions") as string) || "[]"),
     };
 
     const promotion = await Promotion.findByIdAndUpdate(id, data, { new: true });

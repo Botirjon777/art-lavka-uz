@@ -6,10 +6,11 @@ import { getProducts } from "@/features/admin/products/actions/products";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { FiSave, FiArrowLeft, FiTag, FiCalendar, FiTarget, FiBox, FiCheck } from "react-icons/fi";
+import { FiSave, FiArrowLeft, FiTag, FiCalendar, FiTarget, FiBox, FiCheck, FiMapPin, FiMap } from "react-icons/fi";
 import Link from "next/link";
 import Input from "@/components/ui/Input";
 import Dropdown from "@/components/ui/Dropdown";
+import { LOCATIONS } from "@/lib/i18n/locations";
 
 interface PromotionFormProps {
   initialData?: Promotion;
@@ -19,6 +20,7 @@ export default function PromotionForm({ initialData }: PromotionFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const regionKeys = Object.keys(LOCATIONS);
   
   // Basic Info
   const [name, setName] = useState(initialData?.name || "");
@@ -38,6 +40,7 @@ export default function PromotionForm({ initialData }: PromotionFormProps) {
   const [endDate, setEndDate] = useState(
     initialData?.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : ""
   );
+  const [selectedRegions, setSelectedRegions] = useState<string[]>(initialData?.selectedRegions || []);
 
   // Translations
   const [translations, setTranslations] = useState<Record<string, { name: string; description?: string }>>(
@@ -76,6 +79,7 @@ export default function PromotionForm({ initialData }: PromotionFormProps) {
     formData.set("startDate", startDate);
     formData.set("endDate", endDate);
     formData.set("translations", JSON.stringify(translations));
+    formData.set("selectedRegions", JSON.stringify(selectedRegions));
 
     const result = initialData 
       ? await updatePromotion(initialData._id, formData)
@@ -104,7 +108,7 @@ export default function PromotionForm({ initialData }: PromotionFormProps) {
       <div className="flex justify-between items-center mb-8">
         <Link
           href="/admin/promotions"
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-8100 font-bold transition-all"
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-bold transition-all"
         >
           <FiArrowLeft /> Назад к списку
         </Link>
@@ -275,25 +279,30 @@ export default function PromotionForm({ initialData }: PromotionFormProps) {
                     </span>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto p-4 space-y-2">
-                    {products.map((product) => (
-                      <div 
-                        key={product._id} 
-                        onClick={() => handleProductToggle(product._id)}
-                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
-                          conditionValue.includes(product._id) 
-                            ? "bg-purple-50 border-purple-200 text-[#8814B1]" 
-                            : "bg-white border-gray-100 text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                          conditionValue.includes(product._id) ? "bg-[#8814B1] border-[#8814B1]" : "bg-white border-gray-300"
-                        }`}>
-                          {conditionValue.includes(product._id) && <FiCheck className="text-white w-3 h-3" />}
+                    {products.map((product) => {
+                      if (!product._id) return null;
+                      const isSelected = Array.isArray(conditionValue) && conditionValue.includes(product._id);
+                      
+                      return (
+                        <div 
+                          key={product._id} 
+                          onClick={() => handleProductToggle(product._id!)}
+                          className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
+                            isSelected 
+                              ? "bg-purple-50 border-purple-200 text-[#8814B1]" 
+                              : "bg-white border-gray-100 text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+                            isSelected ? "bg-[#8814B1] border-[#8814B1]" : "bg-white border-gray-300"
+                          }`}>
+                            {isSelected && <FiCheck className="text-white w-3 h-3" />}
+                          </div>
+                          <img src={product.image} className="w-10 h-10 rounded-lg object-cover" alt="" />
+                          <span className="font-bold text-sm truncate">{product.name}</span>
                         </div>
-                        <img src={product.image} className="w-10 h-10 rounded-lg object-cover" alt="" />
-                        <span className="font-bold text-sm truncate">{product.name}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -329,6 +338,61 @@ export default function PromotionForm({ initialData }: PromotionFormProps) {
                     />
                   )}
 
+                  {discountType === "free_delivery" && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[10px] font-black text-green-400 uppercase">Области действия</label>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedRegions([])}
+                          className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-all ${
+                            selectedRegions.length === 0 
+                              ? "bg-green-600 text-white" 
+                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                          }`}
+                        >
+                          Весь Узбекистан
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-1">
+                        {regionKeys.map((region) => {
+                          const isSelected = selectedRegions.includes(region);
+                          return (
+                            <div
+                              key={region}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedRegions(selectedRegions.filter(r => r !== region));
+                                } else {
+                                  setSelectedRegions([...selectedRegions, region]);
+                                }
+                              }}
+                              className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all ${
+                                isSelected 
+                                  ? "bg-green-50 border-green-200 text-green-700" 
+                                  : "bg-white border-gray-100 text-gray-600 hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${
+                                isSelected ? "bg-green-600 border-green-600" : "bg-white border-gray-300"
+                              }`}>
+                                {isSelected && <FiCheck className="text-white w-2.5 h-2.5" />}
+                              </div>
+                              <span className="text-[10px] font-bold truncate">{region}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {selectedRegions.length > 0 && (
+                        <p className="text-[10px] text-gray-500 font-medium italic">
+                           * Доставка будет бесплатной только для {selectedRegions.length} выбранных областей.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="p-4 bg-white rounded-2xl border border-green-100 flex items-start gap-4">
                      <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
                         <FiBox className="text-green-600" />
@@ -341,9 +405,10 @@ export default function PromotionForm({ initialData }: PromotionFormProps) {
                             {discountType === 'free_delivery' ? 'бесплатную доставку' : 
                              `${discountValue}${discountType === 'percentage' ? '%' : ' UZS'}`}
                           </span>
-                          если {conditionType === 'min_items' ? `в заказе >= ${conditionValue} товаров` : 
-                                conditionType === 'min_amount' ? `сумма заказа >= ${parseInt(conditionValue).toLocaleString()} UZS` :
-                                'добавлен акционный товар'}.
+                          {discountType === 'free_delivery' && (selectedRegions.length === 0 ? "по всему Узбекистану" : `в ${selectedRegions.length} регионах`)}
+                          {" "}если {conditionType === 'min_items' ? `в заказе >= ${conditionValue} товаров` : 
+                                 conditionType === 'min_amount' ? `сумма заказа >= ${parseInt(conditionValue).toLocaleString()} UZS` :
+                                 'добавлен акционный товар'}.
                         </p>
                      </div>
                   </div>

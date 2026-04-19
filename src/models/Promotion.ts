@@ -12,6 +12,7 @@ export interface IPromotion {
   endDate: Date;
   description?: string;
   translations?: Record<string, { name: string; description?: string }>;
+  selectedRegions: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +38,7 @@ const PromotionSchema = new Schema<IPromotion>(
     endDate: { type: Date, required: true },
     description: { type: String },
     translations: { type: Schema.Types.Mixed },
+    selectedRegions: { type: [String], default: [] },
   },
   { timestamps: true }
 );
