@@ -55,9 +55,15 @@ export default function DeliveryDashboard() {
       </div>
 
       <div className="transition-all duration-300">
-        {activeTab === "zones" && <ZoneTable />}
-        {activeTab === "prices" && <PriceTable />}
-        {activeTab === "offices" && <OfficeManager />}
+        <div className={activeTab === "zones" ? "block" : "hidden"}>
+          <ZoneTable />
+        </div>
+        <div className={activeTab === "prices" ? "block" : "hidden"}>
+          <PriceTable />
+        </div>
+        <div className={activeTab === "offices" ? "block" : "hidden"}>
+          <OfficeManager />
+        </div>
       </div>
 
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">

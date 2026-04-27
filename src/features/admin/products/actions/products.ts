@@ -87,7 +87,7 @@ export async function createProduct(formData: FormData) {
 
     const product = await Product.create(productData);
     
-    revalidatePath("/admin/products");
+    revalidatePath("/admin/products", "page");
     return { success: true, product: JSON.parse(JSON.stringify(product)) };
   } catch (error: any) {
     console.error("Error creating product:", error);
@@ -158,7 +158,7 @@ export async function updateProduct(id: string, formData: FormData) {
       return { success: false, error: "Product not found" };
     }
 
-    revalidatePath("/admin/products");
+    revalidatePath("/admin/products", "page");
     return { success: true, product: JSON.parse(JSON.stringify(product)) };
   } catch (error: any) {
     console.error("Error updating product:", error);
@@ -206,7 +206,7 @@ export async function broadcastProductPromo(id: string) {
       return { success: false, error: "Failed to update broadcast timestamp" };
     }
 
-    revalidatePath("/admin/products");
+    revalidatePath("/admin/products", "page");
     return { success: true, lastPromoSentAt: updatedProduct.lastPromoSentAt };
   } catch (error: any) {
     console.error("Error in broadcastProductPromo:", error);
@@ -218,7 +218,7 @@ export async function deleteProduct(id: string) {
   try {
     await dbConnect();
     await Product.findByIdAndDelete(id);
-    revalidatePath("/admin/products");
+    revalidatePath("/admin/products", "page");
     return { success: true };
   } catch (error: any) {
     console.error("Error deleting product:", error);

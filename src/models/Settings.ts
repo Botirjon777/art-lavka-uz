@@ -19,9 +19,13 @@ export interface ISettings {
     instagramStore: string;
     translations?: Record<string, { delivery?: string; payment?: string; about?: string }>;
   };
-  // Maintain backward compatibility during transition if needed
   categoryStatuses?: {
     [key: string]: "active" | "soon";
+  };
+  deliveryPrices?: Record<string, number[]>;
+  courierFees?: {
+    upto10kg: number;
+    upto20kg: number;
   };
 }
 
@@ -49,6 +53,13 @@ const SettingsSchema = new Schema<ISettings>(
     categoryStatuses: {
       type: Map,
       of: String,
+    },
+    deliveryPrices: {
+      type: Schema.Types.Mixed,
+    },
+    courierFees: {
+      upto10kg: { type: Number },
+      upto20kg: { type: Number },
     },
   },
   {
