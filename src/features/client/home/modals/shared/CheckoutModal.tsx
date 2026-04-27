@@ -61,6 +61,10 @@ export default function CheckoutModal({
   const [showNudge, setShowNudge] = useState(false);
   const [nearMissPromo, setNearMissPromo] = useState<Promotion | null>(null);
   const [hasShownNudgeForRegion, setHasShownNudgeForRegion] = useState<string | null>(null);
+  const [deliverySettings, setDeliverySettings] = useState<{
+    deliveryPrices: Record<string, number[]>;
+    courierFees: { upto10kg: number; upto20kg: number };
+  } | null>(null);
 
   // Delivery State
   const [deliveryMethod, setDeliveryMethod] = useState<"door" | "pickup">(
@@ -72,15 +76,27 @@ export default function CheckoutModal({
 
   // Load dynamic offices
   useEffect(() => {
-    const fetchOffices = async () => {
+      const fetchOffices = async () => {
       try {
-        const response = await fetch("/api/offices");
-        const data = await response.json();
-        if (data.success) {
-          setAllOffices(data.data);
+        const [officesRes, settingsRes] = await Promise.all([
+          fetch("/api/offices"),
+          fetch("/api/settings")
+        ]);
+        
+        const officesData = await officesRes.json();
+        if (officesData.success) {
+          setAllOffices(officesData.data);
+        }
+
+        const settingsData = await settingsRes.json();
+        if (settingsData.success && settingsData.data) {
+          setDeliverySettings({
+            deliveryPrices: settingsData.data.deliveryPrices,
+            courierFees: settingsData.data.courierFees
+          });
         }
       } catch (err) {
-        console.error("Failed to fetch offices:", err);
+        console.error("Failed to fetch data:", err);
       }
     };
     fetchOffices();
@@ -140,7 +156,14 @@ export default function CheckoutModal({
     }
   }, [region, activePromotions, items, hasShownNudgeForRegion]);
 
-  let currentDeliveryPrice = calculateBTSDelivery(region, village, totalWeight, deliveryMethod);
+  let currentDeliveryPrice = calculateBTSDelivery(
+    region, 
+    village, 
+    totalWeight, 
+    deliveryMethod,
+    deliverySettings?.deliveryPrices,
+    deliverySettings?.courierFees
+  );
   let productsDiscount = 0;
 
   // Apply Promotions

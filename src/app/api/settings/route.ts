@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Settings, { ICategory, ISettings } from "@/models/Settings";
+import { BTS_PRICES, BTS_COURIER_FEES } from "@/lib/deliveryDataBTS";
+
+export const revalidate = 86400; // Cache for 24 hours
 
 export async function GET() {
   try {
@@ -29,6 +33,8 @@ export async function GET() {
       settings = await Settings.create({
         categories: defaultCategories,
         menu: defaultMenu,
+        deliveryPrices: BTS_PRICES,
+        courierFees: BTS_COURIER_FEES,
       });
     } else {
       let updated = false;
@@ -69,6 +75,17 @@ export async function GET() {
         updated = true;
       }
 
+      // Initialize delivery settings if missing
+      if (!settings.deliveryPrices) {
+        settings.deliveryPrices = BTS_PRICES;
+        updated = true;
+      }
+
+      if (!settings.courierFees) {
+        settings.courierFees = BTS_COURIER_FEES;
+        updated = true;
+      }
+
       if (updated) await settings.save();
     }
 
@@ -104,6 +121,7 @@ export async function POST(request: Request) {
       settings = await Settings.create(body);
     }
 
+    revalidatePath("/api/settings", "page");
     return NextResponse.json({
       success: true,
       data: settings,

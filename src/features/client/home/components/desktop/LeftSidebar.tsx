@@ -79,7 +79,7 @@ export default function LeftSidebar({
   });
 
   return (
-    <div className="w-full max-w-[558px] h-auto md:h-[calc(100vh-160px)] md:max-h-[886px] px-3 md:px-6 flex flex-col shrink-0">
+    <div className="w-full max-w-[558px] h-auto md:h-[calc(100vh-160px)] md:max-h-[886px] flex flex-col shrink-0">
       {/* Logo + Language Dropdown + Gallery Button */}
       <div className="mb-10 hidden md:flex items-center justify-between gap-4 shrink-0">
         <div className="shrink-0 w-[220px]">

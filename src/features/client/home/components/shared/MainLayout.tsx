@@ -32,7 +32,7 @@ export default function MainLayout({
         activeModal={activeModal}
       />
 
-      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center xl:px-3 xl:py-4 pt-24 md:p-6">
+      <div className="min-h-screen bg-[#F5F5F5] pt-24 md:pt-0 flex items-center justify-center">
         {/* Centered Container */}
         <div className="relative w-full max-w-[1600px]">
           {/* Menu Icon - Top Left of Container */}

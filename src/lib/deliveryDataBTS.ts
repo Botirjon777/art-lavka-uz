@@ -108,12 +108,16 @@ const ORIGIN_CITY_INDEX = 12;
  * @param targetDistrict - User selected district (to handle specific cities like Kokand)
  * @param weight - Total weight in kg
  * @param method - 'door' or 'pickup'
+ * @param customPrices - Optional override from DB
+ * @param customFees - Optional override from DB
  */
 export function calculateBTSDelivery(
   targetRegion: string,
   targetDistrict: string,
   weight: number,
-  method: "door" | "pickup"
+  method: "door" | "pickup",
+  customPrices?: Record<string, number[]>,
+  customFees?: { upto10kg: number; upto20kg: number }
 ): number {
   if (!targetRegion) return 30000; // default base
 
@@ -137,12 +141,16 @@ export function calculateBTSDelivery(
 
   // 3. Get Price from Table (normalize weight 1-20kg)
   const normalizedWeight = Math.max(1, Math.min(20, Math.ceil(weight)));
-  const basePrice = BTS_PRICES[normalizedWeight][zone];
+  
+  // Use custom prices if available, otherwise use static BTS_PRICES
+  const priceTable = customPrices || BTS_PRICES;
+  const basePrice = priceTable[normalizedWeight][zone];
 
   // 4. Add Courier Fee if "Door" delivery
   let courierFee = 0;
   if (method === "door") {
-    courierFee = normalizedWeight <= 10 ? BTS_COURIER_FEES.upto10kg : BTS_COURIER_FEES.upto20kg;
+    const fees = customFees || BTS_COURIER_FEES;
+    courierFee = normalizedWeight <= 10 ? fees.upto10kg : fees.upto20kg;
   }
 
   return basePrice + courierFee;

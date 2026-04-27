@@ -39,8 +39,8 @@ export async function createGallery(formData: FormData) {
 
     const gallery = await Gallery.create(galleryData);
 
-    revalidatePath("/admin/gallery");
-    revalidatePath("/");
+    revalidatePath("/admin/gallery", "page");
+    revalidatePath("/", "page");
 
     return { success: true, data: JSON.parse(JSON.stringify(gallery)) };
   } catch (error) {
@@ -67,8 +67,8 @@ export async function updateGallery(id: string, formData: FormData) {
       return { success: false, error: "Gallery image not found" };
     }
 
-    revalidatePath("/admin/gallery");
-    revalidatePath("/");
+    revalidatePath("/admin/gallery", "page");
+    revalidatePath("/", "page");
 
     return { success: true, data: JSON.parse(JSON.stringify(gallery)) };
   } catch (error) {
@@ -86,8 +86,8 @@ export async function deleteGallery(id: string) {
       return { success: false, error: "Gallery image not found" };
     }
 
-    revalidatePath("/admin/gallery");
-    revalidatePath("/");
+    revalidatePath("/admin/gallery", "page");
+    revalidatePath("/", "page");
 
     return { success: true };
   } catch (error) {
