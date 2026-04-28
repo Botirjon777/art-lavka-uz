@@ -208,7 +208,7 @@ export default function PrintForm({
                           : "border-transparent text-gray-400 hover:text-gray-700"
                       }`}
                     >
-                      <span>{l.flag}</span>
+                      <img src={l.flag} alt={l.label} className="w-4 h-3 object-cover rounded-sm shrink-0" />
                       <span>{l.label}</span>
                       {hasContent && l.id !== "ru" && (
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400" />

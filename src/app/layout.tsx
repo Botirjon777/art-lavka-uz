@@ -10,6 +10,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://art-lavka.uz"),
   title: "ART-LAVKA.UZ - Эксклюзивные дизайнерские футболки",
   description:
     "Интернет-магазин эксклюзивных дизайнерских футболок с авторскими иллюстрациями",

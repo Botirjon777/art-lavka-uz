@@ -63,16 +63,13 @@ export default function MobileConfigurator({
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
 
-  const price =
-    selectedVariant?.promoPrice ||
-    selectedProduct.promoPrice ||
-    selectedVariant?.price ||
-    selectedProduct.price;
+  const price = (selectedVariant?.price && selectedVariant.price > 0)
+    ? selectedVariant.price
+    : (selectedProduct.promoPrice || selectedProduct.price || 0);
 
-  const hasPromo = !!(selectedVariant?.promoPrice || selectedProduct.promoPrice);
-  const oldPrice = hasPromo
-    ? (selectedVariant?.price || selectedProduct.price)
-    : (selectedVariant?.oldPrice || selectedProduct.oldPrice);
+  const oldPrice = (selectedVariant?.oldPrice && selectedVariant.oldPrice > price)
+    ? selectedVariant.oldPrice
+    : (selectedProduct.oldPrice || (selectedProduct.promoPrice ? selectedProduct.price : 0));
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
