@@ -1,6 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment, Html } from "@react-three/drei";
 import { LuX } from "react-icons/lu";
@@ -19,14 +20,20 @@ export default function FullscreenViewer({
   selectedColor,
   selectedProduct,
 }: FullscreenViewerProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-6 right-6 z-110 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all active:scale-95 group"
+        className="absolute top-6 right-6 z-210 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all active:scale-95 group cursor-pointer"
       >
         <LuX
           size={32}
@@ -93,6 +100,7 @@ export default function FullscreenViewer({
           <span>Колесико для масштабирования</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

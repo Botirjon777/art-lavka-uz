@@ -38,7 +38,7 @@ export default function MainLayout({
           {/* Menu Icon - Top Left of Container */}
           <button
             onClick={activeModal ? onCloseModal : onMenuClick}
-            className="absolute top-20 -left-15 w-14 h-14 hidden md:flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-9999"
+            className="absolute top-20 -left-20 w-14 h-14 hidden md:flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-99"
             aria-label="Open menu"
           >
             <svg
@@ -59,7 +59,7 @@ export default function MainLayout({
           {/* Cart Icon / Close Button - Top Right of Container */}
           <button
             onClick={activeModal ? onCloseModal : onCartClick}
-            className="absolute top-20 -right-15 w-14 h-14 hidden md:flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-9999"
+            className="absolute top-20 -right-20 w-14 h-14 hidden md:flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-99"
             aria-label={activeModal ? "Close modal" : "Open cart"}
           >
             {activeModal ? (

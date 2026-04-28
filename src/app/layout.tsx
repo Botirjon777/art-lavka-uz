@@ -10,9 +10,16 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "ART LAVKA.UZ - Эксклюзивные дизайнерские футболки",
+  title: "ART-LAVKA.UZ - Эксклюзивные дизайнерские футболки",
   description:
     "Интернет-магазин эксклюзивных дизайнерских футболок с авторскими иллюстрациями",
+  openGraph: {
+    images: ["/art-lavka-square.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/art-lavka-square.png"],
+  },
 };
 
 export default function RootLayout({
