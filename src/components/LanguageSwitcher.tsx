@@ -29,11 +29,9 @@ export default function LanguageSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-white/70 backdrop-blur-md rounded-xl px-4 py-2.5 shadow-sm border border-gray-100 hover:bg-white/90 hover:shadow-md transition-all duration-300 active:scale-95 group min-w-[70px] justify-center"
+        className="flex items-center gap-1.5 bg-white/70 backdrop-blur-md rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 hover:bg-white/90 hover:shadow-md transition-all duration-300 active:scale-95 group justify-center"
       >
-        <span className="text-[15px] font-bold text-[#333333] group-hover:text-[#8814B1] transition-colors tracking-tight">
-          {currentLanguage.label}
-        </span>
+        <img src={currentLanguage.flag} alt={currentLanguage.label} className="w-6 h-4 object-cover rounded-sm shrink-0" />
         <HiChevronDown
           className={`w-4 h-4 text-gray-400 transition-transform duration-300 group-hover:text-[#8814B1] ${isOpen ? "rotate-180" : ""}`}
         />
@@ -41,7 +39,7 @@ export default function LanguageSwitcher() {
 
       {/* Dropdown Menu */}
       <div
-        className={`absolute right-0 mt-2 w-24 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 z-100 ${
+        className={`absolute right-0 mt-2 w-36 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 z-100 ${
           isOpen
             ? "opacity-100 translate-y-0 visible"
             : "opacity-0 -translate-y-2 invisible"
@@ -55,15 +53,18 @@ export default function LanguageSwitcher() {
                 setLang(l.id);
                 setIsOpen(false);
               }}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold transition-colors hover:bg-purple-50 ${
+              className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm font-bold transition-colors hover:bg-purple-50 ${
                 lang === l.id
                   ? "text-[#8814B1] bg-purple-50/50"
                   : "text-gray-600"
               }`}
             >
-              <span>{l.label}</span>
+              <div className="flex items-center gap-2">
+                <img src={l.flag} alt={l.label} className="w-5 h-3.5 object-cover rounded-sm shrink-0" />
+                <span>{l.label}</span>
+              </div>
               {lang === l.id && (
-                <div className="w-1.5 h-1.5 rounded-full bg-[#8814B1] shadow-[0_0_8px_rgba(136,20,177,0.6)]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#8814B1] shadow-[0_0_8px_rgba(136,20,177,0.6)] shrink-0" />
               )}
             </button>
           ))}
