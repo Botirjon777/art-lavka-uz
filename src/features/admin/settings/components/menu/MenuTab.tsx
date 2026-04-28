@@ -55,7 +55,7 @@ export default function MenuTab({
                     : "text-gray-400 hover:text-gray-600"
                 }`}
               >
-                <span>{l.flag}</span>
+                <img src={l.flag} alt={l.label} className="w-4 h-3 object-cover rounded-sm shrink-0" />
                 <span>{l.id.toUpperCase()}</span>
               </button>
             ))}

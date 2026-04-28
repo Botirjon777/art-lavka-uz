@@ -41,7 +41,7 @@ export default function CheckoutModal({
 }: CheckoutModalProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
-  
+
   // Checkout State
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -60,7 +60,9 @@ export default function CheckoutModal({
   // Nudge State
   const [showNudge, setShowNudge] = useState(false);
   const [nearMissPromo, setNearMissPromo] = useState<Promotion | null>(null);
-  const [hasShownNudgeForRegion, setHasShownNudgeForRegion] = useState<string | null>(null);
+  const [hasShownNudgeForRegion, setHasShownNudgeForRegion] = useState<
+    string | null
+  >(null);
   const [deliverySettings, setDeliverySettings] = useState<{
     deliveryPrices: Record<string, number[]>;
     courierFees: { upto10kg: number; upto20kg: number };
@@ -76,13 +78,13 @@ export default function CheckoutModal({
 
   // Load dynamic offices
   useEffect(() => {
-      const fetchOffices = async () => {
+    const fetchOffices = async () => {
       try {
         const [officesRes, settingsRes] = await Promise.all([
           fetch("/api/offices"),
-          fetch("/api/settings")
+          fetch("/api/settings"),
         ]);
-        
+
         const officesData = await officesRes.json();
         if (officesData.success) {
           setAllOffices(officesData.data);
@@ -92,7 +94,7 @@ export default function CheckoutModal({
         if (settingsData.success && settingsData.data) {
           setDeliverySettings({
             deliveryPrices: settingsData.data.deliveryPrices,
-            courierFees: settingsData.data.courierFees
+            courierFees: settingsData.data.courierFees,
           });
         }
       } catch (err) {
@@ -114,36 +116,49 @@ export default function CheckoutModal({
     : [];
 
   // Filter BTS branches based on selected region
-  const branches = region ? allOffices.filter(office => office.region === region).map((office, idx) => ({
-    id: office._id,
-    name: office.name,
-    address: office.address
-  })) : [];
+  const branches = region
+    ? allOffices
+        .filter((office) => office.region === region)
+        .map((office, idx) => ({
+          id: office._id,
+          name: office.name,
+          address: office.address,
+        }))
+    : [];
 
-  const totalWeight = items.reduce((sum, item) => sum + (item.product.weight || 0.5) * item.quantity, 0);
+  const totalWeight = items.reduce(
+    (sum, item) => sum + (item.product.weight || 0.5) * item.quantity,
+    0,
+  );
   const { data: activePromotions = [] } = usePromotions();
-  
+
   // Nudge Detection Effect
   useEffect(() => {
-    if (!region || !activePromotions.length || hasShownNudgeForRegion === region) return;
+    if (
+      !region ||
+      !activePromotions.length ||
+      hasShownNudgeForRegion === region
+    )
+      return;
 
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-    const nearMiss = activePromotions.find(promo => {
+    const nearMiss = activePromotions.find((promo) => {
       // Must be free delivery
-      if (promo.discountType !== 'free_delivery') return false;
-      
+      if (promo.discountType !== "free_delivery") return false;
+
       // Must be eligible for region
-      const isRegionEligible = !promo.selectedRegions || 
-                              promo.selectedRegions.length === 0 || 
-                              promo.selectedRegions.includes(region);
+      const isRegionEligible =
+        !promo.selectedRegions ||
+        promo.selectedRegions.length === 0 ||
+        promo.selectedRegions.includes(region);
       if (!isRegionEligible) return false;
 
       // Only nudge for item-count based promotions
-      if (promo.conditionType !== 'min_items') return false;
+      if (promo.conditionType !== "min_items") return false;
 
       const target = parseInt(promo.conditionValue) || 0;
-      
+
       // We nudge if user has at least 2 items but hasn't reached the target yet
       // If they have equal to or more than target, they already have free delivery!
       return target > 1 && itemCount >= 2 && itemCount < target;
@@ -157,61 +172,80 @@ export default function CheckoutModal({
   }, [region, activePromotions, items, hasShownNudgeForRegion]);
 
   let currentDeliveryPrice = calculateBTSDelivery(
-    region, 
-    village, 
-    totalWeight, 
+    region,
+    village,
+    totalWeight,
     deliveryMethod,
     deliverySettings?.deliveryPrices,
-    deliverySettings?.courierFees
+    deliverySettings?.courierFees,
   );
   let productsDiscount = 0;
 
   // Apply Promotions
-  activePromotions.forEach(promo => {
+  activePromotions.forEach((promo) => {
     // Check if current region is eligible for this promo (if regions are specified)
-    const isRegionEligible = !promo.selectedRegions || 
-                            promo.selectedRegions.length === 0 || 
-                            promo.selectedRegions.includes(region);
+    const isRegionEligible =
+      !promo.selectedRegions ||
+      promo.selectedRegions.length === 0 ||
+      promo.selectedRegions.includes(region);
 
-    if (promo.type === 'global') {
-      const conditionMet = 
-        (promo.conditionType === 'min_items' && items.reduce((sum, item) => sum + item.quantity, 0) >= promo.conditionValue) ||
-        (promo.conditionType === 'min_amount' && totalAmount >= promo.conditionValue);
-      
+    if (promo.type === "global") {
+      const conditionMet =
+        (promo.conditionType === "min_items" &&
+          items.reduce((sum, item) => sum + item.quantity, 0) >=
+            promo.conditionValue) ||
+        (promo.conditionType === "min_amount" &&
+          totalAmount >= promo.conditionValue);
+
       if (conditionMet) {
-        if (promo.discountType === 'free_delivery' && isRegionEligible) {
+        if (promo.discountType === "free_delivery" && isRegionEligible) {
           currentDeliveryPrice = 0;
-        } else if (promo.discountType === 'percentage') {
-          productsDiscount += (totalAmount * (promo.discountValue / 100));
-        } else if (promo.discountType === 'fixed') {
+        } else if (promo.discountType === "percentage") {
+          productsDiscount += totalAmount * (promo.discountValue / 100);
+        } else if (promo.discountType === "fixed") {
           productsDiscount += promo.discountValue;
         }
       }
-    } else if (promo.type === 'targeted' && promo.conditionType === 'product_selected') {
+    } else if (
+      promo.type === "targeted" &&
+      promo.conditionType === "product_selected"
+    ) {
       // Find items in cart that match the targeted product list
-      const targetedProducts = Array.isArray(promo.conditionValue) ? promo.conditionValue : [];
+      const targetedProducts = Array.isArray(promo.conditionValue)
+        ? promo.conditionValue
+        : [];
       let hasTargetedProduct = false;
-      
-      items.forEach(item => {
-        const productId = (item.product._id || item.product.id || "").toString();
+
+      items.forEach((item) => {
+        const productId = (
+          item.product._id ||
+          item.product.id ||
+          ""
+        ).toString();
         if (targetedProducts.includes(productId)) {
           hasTargetedProduct = true;
-          if (promo.discountType === 'percentage') {
-            productsDiscount += (item.price * item.quantity * (promo.discountValue / 100));
-          } else if (promo.discountType === 'fixed') {
+          if (promo.discountType === "percentage") {
+            productsDiscount +=
+              item.price * item.quantity * (promo.discountValue / 100);
+          } else if (promo.discountType === "fixed") {
             productsDiscount += promo.discountValue * item.quantity;
           }
         }
       });
 
       // Targeted free delivery also respects region
-      if (hasTargetedProduct && promo.discountType === 'free_delivery' && isRegionEligible) {
+      if (
+        hasTargetedProduct &&
+        promo.discountType === "free_delivery" &&
+        isRegionEligible
+      ) {
         currentDeliveryPrice = 0;
       }
     }
   });
 
-  const finalTotal = Math.max(0, totalAmount - productsDiscount) + currentDeliveryPrice;
+  const finalTotal =
+    Math.max(0, totalAmount - productsDiscount) + currentDeliveryPrice;
   const totalDiscount = productsDiscount;
 
   const isMobile = useIsMobile();
@@ -359,49 +393,6 @@ export default function CheckoutModal({
             <h2 className="text-[22px]/[27px] text-[#333333] font-bold">
               {t.checkoutTitle}
             </h2>
-          </div>
-
-          {/* Order Summary */}
-          <div className="mb-5 p-4 bg-white shadow-lg rounded-xl border border-gray-100">
-            <h3 className="text-[16px]/[20px] font-bold mb-3">
-              {t.orderSummary}
-            </h3>
-            <div className="space-y-2 text-[14px]/[17px]">
-              <div className="flex justify-between items-center text-[#666666]">
-                <span>{t.itemsTotal}:</span>
-                <span className="font-medium text-[#333333]">
-                  {totalAmount.toLocaleString()} {t.currency}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-[#666666]">
-                <span>
-                  {t.deliveryPrice} (
-                  {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
-                </span>
-                <span className="font-medium text-[#333333]">
-                  {currentDeliveryPrice === 0 ? (
-                    <span className="text-green-600 font-bold whitespace-nowrap">Бесплатно</span>
-                  ) : (
-                    `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
-                  )}
-                </span>
-              </div>
-              {totalDiscount > 0 && (
-                <div className="flex justify-between items-center text-green-600 font-bold mb-1">
-                  <span>Скидка по акции:</span>
-                  <span>
-                    -{totalDiscount.toLocaleString()} {t.currency}
-                  </span>
-                </div>
-              )}
-              <div className="h-px bg-gray-100 my-1" />
-              <div className="flex justify-between items-center text-[16px]/[20px] font-bold text-[#8814B1]">
-                <span>{t.total}:</span>
-                <span>
-                  {finalTotal.toLocaleString()} {t.currency}
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Customer Information Form */}
@@ -639,6 +630,51 @@ export default function CheckoutModal({
               />
             </div>
 
+            {/* Order Summary */}
+            <div className="mt-4 mb-5 p-4">
+              <h3 className="text-[16px]/[20px] font-bold mb-3">
+                {t.orderSummary}
+              </h3>
+              <div className="space-y-2 text-[14px]/[17px]">
+                <div className="flex justify-between items-center text-[#666666]">
+                  <span>{t.itemsTotal}:</span>
+                  <span className="font-medium text-[#333333]">
+                    {totalAmount.toLocaleString()} {t.currency}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-[#666666]">
+                  <span>
+                    {t.deliveryPrice} (
+                    {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
+                  </span>
+                  <span className="font-medium text-[#333333]">
+                    {currentDeliveryPrice === 0 ? (
+                      <span className="text-green-600 font-bold whitespace-nowrap">
+                        Бесплатно
+                      </span>
+                    ) : (
+                      `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
+                    )}
+                  </span>
+                </div>
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between items-center text-green-600 font-bold mb-1">
+                    <span>Скидка по акции:</span>
+                    <span>
+                      -{totalDiscount.toLocaleString()} {t.currency}
+                    </span>
+                  </div>
+                )}
+                <div className="h-px bg-gray-100 my-1" />
+                <div className="flex justify-between items-center text-[16px]/[20px] font-bold text-[#8814B1]">
+                  <span>{t.total}:</span>
+                  <span>
+                    {finalTotal.toLocaleString()} {t.currency}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div className="flex gap-2.5 pt-2.5">
               <button
                 type="button"
@@ -689,49 +725,6 @@ export default function CheckoutModal({
             </button>
           </div>
 
-          {/* Order Summary */}
-          <div className="mb-3 p-4 bg-white shadow-lg rounded-2xl border border-gray-100">
-            <h3 className="text-[18px]/[22px] font-bold mb-2">
-              {t.orderSummary}
-            </h3>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[14px]/[18px]">
-              <div className="flex justify-between items-center text-[#666666]">
-                <span>{t.itemsTotal}:</span>
-                <span className="font-medium text-[#333333]">
-                  {totalAmount.toLocaleString()} {t.currency}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-[#666666]">
-                <span>
-                  {t.deliveryPrice} (
-                  {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
-                </span>
-                <span className="font-medium text-[#333333]">
-                   {currentDeliveryPrice === 0 ? (
-                    <span className="text-green-600 font-bold whitespace-nowrap">Бесплатно</span>
-                  ) : (
-                    `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
-                  )}
-                </span>
-              </div>
-              {totalDiscount > 0 && (
-                <div className="flex justify-between items-center text-green-600 font-bold mb-1">
-                  <span>Скидка по акции:</span>
-                  <span>
-                    -{totalDiscount.toLocaleString()} {t.currency}
-                  </span>
-                </div>
-              )}
-              <div className="col-span-2 h-px bg-gray-100 my-1" />
-              <div className="col-span-2 flex justify-between items-center text-[20px]/[26px] font-bold text-[#00C6F1]">
-                <span>{t.total}:</span>
-                <span>
-                  {finalTotal.toLocaleString()} {t.currency}
-                </span>
-              </div>
-            </div>
-          </div>
-
           {/* Customer Information Form */}
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex gap-4">
@@ -776,11 +769,11 @@ export default function CheckoutModal({
                       if (errors.customerPhone)
                         setErrors({ ...errors, customerPhone: "" });
                     }}
-                  className={`w-full h-[42px] pl-13 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
-                    errors.customerPhone
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-gray-300"
-                  }`}
+                    className={`w-full h-[42px] pl-13 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
+                      errors.customerPhone
+                        ? "border-red-500 focus:ring-red-200"
+                        : "border-gray-300"
+                    }`}
                     placeholder="XX XXX XX XX"
                   />
                 </div>
@@ -982,6 +975,51 @@ export default function CheckoutModal({
                   rows={1}
                   placeholder={t.notesPlaceholder}
                 />
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="mt-4 mb-3">
+              <h3 className="text-[18px]/[22px] font-bold mb-2">
+                {t.orderSummary}
+              </h3>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[14px]/[18px]">
+                <div className="flex justify-between items-center text-[#666666]">
+                  <span>{t.itemsTotal}:</span>
+                  <span className="font-medium text-[#333333]">
+                    {totalAmount.toLocaleString()} {t.currency}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-[#666666]">
+                  <span>
+                    {t.deliveryPrice} (
+                    {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
+                  </span>
+                  <span className="font-medium text-[#333333]">
+                    {currentDeliveryPrice === 0 ? (
+                      <span className="text-green-600 font-bold whitespace-nowrap">
+                        Бесплатно
+                      </span>
+                    ) : (
+                      `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
+                    )}
+                  </span>
+                </div>
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between items-center text-green-600 font-bold mb-1">
+                    <span>Скидка по акции:</span>
+                    <span>
+                      -{totalDiscount.toLocaleString()} {t.currency}
+                    </span>
+                  </div>
+                )}
+                <div className="col-span-2 h-px bg-gray-100 my-1" />
+                <div className="col-span-2 flex justify-between items-center text-[20px]/[26px] font-bold text-[#00C6F1]">
+                  <span>{t.total}:</span>
+                  <span>
+                    {finalTotal.toLocaleString()} {t.currency}
+                  </span>
+                </div>
               </div>
             </div>
 
