@@ -275,7 +275,9 @@ export default function RightConfigurator({
                         {t.available}:
                       </span>
                       <span className="inline-block min-w-[100px] font-medium text-green-600">
-                        {t.inStock}
+                        {selectedVariant?.hideExactStock
+                          ? t.inStock
+                          : `${sizeStock} ${t.pcs}`}
                       </span>
                     </span>
                   )}

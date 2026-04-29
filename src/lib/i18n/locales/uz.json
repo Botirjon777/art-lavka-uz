@@ -142,5 +142,7 @@
   "errorEnterPhone": "Telefon raqamini kiriting",
   "errorOrdersNotFound": "Buyurtmalar topilmadi",
   "errorLoadOrderDetails": "Buyurtma tafsilotlarini yuklashda xatolik",
-  "backToHome": "Asosiy sahifaga"
+  "backToHome": "Asosiy sahifaga",
+  "rotateModel": "Modelni sichqoncha bilan aylantiring",
+  "zoomScroll": "Masshtabni o'zgartirish uchun sichqoncha g'ildiragidan foydalaning"
 }

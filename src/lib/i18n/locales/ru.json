@@ -142,5 +142,7 @@
   "errorEnterPhone": "Введите номер телефона",
   "errorOrdersNotFound": "Заказы не найдены",
   "errorLoadOrderDetails": "Ошибка при загрузке деталей заказа",
-  "backToHome": "На главную"
+  "backToHome": "На главную",
+  "rotateModel": "Вращайте модель мышкой",
+  "zoomScroll": "Колесико для масштабирования"
 }

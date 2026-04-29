@@ -1,6 +1,8 @@
 const fs = require('fs');
 
-const csvPath = 'd:\\projects\\art-lavka-uz\\bts_offices_FINAL.csv';
+const path = require('path');
+
+const csvPath = path.join(__dirname, '..', 'bts_offices_FINAL.csv');
 const content = fs.readFileSync(csvPath, 'utf8');
 const lines = content.split('\n').filter(l => l.trim() !== '');
 
@@ -33,7 +35,7 @@ const districtToRegion = {
   "г.Нурафшон": "Ташкентская область",
   "Кибрайский р-н": "Ташкентская область",
   "Паркентский р-н": "Ташкентская область",
-  "г. Газалкент": "Ташкентская область",
+  "г.Газалкент": "Ташкентская область",
   "Зангиатинский р-н": "Ташкентская область",
   "Ташкентский р-н": "Ташкентская область",
   "Юкори чирчикский р-н": "Ташкентская область",
@@ -248,6 +250,9 @@ for (let i = 1; i < lines.length; i++) {
   let [district, id, name, address] = parts;
   if (!district) continue;
 
+  // Normalize district name (e.g. "г. Газалкент" -> "г.Газалкент")
+  district = district.replace(/^г\.\s+/, "г.");
+
   // Clean address
   address = (address || "").replace("Посмотреть на карте ...", "").trim();
   // Strip starting/ending quotes if any
@@ -263,5 +268,5 @@ for (let i = 1; i < lines.length; i++) {
   });
 }
 
-fs.writeFileSync('d:\\projects\\art-lavka-uz\\src\\lib\\btsOffices.json', JSON.stringify(results, null, 2), 'utf8');
+fs.writeFileSync(path.join(__dirname, '..', 'src', 'lib', 'btsOffices.json'), JSON.stringify(results, null, 2), 'utf8');
 console.log('Processed ' + results.length + ' offices.');
