@@ -199,7 +199,11 @@ export default function MobileConfigurator({
           {!isOutOfStock && (
             <p className="text-green-600 text-sm font-medium mt-5 flex items-center gap-1">
               <span className="text-lg">✓</span> 
-              <span className="inline-block min-w-[100px]">{t.inStock}</span>
+              <span className="inline-block min-w-[100px]">
+                {selectedVariant?.hideExactStock 
+                  ? t.inStock 
+                  : `${sizeStock} ${t.pcs}`}
+              </span>
             </p>
           )}
         </div>
@@ -236,7 +240,9 @@ export default function MobileConfigurator({
 
             {!isOutOfStock && (
               <span className="text-sm text-green-600 font-medium ml-2 inline-block min-w-[100px]">
-                {t.inStock}
+                {selectedVariant?.hideExactStock 
+                  ? t.inStock 
+                  : `${sizeStock} ${t.pcs}`}
               </span>
             )}
           </div>

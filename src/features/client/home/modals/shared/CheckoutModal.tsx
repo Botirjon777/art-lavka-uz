@@ -115,10 +115,13 @@ export default function CheckoutModal({
     ? LOCATIONS[region as keyof typeof LOCATIONS] || []
     : [];
 
-  // Filter BTS branches based on selected region
+  // Filter BTS branches based on selected region and village (district)
   const branches = region
     ? allOffices
-        .filter((office) => office.region === region)
+        .filter(
+          (office) =>
+            office.region === region && (!village || office.district === village)
+        )
         .map((office, idx) => ({
           id: office._id,
           name: office.name,

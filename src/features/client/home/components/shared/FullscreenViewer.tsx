@@ -7,6 +7,7 @@ import { OrbitControls, Environment, Html } from "@react-three/drei";
 import { LuX } from "react-icons/lu";
 import { TShirtModel, TShirtModelProps } from "./TShirtModel";
 import Loader from "@/components/Loader";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface FullscreenViewerProps extends TShirtModelProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function FullscreenViewer({
   selectedColor,
   selectedProduct,
 }: FullscreenViewerProps) {
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -96,8 +98,8 @@ export default function FullscreenViewer({
 
         {/* Floating Info */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40 text-[10px] uppercase font-black tracking-widest text-center">
-          <span>Вращайте модель мышкой</span>
-          <span>Колесико для масштабирования</span>
+          <span>{t.rotateModel}</span>
+          <span>{t.zoomScroll}</span>
         </div>
       </div>
     </div>,

@@ -142,5 +142,7 @@
   "errorEnterPhone": "Please enter your phone number",
   "errorOrdersNotFound": "Orders not found",
   "errorLoadOrderDetails": "Error loading order details",
-  "backToHome": "Back to Home"
+  "backToHome": "Back to Home",
+  "rotateModel": "Rotate the model with your mouse",
+  "zoomScroll": "Use the mouse wheel to zoom"
 }
