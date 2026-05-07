@@ -26,8 +26,10 @@ export default function MobileProductsModal({
   const { lang } = useLanguageStore();
   const { data: products = [], isLoading: loading } = useProducts();
   const { data: settings } = useSettings();
-  
+
   const [activeTab, setActiveTab] = useState<string>("");
+  const [selectedProductInfo, setSelectedProductInfo] =
+    useState<Product | null>(null);
 
   const categories: ICategory[] = settings?.categories || [
     { id: "women", label: "Женский", status: "active" },
@@ -37,7 +39,7 @@ export default function MobileProductsModal({
 
   const tabs = categories.map((cat: ICategory) => ({
     id: cat.id,
-    label: getTranslated(cat, lang) || cat.label,
+    label: getTranslated(cat, lang, "label") || cat.label,
     soon: cat.status === "soon",
   }));
 
@@ -46,7 +48,9 @@ export default function MobileProductsModal({
   // Auto-select first active tab when settings load
   useEffect(() => {
     if (settings && settings.categories?.length > 0) {
-      const firstActive = settings.categories.find((cat: ICategory) => cat.status === "active");
+      const firstActive = settings.categories.find(
+        (cat: ICategory) => cat.status === "active",
+      );
       if (firstActive) {
         setActiveTab(firstActive.id);
       } else {
@@ -54,8 +58,8 @@ export default function MobileProductsModal({
         setActiveTab(settings.categories[0].id);
       }
     } else if (!settings) {
-       // Initial default if settings haven't loaded
-       setActiveTab("women");
+      // Initial default if settings haven't loaded
+      setActiveTab("women");
     }
   }, [settings]);
 
@@ -100,7 +104,8 @@ export default function MobileProductsModal({
               Извините, продуктов нет
             </h3>
             <p className="text-gray-500 text-sm">
-              Все категории временно недоступны. Пожалуйста, зайдите позже или следите за обновлениями!
+              Все категории временно недоступны. Пожалуйста, зайдите позже или
+              следите за обновлениями!
             </p>
           </div>
         ) : (
@@ -115,49 +120,154 @@ export default function MobileProductsModal({
                 if (filteredProducts.length === 0) {
                   return (
                     <div className="col-span-2 text-center py-12 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-                      <p className="text-gray-400 text-sm">Нет доступных товаров</p>
+                      <p className="text-gray-400 text-sm">
+                        Нет доступных товаров
+                      </p>
                     </div>
                   );
                 }
 
                 return filteredProducts.map((product) => (
-                  <button
+                  <div
                     key={product.id}
-                    onClick={() => {
-                      onSelectProduct(product);
-                      onClose();
-                    }}
-                    className="group text-center"
+                    className="group text-center flex flex-col items-center"
                   >
-                    <div className="relative w-full aspect-3/4 mb-2 overflow-hidden">
+                    <div
+                      onClick={() => {
+                        onSelectProduct(product);
+                        onClose();
+                      }}
+                      className="relative w-full aspect-3/4 mb-2 overflow-hidden rounded-xl active:scale-95 transition-transform"
+                    >
                       <Image
                         src={product.image}
                         alt={getTranslated(product, lang)}
                         fill
                         sizes="(max-width: 768px) 50vw, 200px"
-                        className="object-cover group-active:scale-95 transition-transform duration-200"
+                        className="object-cover"
                       />
                     </div>
-                    <p className="text-sm text-[#333333] font-medium line-clamp-1 mb-1">
-                      {getTranslated(product, lang)}
-                    </p>
-                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                      <span className={`text-[13px] font-bold ${product.promoPrice ? "text-[#8814B1]" : "text-[#333333]"}`}>
-                        {(product.promoPrice || product.price).toLocaleString()} {t.currency}
-                      </span>
-                      {product.promoPrice && (
-                        <span className="text-[11px] text-gray-400 line-through">
-                          {product.price.toLocaleString()}
-                        </span>
-                      )}
+                    <div className="flex items-center justify-center gap-1 w-full px-1">
+                      <p
+                        onClick={() => {
+                          onSelectProduct(product);
+                          onClose();
+                        }}
+                        className="text-sm text-[#333333] font-medium line-clamp-1 flex-1 text-center"
+                      >
+                        {getTranslated(product, lang)}
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProductInfo(product);
+                        }}
+                        className="text-gray-400 p-1 active:text-[#8814B1]"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </button>
                     </div>
-                  </button>
+
+                    <div className="flex flex-col items-center justify-center w-full px-1">
+                      {(() => {
+                        const firstColor =
+                          product.colors?.find((c) =>
+                            c.variants?.some((v) => v.stock > 0),
+                          ) || product.colors?.[0];
+                        const firstVariant =
+                          firstColor?.variants?.find((v) => v.stock > 0) ||
+                          firstColor?.variants?.[0];
+
+                        if (!firstVariant) return null;
+
+                        const currentPrice =
+                          firstVariant.promoPrice || firstVariant.price;
+                        const hasPromo =
+                          firstVariant.promoPrice &&
+                          firstVariant.promoPrice > 0 &&
+                          firstVariant.oldPrice &&
+                          firstVariant.oldPrice > firstVariant.promoPrice;
+                        const displayOldPrice = hasPromo
+                          ? firstVariant.oldPrice
+                          : firstVariant.oldPrice &&
+                              firstVariant.oldPrice > firstVariant.price
+                            ? firstVariant.oldPrice
+                            : null;
+
+                        return (
+                          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                            <span className="text-[12px] text-gray-500">
+                              {firstVariant.size}
+                            </span>
+                            <span
+                              className={`text-[13px] font-bold ${hasPromo ? "text-[#8814B1]" : "text-[#333333]"}`}
+                            >
+                              {currentPrice.toLocaleString()} {t.currency}
+                            </span>
+                            {displayOldPrice && (
+                              <span className="text-[11px] text-gray-400 line-through">
+                                {displayOldPrice.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 ));
               })()}
             </div>
           </>
         )}
       </div>
+
+      {/* Mobile Description Modal */}
+      {selectedProductInfo && (
+        <div className="fixed inset-0 z-110 flex items-end justify-center">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedProductInfo(null)}
+          />
+          <div className="relative bg-white rounded-t-[30px] w-full max-h-[85vh] overflow-y-auto p-6 animate-in slide-in-from-bottom duration-300">
+            <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6" />
+            <button
+              onClick={() => setSelectedProductInfo(null)}
+              className="absolute top-6 right-6 text-gray-400 text-2xl"
+            >
+              ×
+            </button>
+            <div className="space-y-4">
+              <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-md">
+                <Image
+                  src={selectedProductInfo.image}
+                  alt={getTranslated(selectedProductInfo, lang)}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-xl font-bold text-[#333333]">
+                {getTranslated(selectedProductInfo, lang)}
+              </h3>
+              <p className="text-[#666666] text-sm leading-relaxed pb-10">
+                {getTranslated(selectedProductInfo, lang, "description") ||
+                  t.noDescription}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </MobileModal>
   );
 }

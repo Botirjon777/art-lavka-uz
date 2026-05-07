@@ -49,6 +49,7 @@ export interface IProduct {
   sizeTable?: SizeTableEntry[]; // Per-product size measurements
   stock: number; // Total stock
   active: boolean;
+  isDefault?: boolean;
   featured?: boolean;
   lastPromoSentAt?: Date;
   weight?: number; // Weight in kg
@@ -139,6 +140,10 @@ const ProductSchema = new Schema<IProduct>(
     active: {
       type: Boolean,
       default: true,
+    },
+    isDefault: {
+      type: Boolean,
+      default: false,
     },
     weight: {
       type: Number,

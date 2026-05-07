@@ -43,9 +43,9 @@ export default function Dropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const dropdownId = React.useMemo(() => 
-    id || `dropdown-${Math.random().toString(36).substr(2, 9)}`,
-    [id]
+  const dropdownId = React.useMemo(
+    () => id || `dropdown-${Math.random().toString(36).substr(2, 9)}`,
+    [id],
   );
 
   // Find the selected option
@@ -136,9 +136,7 @@ export default function Dropdown({
       )}
 
       <div ref={dropdownRef} className="relative">
-        {name && (
-          <input type="hidden" name={name} value={value} />
-        )}
+        {name && <input type="hidden" name={name} value={value} />}
         {/* Dropdown Button */}
         <button
           type="button"
@@ -181,69 +179,71 @@ export default function Dropdown({
         </button>
 
         {/* Dropdown Menu Portaled to Body */}
-        {isOpen && !disabled && typeof document !== 'undefined' && createPortal(
-          <div 
-            id={`${dropdownId}-menu`}
-            className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
-            style={{
-              top: coords.top + 8,
-              left: coords.left,
-              width: coords.width,
-            }}
-          >
-            {options.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                No options available
-              </div>
-            ) : (
-              options.map((option, index) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleSelect(option.value)}
-                  className={`w-full px-4 py-3 text-left transition-colors duration-150 ${
-                    option.value === value
-                      ? "bg-[#00C6F1]/10 text-[#00C6F1] font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
-                  } ${index === 0 ? "rounded-t-lg" : ""} ${
-                    index === options.length - 1 ? "rounded-b-lg" : ""
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="text-sm">{option.label}</div>
-                      {option.description && (
-                        <div className="text-xs text-gray-500 mt-0.5">
-                          {option.description}
-                        </div>
+        {isOpen &&
+          !disabled &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <div
+              id={`${dropdownId}-menu`}
+              className="fixed z-9999 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+              style={{
+                top: coords.top + 8,
+                left: coords.left,
+                width: coords.width,
+              }}
+            >
+              {options.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                  No options available
+                </div>
+              ) : (
+                options.map((option, index) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleSelect(option.value)}
+                    className={`w-full px-4 py-3 text-left transition-colors duration-150 ${
+                      option.value === value
+                        ? "bg-[#00C6F1]/10 text-[#00C6F1] font-medium"
+                        : "text-gray-700 hover:bg-gray-50"
+                    } ${index === 0 ? "rounded-t-lg" : ""} ${
+                      index === options.length - 1 ? "rounded-b-lg" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="text-sm">{option.label}</div>
+                        {option.description && (
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {option.description}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Checkmark for selected option */}
+                      {option.value === value && (
+                        <svg
+                          className="w-5 h-5 text-[#00C6F1] ml-2 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
                       )}
                     </div>
-
-                    {/* Checkmark for selected option */}
-                    {option.value === value && (
-                      <svg
-                        className="w-5 h-5 text-[#00C6F1] ml-2 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              ))
-            )}
-          </div>,
-          document.body
-        )}
+                  </button>
+                ))
+              )}
+            </div>,
+            document.body,
+          )}
       </div>
-
 
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
 

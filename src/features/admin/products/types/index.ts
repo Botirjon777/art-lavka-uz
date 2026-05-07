@@ -18,6 +18,7 @@ export interface Product {
   lastPromoSentAt?: string;
   weight?: number;
   sizeTable?: SizeTableEntry[];
+  isDefault?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

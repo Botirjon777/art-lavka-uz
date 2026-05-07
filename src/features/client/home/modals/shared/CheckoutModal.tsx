@@ -70,7 +70,7 @@ export default function CheckoutModal({
 
   // Delivery State
   const [deliveryMethod, setDeliveryMethod] = useState<"door" | "pickup">(
-    "door",
+    "pickup",
   );
   const [selectedBranch, setSelectedBranch] = useState<DeliveryBranch | null>(
     null,
@@ -120,7 +120,8 @@ export default function CheckoutModal({
     ? allOffices
         .filter(
           (office) =>
-            office.region === region && (!village || office.district === village)
+            office.region === region &&
+            (!village || office.district === village),
         )
         .map((office, idx) => ({
           id: office._id,
@@ -459,35 +460,28 @@ export default function CheckoutModal({
 
             {/* Delivery Method Selection */}
             <div>
-              <label className="block text-[13px]/[16px] text-[#333333] mb-2">
-                {t.deliveryMethod} <span className="text-red-500">*</span>
-              </label>
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setDeliveryMethod("door")}
-                  className={`flex-1 h-[42px] px-3 rounded-xl border text-[13px]/[16px] transition-all flex items-center justify-center ${
-                    deliveryMethod === "door"
-                      ? "bg-[#8814B1] text-white border-[#8814B1] shadow-md"
-                      : "bg-white text-[#333333] border-gray-200"
-                  }`}
-                >
-                  {t.toDoor}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeliveryMethod("pickup");
-                  }}
-                  className={`flex-1 h-[42px] px-3 rounded-xl border text-[13px]/[16px] transition-all flex items-center justify-center ${
-                    deliveryMethod === "pickup"
-                      ? "bg-[#8814B1] text-white border-[#8814B1] shadow-md"
-                      : "bg-white text-[#333333] border-gray-200"
-                  }`}
-                >
-                  {t.toPunct}
-                </button>
+              <div className="flex flex-col gap-2 mb-3">
+                <div className="flex items-center gap-2 text-[#8814B1] font-bold text-[12px] bg-purple-50 px-2 py-1.5 rounded-lg w-fit">
+                  <input
+                    type="radio"
+                    checked
+                    readOnly
+                    className="accent-[#8814B1]"
+                  />
+                  BTS EXPRESS
+                </div>
               </div>
+              <Dropdown
+                label={t.deliveryMethod}
+                value={deliveryMethod}
+                onChange={(val) => setDeliveryMethod(val as "door" | "pickup")}
+                options={[
+                  { value: "door", label: t.toDoor },
+                  { value: "pickup", label: t.toPunct },
+                ]}
+                required
+                buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
+              />
             </div>
 
             {/* Region */}
@@ -703,7 +697,7 @@ export default function CheckoutModal({
 
   // Desktop version
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-[30px] w-full max-w-5xl max-h-[95vh] overflow-y-auto relative">
         {showNudge && nearMissPromo && (
           <PromotionNudge
@@ -722,7 +716,7 @@ export default function CheckoutModal({
             </h2>
             <button
               onClick={onClose}
-              className="text-[#666666] hover:text-[#8814B1] text-[24px]/[30px] cursor-pointer"
+              className="text-[#666666] hover:text-[#8814B1] text-[40px]/[40px] cursor-pointer"
             >
               ×
             </button>
@@ -790,33 +784,28 @@ export default function CheckoutModal({
 
             {/* Delivery Method Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t.deliveryMethod} <span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setDeliveryMethod("door")}
-                  className={`flex-1 h-[42px] px-4 rounded-xl border-2 transition-all font-medium text-sm cursor-pointer flex items-center justify-center ${
-                    deliveryMethod === "door"
-                      ? "bg-[#00C6F1] text-white border-[#00C6F1] shadow-lg"
-                      : "bg-white text-[#333333] border-gray-100 hover:border-[#00C6F1]"
-                  }`}
-                >
-                  {t.toDoor}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeliveryMethod("pickup")}
-                  className={`flex-1 h-[42px] px-4 rounded-xl border-2 transition-all font-medium text-sm cursor-pointer flex items-center justify-center ${
-                    deliveryMethod === "pickup"
-                      ? "bg-[#00C6F1] text-white border-[#00C6F1] shadow-lg"
-                      : "bg-white text-[#333333] border-gray-100 hover:border-[#00C6F1]"
-                  }`}
-                >
-                  {t.toPunct}
-                </button>
+              <div className="flex flex-col gap-3 mb-4">
+                <div className="flex items-center gap-2 text-[#8814B1] font-bold text-sm bg-purple-50 px-3 py-2 rounded-lg w-fit">
+                  <input
+                    type="radio"
+                    checked
+                    readOnly
+                    className="accent-[#8814B1]"
+                  />
+                  BTS EXPRESS
+                </div>
               </div>
+              <Dropdown
+                label={t.deliveryMethod}
+                value={deliveryMethod}
+                onChange={(val) => setDeliveryMethod(val as "door" | "pickup")}
+                options={[
+                  { value: "door", label: t.toDoor },
+                  { value: "pickup", label: t.toPunct },
+                ]}
+                required
+                buttonClassName="h-[42px] px-3 py-2 text-sm"
+              />
             </div>
 
             {/* Region & Village */}

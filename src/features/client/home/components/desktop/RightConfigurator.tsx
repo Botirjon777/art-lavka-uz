@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "../shared/TShirtScene";
 import SizeTableModal from "@/components/SizeTableModal";
@@ -44,6 +44,29 @@ export default function RightConfigurator({
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
+  // Reset selection when product changes
+  useEffect(() => {
+    if (selectedProduct) {
+      const colors = selectedProduct.colors || [];
+      const firstAvailable = colors.find((c: ProductColor) =>
+        c.variants?.some((v) => v.stock > 0),
+      );
+      const initialColor = firstAvailable || colors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] };
+      setSelectedColor(initialColor);
+      
+      const firstInStock = initialColor.variants?.find((v) => v.stock > 0);
+      if (firstInStock) {
+        setSelectedSize(firstInStock.size);
+      } else if (initialColor.variants && initialColor.variants.length > 0) {
+        setSelectedSize(initialColor.variants[0].size);
+      } else {
+        setSelectedSize("");
+      }
+      setQuantity(1);
+    }
+  }, [selectedProduct]);
+
+
   const handleColorChange = (color: ProductColor) => {
     setSelectedColor(color);
     const firstInStock = color.variants?.find((v) => v.stock > 0);
@@ -54,6 +77,7 @@ export default function RightConfigurator({
     } else {
       setSelectedSize("");
     }
+    setQuantity(1);
   };
 
   const selectedVariant = selectedColor.variants.find(
@@ -173,7 +197,10 @@ export default function RightConfigurator({
                     return (
                       <button
                         key={v.size}
-                        onClick={() => setSelectedSize(v.size)}
+                        onClick={() => {
+                          setSelectedSize(v.size);
+                          setQuantity(1);
+                        }}
                         disabled={false}
                         style={
                           isOutOfStock
@@ -290,12 +317,12 @@ export default function RightConfigurator({
                   {t.price}{" "}
                   {oldPrice && oldPrice > price && (
                     <span className="line-through text-[18px]/[22px] text-[#9F9F9F]">
-                      {oldPrice.toLocaleString()} {t.currency}
+                      {(oldPrice * quantity).toLocaleString()} {t.currency}
                     </span>
                   )}
                 </p>
                 <p className="text-[25px]/[30px] text-[#333333]">
-                  {price.toLocaleString()} {t.currency}
+                  {(price * quantity).toLocaleString()} {t.currency}
                 </p>
               </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "../shared/TShirtScene";
 import SizeTableModal from "@/components/SizeTableModal";
@@ -47,6 +47,29 @@ export default function MobileConfigurator({
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
+  // Reset selection when product changes
+  useEffect(() => {
+    if (selectedProduct) {
+      const colors = selectedProduct.colors || [];
+      const firstAvailable = colors.find((c: ProductColor) =>
+        c.variants?.some((v) => v.stock > 0),
+      );
+      const initialColor = firstAvailable || colors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] };
+      setSelectedColor(initialColor);
+      
+      const firstInStock = initialColor.variants?.find((v) => v.stock > 0);
+      if (firstInStock) {
+        setSelectedSize(firstInStock.size);
+      } else if (initialColor.variants && initialColor.variants.length > 0) {
+        setSelectedSize(initialColor.variants[0].size);
+      } else {
+        setSelectedSize("");
+      }
+      setQuantity(1);
+    }
+  }, [selectedProduct]);
+
+
   const handleColorChange = (color: ProductColor) => {
     setSelectedColor(color);
     const firstInStock = color.variants?.find((v) => v.stock > 0);
@@ -57,6 +80,7 @@ export default function MobileConfigurator({
     } else {
       setSelectedSize("");
     }
+    setQuantity(1);
   };
 
   const selectedVariant = selectedColor.variants.find(v => v.size === selectedSize);
@@ -170,7 +194,10 @@ export default function MobileConfigurator({
               return (
                 <button
                   key={v.size}
-                  onClick={() => setSelectedSize(v.size)}
+                  onClick={() => {
+                    setSelectedSize(v.size);
+                    setQuantity(1);
+                  }}
                   disabled={false}
                   style={isOutOfStock ? {
                     backgroundImage: "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
@@ -254,12 +281,12 @@ export default function MobileConfigurator({
             {t.price}{" "}
             {oldPrice && oldPrice > price && (
               <span className="line-through text-[#9F9F9F]">
-                {oldPrice.toLocaleString()} {t.currency}
+                {(oldPrice * quantity).toLocaleString()} {t.currency}
               </span>
             )}
           </p>
-          <p className="text-[20px]/[24px] text-[#333333]">
-            {price.toLocaleString()} {t.currency}
+          <p className="text-[20px]/[24px] text-[#333333] font-bold">
+            {(price * quantity).toLocaleString()} {t.currency}
           </p>
         </div>
 

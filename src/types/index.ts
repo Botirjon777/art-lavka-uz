@@ -50,6 +50,7 @@ export interface Product {
   inventory: ProductInventory; // Stock per size
   description?: string;
   isNew?: boolean;
+  isDefault?: boolean;
   sizeTable?: SizeTableEntry[];
   weight?: number;
   lastPromoSentAt?: string;

@@ -79,10 +79,17 @@ export default function ProductList() {
                           sizes="48px"
                         />
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-800">
-                          {product.name}
-                        </p>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-gray-800">
+                            {product.name}
+                          </p>
+                          {product.isDefault && (
+                            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-bold rounded-md uppercase tracking-wider whitespace-nowrap">
+                              По умолчанию
+                            </span>
+                          )}
+                        </div>
                         {product.description && (
                           <p className="text-sm text-gray-500 truncate max-w-xs">
                             {product.description}

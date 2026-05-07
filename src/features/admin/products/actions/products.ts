@@ -82,8 +82,14 @@ export async function createProduct(formData: FormData) {
       promoPrice: finalPromoPrice,
       price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
       weight: parseFloat(formData.get("weight") as string) || 0.5,
+      isDefault: formData.get("isDefault") === "true",
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
+
+    if (productData.isDefault) {
+      await Product.updateMany({}, { isDefault: false });
+    }
+
 
     const product = await Product.create(productData);
     
@@ -147,8 +153,14 @@ export async function updateProduct(id: string, formData: FormData) {
       promoPrice: finalPromoPrice,
       price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
       weight: parseFloat(formData.get("weight") as string) || 0.5,
+      isDefault: formData.get("isDefault") === "true",
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
     };
+
+    if (productData.isDefault) {
+      await Product.updateMany({ _id: { $ne: id } }, { isDefault: false });
+    }
+
 
     const product = await Product.findByIdAndUpdate(id, productData, {
       new: true,
