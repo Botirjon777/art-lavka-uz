@@ -44,6 +44,7 @@ export default function ProductForm({
   const [colors, setColors] = useState<Color[]>(initialData?.colors || []);
   const [category, setCategory] = useState(initialData?.category || "men");
   const [active, setActive] = useState(initialData?.active ?? true);
+  const [isDefault, setIsDefault] = useState(initialData?.isDefault ?? false);
   const [sizeTable, setSizeTable] = useState<SizeTableEntry[]>(
     initialData?.sizeTable || [],
   );
@@ -94,6 +95,7 @@ export default function ProductForm({
       setColors(initialData.colors || []);
       setCategory(initialData.category || "men");
       setActive(initialData.active ?? true);
+      setIsDefault(initialData.isDefault ?? false);
       setSizeTable(initialData.sizeTable || []);
       setLastPromoSentAt(initialData.lastPromoSentAt);
       setWeight(initialData.weight || 0.5);
@@ -111,6 +113,7 @@ export default function ProductForm({
     category !== (initialData?.category || "men") ||
     imageUrl !== (initialData?.image || "") ||
     active !== (initialData?.active ?? true) ||
+    isDefault !== (initialData?.isDefault ?? false) ||
     weight !== (initialData?.weight || 0.5) ||
     JSON.stringify(sizeTable) !== JSON.stringify(initialData?.sizeTable || []) ||
     JSON.stringify(colors) !== JSON.stringify(initialData?.colors || []);
@@ -176,6 +179,7 @@ export default function ProductForm({
     formData.set("sizeTable", JSON.stringify(sizeTable));
     formData.set("model", model);
     formData.set("active", active.toString());
+    formData.set("isDefault", isDefault.toString());
     formData.set("weight", weight.toString());
     // Translations
     formData.set("translations", JSON.stringify({
@@ -444,6 +448,24 @@ export default function ProductForm({
               className="text-sm font-semibold text-gray-700 cursor-pointer"
             >
               Активен (видим для клиентов)
+            </label>
+          </div>
+          
+          {/* Default Product Status */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isDefault"
+              name="isDefault"
+              checked={isDefault}
+              onChange={(e) => setIsDefault(e.target.checked)}
+              className="w-5 h-5 text-[#8814B1] border-gray-300 rounded-lg focus:ring-[#8814B1] cursor-pointer"
+            />
+            <label
+              htmlFor="isDefault"
+              className="text-sm font-semibold text-gray-700 cursor-pointer"
+            >
+              Сделать продуктом по умолчанию
             </label>
           </div>
 

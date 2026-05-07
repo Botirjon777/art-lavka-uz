@@ -38,6 +38,7 @@ export default function PrintForm({
     initialData?.backImage || "",
   );
   const [category, setCategory] = useState(initialData?.category || "");
+  const [active, setActive] = useState(initialData?.active ?? true);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Multilingual name content
@@ -67,6 +68,7 @@ export default function PrintForm({
       setFrontImageUrl(initialData.frontImage || "");
       setBackImageUrl(initialData.backImage || "");
       setCategory(initialData.category || "");
+      setActive(initialData.active ?? true);
     }
   }, [initialData]);
 
@@ -127,6 +129,7 @@ export default function PrintForm({
     formData.set("name", langName.ru);
     formData.set("frontImage", frontImageUrl);
     formData.set("backImage", backImageUrl || "");
+    formData.set("active", active.toString());
 
     // Pass translations
     formData.set("translations", JSON.stringify({
@@ -405,20 +408,16 @@ export default function PrintForm({
 
             <div
               className="p-5 bg-gray-50 rounded-[24px] border border-gray-100 group cursor-pointer hover:bg-white hover:shadow-lg hover:shadow-purple-50 transition-all"
-              onClick={() => {
-                const ck = document.getElementById(
-                  "active",
-                ) as HTMLInputElement;
-                if (ck) ck.checked = !ck.checked;
-              }}
+              onClick={() => setActive(!active)}
             >
               <div className="flex items-center justify-between mb-4">
                 <input
                   type="checkbox"
                   id="active"
                   name="active"
-                  value="true"
-                  defaultChecked={initialData ? initialData.active : true}
+                  checked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                  onClick={(e) => e.stopPropagation()}
                   className="w-6 h-6 rounded-lg text-[#8814B1] border-gray-200 focus:ring-[#8814B1] cursor-pointer accent-[#8814B1]"
                 />
               </div>

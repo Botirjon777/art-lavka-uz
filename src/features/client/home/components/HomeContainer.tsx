@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 
 // Feature Components (now local to home feature)
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/stores/languageStore";
+import { getTranslated } from "@/lib/i18n/utils";
 import MainLayout from "./shared/MainLayout";
 import LeftSidebar from "./desktop/LeftSidebar";
 import RightConfigurator from "./desktop/RightConfigurator";
@@ -32,6 +34,7 @@ import {
 
 export default function HomeContainer() {
   const { t } = useTranslation();
+  const { lang } = useLanguageStore();
   const [activeModal, setActiveModal] = useState<
     "menu" | "cart" | "gallery" | "products" | "prints" | null
   >(null);
@@ -103,27 +106,34 @@ export default function HomeContainer() {
         setHasMultipleProducts(normalizedProducts.length > 1);
 
         if (!selectedProduct) {
-          const activeSettings = currentSettings || settings;
-          if (activeSettings) {
-            const categoryOrder = ["women", "men", "kids"] as const;
-            const firstActiveCategory = categoryOrder.find(
-              (cat) => activeSettings.categoryStatuses?.[cat] === "active",
-            );
-
-            if (firstActiveCategory) {
-              const match = normalizedProducts.find(
-                (p: Product) => p.category === firstActiveCategory,
+          // Priority 1: Default Product
+          const defaultProduct = normalizedProducts.find((p: Product) => p.isDefault);
+          if (defaultProduct) {
+            setSelectedProduct(defaultProduct);
+          } else {
+            // Priority 2: Active Category Match
+            const activeSettings = currentSettings || settings;
+            if (activeSettings) {
+              const categoryOrder = ["women", "men", "kids"] as const;
+              const firstActiveCategory = categoryOrder.find(
+                (cat) => activeSettings.categoryStatuses?.[cat] === "active",
               );
-              if (match) {
-                setSelectedProduct(match);
+
+              if (firstActiveCategory) {
+                const match = normalizedProducts.find(
+                  (p: Product) => p.category === firstActiveCategory,
+                );
+                if (match) {
+                  setSelectedProduct(match);
+                } else {
+                  setSelectedProduct(normalizedProducts[0]);
+                }
               } else {
                 setSelectedProduct(normalizedProducts[0]);
               }
             } else {
               setSelectedProduct(normalizedProducts[0]);
             }
-          } else {
-            setSelectedProduct(normalizedProducts[0]);
           }
         } else {
           const updated = normalizedProducts.find(
@@ -177,18 +187,60 @@ export default function HomeContainer() {
   const handleAddToCart = (config: ConfiguratorState) => {
     if (!selectedProduct) return;
 
-    const newItem: CartItem = {
-      id: Date.now().toString(),
-      product: selectedProduct,
-      print: config.selectedPrint,
-      color: config.selectedColor,
-      size: config.selectedSize,
-      quantity: config.quantity,
-      price: config.price || selectedProduct.price,
-      oldPrice: config.oldPrice,
-    };
+    // Check if item already exists in cart (same product, print, color, size)
+    const existingItemIndex = cartItems.findIndex(
+      (item) =>
+        (item.product.id === selectedProduct.id ||
+          item.product._id === selectedProduct._id) &&
+        ((!item.print && !config.selectedPrint) ||
+          (item.print &&
+            config.selectedPrint &&
+            (item.print.id === config.selectedPrint.id ||
+              item.print._id === config.selectedPrint._id))) &&
+        item.color === config.selectedColor &&
+        item.size === config.selectedSize,
+    );
 
-    setCartItems([...cartItems, newItem]);
+    const selectedVariant = selectedProduct.colors
+      ?.find((c) => getTranslated(c, lang) === config.selectedColor || c.hex === config.selectedColor)
+      ?.variants?.find((v) => v.size === config.selectedSize);
+
+    const maxStock = selectedVariant?.stock || 0;
+
+    if (existingItemIndex > -1) {
+      const existingItem = cartItems[existingItemIndex];
+      const newQuantity = existingItem.quantity + config.quantity;
+
+      if (newQuantity > maxStock) {
+        toast.error(`${t.inStock}: ${maxStock}`);
+        return;
+      }
+
+      const updatedCart = [...cartItems];
+      updatedCart[existingItemIndex] = {
+        ...existingItem,
+        quantity: newQuantity,
+      };
+      setCartItems(updatedCart);
+    } else {
+      if (config.quantity > maxStock) {
+        toast.error(`${t.inStock}: ${maxStock}`);
+        return;
+      }
+
+      const newItem: CartItem = {
+        id: Date.now().toString(),
+        product: selectedProduct,
+        print: config.selectedPrint,
+        color: config.selectedColor,
+        size: config.selectedSize,
+        quantity: config.quantity,
+        price: config.price || selectedProduct.price,
+        oldPrice: config.oldPrice,
+      };
+
+      setCartItems([...cartItems, newItem]);
+    }
     toast.success(t.productAddedToCart);
   };
 
@@ -211,6 +263,21 @@ export default function HomeContainer() {
   };
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
+    const item = cartItems.find((i) => i.id === id);
+    if (!item) return;
+
+    // Find stock for this specific item configuration
+    const color = item.product.colors?.find(
+      (c) => getTranslated(c, lang) === item.color
+    );
+    const variant = color?.variants?.find((v) => v.size === item.size);
+    const maxStock = variant?.stock || 0;
+
+    if (quantity > maxStock) {
+      toast.error(`${t.inStock}: ${maxStock}`);
+      return;
+    }
+
     setCartItems(
       cartItems.map((item) => (item.id === id ? { ...item, quantity } : item)),
     );
@@ -260,6 +327,7 @@ export default function HomeContainer() {
       onCloseModal={() => setActiveModal(null)}
       cartItemCount={cartItems.length}
       activeModal={activeModal}
+      isCheckoutOpen={showCheckout}
     >
       {loading ? (
         <div className="flex items-center justify-center min-h-[600px]">

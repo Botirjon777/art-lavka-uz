@@ -8,6 +8,7 @@ interface NavbarProps {
   onCartClick: () => void;
   cartItemCount: number;
   activeModal: "menu" | "cart" | "gallery" | "products" | "prints" | null;
+  hidden?: boolean;
 }
 
 export default function Navbar({
@@ -15,7 +16,10 @@ export default function Navbar({
   onCartClick,
   cartItemCount,
   activeModal,
+  hidden,
 }: NavbarProps) {
+  if (hidden) return null;
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 md:hidden">
       <div className="flex items-center justify-between px-4 py-3">

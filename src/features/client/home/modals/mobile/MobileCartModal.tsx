@@ -75,8 +75,20 @@ export default function MobileCartModal({
                         </button>
                         <span className="text-[14px]/[17px] text-[#333333] w-4 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-full transition-colors"
+                          onClick={() => {
+                            const color = item.product.colors?.find(c => getTranslated(c, lang) === item.color);
+                            const variant = color?.variants?.find(v => v.size === item.size);
+                            const maxStock = variant?.stock || 0;
+                            if (item.quantity < maxStock) {
+                              onUpdateQuantity(item.id, item.quantity + 1);
+                            }
+                          }}
+                          disabled={(() => {
+                            const color = item.product.colors?.find(c => getTranslated(c, lang) === item.color);
+                            const variant = color?.variants?.find(v => v.size === item.size);
+                            return item.quantity >= (variant?.stock || 0);
+                          })()}
+                          className="w-8 h-8 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-full transition-colors"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
