@@ -239,26 +239,18 @@ export default function ProductsModal({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setSelectedProductInfo(null)}
           />
-          <div className="relative bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl animate-in zoom-in duration-200">
+          <div className="relative bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in duration-200">
             <button
               onClick={() => setSelectedProductInfo(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
             >
               ×
             </button>
-            <div className="flex flex-col gap-4">
-              <div className="relative w-full aspect-video rounded-2xl overflow-hidden">
-                <Image
-                  src={selectedProductInfo.image}
-                  alt={getTranslated(selectedProductInfo, lang)}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="text-xl font-bold text-[#333333]">
+            <div className="flex flex-col gap-3">
+              <h3 className="text-lg font-bold text-[#333333]">
                 {getTranslated(selectedProductInfo, lang)}
               </h3>
-              <p className="text-[#666666] leading-relaxed">
+              <p className="text-[#666666] text-sm leading-relaxed">
                 {getTranslated(selectedProductInfo, lang, "description") ||
                   t.noDescription}
               </p>

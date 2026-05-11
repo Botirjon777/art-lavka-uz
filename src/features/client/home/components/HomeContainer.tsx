@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 // Feature Components (now local to home feature)
@@ -51,6 +51,17 @@ export default function HomeContainer() {
   const [printsLoading, setPrintsLoading] = useState(true);
   const [printCategories, setPrintCategories] = useState<PrintCategory[]>([]);
   const [hasMultipleProducts, setHasMultipleProducts] = useState(false);
+  const selectedProductRef = useRef(selectedProduct);
+  const settingsRef = useRef(settings);
+
+  // Sync refs with state to avoid stale closures in interval
+  useEffect(() => {
+    selectedProductRef.current = selectedProduct;
+  }, [selectedProduct]);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   // Fetch products on mount and set up auto-refresh
   useEffect(() => {
@@ -105,14 +116,14 @@ export default function HomeContainer() {
 
         setHasMultipleProducts(normalizedProducts.length > 1);
 
-        if (!selectedProduct) {
+        if (!selectedProductRef.current) {
           // Priority 1: Default Product
           const defaultProduct = normalizedProducts.find((p: Product) => p.isDefault);
           if (defaultProduct) {
             setSelectedProduct(defaultProduct);
           } else {
             // Priority 2: Active Category Match
-            const activeSettings = currentSettings || settings;
+            const activeSettings = currentSettings || settingsRef.current;
             if (activeSettings) {
               const categoryOrder = ["women", "men", "kids"] as const;
               const firstActiveCategory = categoryOrder.find(
@@ -138,7 +149,7 @@ export default function HomeContainer() {
         } else {
           const updated = normalizedProducts.find(
             (p: Product) =>
-              p.id === selectedProduct.id || p._id === selectedProduct._id,
+              p.id === selectedProductRef.current?.id || p._id === selectedProductRef.current?._id,
           );
           if (updated) {
             setSelectedProduct(updated);
