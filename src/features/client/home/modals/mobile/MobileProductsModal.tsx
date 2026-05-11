@@ -248,16 +248,8 @@ export default function MobileProductsModal({
             >
               ×
             </button>
-            <div className="space-y-4">
-              <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-md">
-                <Image
-                  src={selectedProductInfo.image}
-                  alt={getTranslated(selectedProductInfo, lang)}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="text-xl font-bold text-[#333333]">
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-[#333333]">
                 {getTranslated(selectedProductInfo, lang)}
               </h3>
               <p className="text-[#666666] text-sm leading-relaxed pb-10">
