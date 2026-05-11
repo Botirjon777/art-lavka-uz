@@ -3,6 +3,7 @@ import mongoose, { Schema, Model } from "mongoose";
 export interface IPrint {
   name: string;
   frontImage: string;
+  frontImagePreview?: string;
   backImage?: string;
   category: "national" | "stylish" | "funny" | "all";
   active: boolean;
@@ -25,6 +26,10 @@ const PrintSchema = new Schema<IPrint>(
     frontImage: {
       type: String,
       required: true,
+    },
+    frontImagePreview: {
+      type: String,
+      required: false,
     },
     backImage: {
       type: String,

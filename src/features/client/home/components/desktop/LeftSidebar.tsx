@@ -190,7 +190,7 @@ export default function LeftSidebar({
                 >
                   <div className="relative bg-white h-[90%] w-[90%] rounded-[26px] overflow-hidden shadow-lg">
                     <Image
-                      src={print.frontImage}
+                      src={print.frontImagePreview || print.frontImage}
                       alt={getTranslated(print, lang)}
                       fill
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 150px"

@@ -73,6 +73,7 @@ export interface Print {
   _id: string;
   name: string;
   frontImage: string;
+  frontImagePreview?: string;
   backImage?: string;
   category: string;
   active: boolean;
@@ -86,6 +87,7 @@ export interface PrintDesign {
   _id?: string;
   name: string;
   frontImage: string;
+  frontImagePreview?: string;
   backImage?: string;
   category: string;
   translations?: Record<string, Translation>;
@@ -144,6 +146,7 @@ export interface OrderItem {
     _id: string;
     name: string;
     frontImage: string;
+    frontImagePreview?: string;
     backImage?: string;
   } | null;
   color: string;

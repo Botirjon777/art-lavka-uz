@@ -34,6 +34,9 @@ export default function PrintForm({
   const [frontImageUrl, setFrontImageUrl] = useState(
     initialData?.frontImage || "",
   );
+  const [frontImagePreviewUrl, setFrontImagePreviewUrl] = useState(
+    initialData?.frontImagePreview || "",
+  );
   const [backImageUrl, setBackImageUrl] = useState(
     initialData?.backImage || "",
   );
@@ -50,7 +53,8 @@ export default function PrintForm({
   const [activeLangTab, setActiveLangTab] = useState<Lang>("ru");
 
   const name = langName[activeLangTab];
-  const setName = (v: string) => setLangName((prev) => ({ ...prev, [activeLangTab]: v }));
+  const setName = (v: string) =>
+    setLangName((prev) => ({ ...prev, [activeLangTab]: v }));
 
   const { data: categories = [] } = useAdminPrintCategories();
   const createMutation = useCreatePrint();
@@ -66,6 +70,7 @@ export default function PrintForm({
         uz: (initialData as any)?.translations?.uz?.name || "",
       });
       setFrontImageUrl(initialData.frontImage || "");
+      setFrontImagePreviewUrl(initialData.frontImagePreview || "");
       setBackImageUrl(initialData.backImage || "");
       setCategory(initialData.category || "");
       setActive(initialData.active ?? true);
@@ -81,6 +86,7 @@ export default function PrintForm({
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     setField: (url: string) => void,
+    setPreviewField: (url: string) => void,
     setLoadingField: (loading: boolean) => void,
     fieldName: string,
   ) => {
@@ -91,12 +97,16 @@ export default function PrintForm({
     const formData = new FormData();
     formData.append("file", file);
     formData.append("folder", "art-lavka/prints");
+    formData.append("withPreview", "true");
 
     try {
       const data = await uploadFileAction(formData);
 
       if (data.success && data.url) {
         setField(data.url);
+        if (data.previewUrl) {
+          setPreviewField(data.previewUrl);
+        }
         toast.success(`${fieldName} успешно загружено`);
       } else {
         toast.error(data.error || "Ошибка при загрузке");
@@ -112,12 +122,14 @@ export default function PrintForm({
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    
+
     // Validation
     const newErrors: Record<string, string> = {};
-    if (!langName.ru.trim()) newErrors.name = "Пожалуйста, введите название принта (RU)";
+    if (!langName.ru.trim())
+      newErrors.name = "Пожалуйста, введите название принта (RU)";
     if (!category) newErrors.category = "Выберите категорию для принта";
-    if (!frontImageUrl) newErrors.imageFront = "Загрузите переднюю сторону принта";
+    if (!frontImageUrl)
+      newErrors.imageFront = "Загрузите переднюю сторону принта";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -128,15 +140,19 @@ export default function PrintForm({
     setErrors({});
     formData.set("name", langName.ru);
     formData.set("frontImage", frontImageUrl);
+    formData.set("frontImagePreview", frontImagePreviewUrl || "");
     formData.set("backImage", backImageUrl || "");
     formData.set("active", active.toString());
 
     // Pass translations
-    formData.set("translations", JSON.stringify({
-      ru: { name: langName.ru },
-      en: { name: langName.en },
-      uz: { name: langName.uz },
-    }));
+    formData.set(
+      "translations",
+      JSON.stringify({
+        ru: { name: langName.ru },
+        en: { name: langName.en },
+        uz: { name: langName.uz },
+      }),
+    );
 
     if (isEditing) {
       updateMutation.mutate(
@@ -211,7 +227,11 @@ export default function PrintForm({
                           : "border-transparent text-gray-400 hover:text-gray-700"
                       }`}
                     >
-                      <img src={l.flag} alt={l.label} className="w-4 h-3 object-cover rounded-sm shrink-0" />
+                      <img
+                        src={l.flag}
+                        alt={l.label}
+                        className="w-4 h-3 object-cover rounded-sm shrink-0"
+                      />
                       <span>{l.label}</span>
                       {hasContent && l.id !== "ru" && (
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
@@ -232,7 +252,13 @@ export default function PrintForm({
                   required={activeLangTab === "ru"}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder={activeLangTab === "ru" ? "Например: Узбекский узор" : activeLangTab === "en" ? "Example: Uzbek Pattern" : "Masalan: O'zbek naqsh"}
+                  placeholder={
+                    activeLangTab === "ru"
+                      ? "Например: Узбекский узор"
+                      : activeLangTab === "en"
+                        ? "Example: Uzbek Pattern"
+                        : "Masalan: O'zbek naqsh"
+                  }
                   error={activeLangTab === "ru" ? errors.name : undefined}
                 />
               </div>
@@ -256,142 +282,207 @@ export default function PrintForm({
           </div>
 
           {/* Visuals */}
-          <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-8 flex items-center gap-3">
-              <span className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                <FiUploadCloud />
-              </span>
-              Визуализация дизайна
-            </h3>
+          <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              {/* Front Side Group */}
+              <div className="space-y-6">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+                  Передняя сторона
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Front High Res */}
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-bold uppercase text-gray-400 ml-1">High-Res *</p>
+                    <div
+                      className={`relative aspect-square rounded-[24px] border-2 border-dashed transition-all overflow-hidden cursor-pointer group ${
+                        errors.imageFront
+                          ? "border-red-500 bg-red-50/10"
+                          : frontImageUrl
+                            ? "border-gray-100"
+                            : "border-gray-200 hover:border-[#8814B1] hover:bg-purple-50/30"
+                      }`}
+                    >
+                      {frontImageUrl ? (
+                        <>
+                          <Image
+                            src={frontImageUrl}
+                            alt="Front High Res"
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setFrontImageUrl("")}
+                              className="p-3 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-red-500 transition-all"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <label className="absolute inset-0 flex flex-col items-center justify-center p-4 cursor-pointer">
+                          <span
+                            className={`w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center mb-2 transition-all group-hover:scale-110 group-hover:bg-white group-hover:shadow-lg ${uploadingFront ? "animate-pulse" : ""}`}
+                          >
+                            <FiUploadCloud
+                              className={`w-6 h-6 ${uploadingFront ? "text-[#8814B1]" : "text-gray-300 group-hover:text-[#8814B1]"}`}
+                            />
+                          </span>
+                          <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-600 text-center">
+                            Загрузить
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleImageUpload(
+                                e,
+                                setFrontImageUrl,
+                                setFrontImagePreviewUrl,
+                                setUploadingFront,
+                                "Переднее High-Res фото",
+                              )
+                            }
+                            className="hidden"
+                            disabled={uploadingFront}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Front Image */}
-              <div className="space-y-4">
-                <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">
-                  Передняя сторона *
-                </p>
-                <div
-                  className={`relative aspect-square rounded-[32px] border-2 border-dashed transition-all overflow-hidden cursor-pointer group ${
-                    errors.imageFront ? "border-red-500 bg-red-50/10" :
-                    frontImageUrl
-                      ? "border-gray-100"
-                      : "border-gray-200 hover:border-[#8814B1] hover:bg-purple-50/30"
-                  }`}
-                >
-                  {frontImageUrl ? (
-                    <>
-                      <Image
-                        src={frontImageUrl}
-                        alt="Front"
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={() => setFrontImageUrl("")}
-                          className="p-4 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-red-500 transition-all font-bold text-xs flex items-center gap-2"
-                        >
-                          <FiTrash2 /> Очистить
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <label className="absolute inset-0 flex flex-col items-center justify-center p-8 cursor-pointer">
-                      <span
-                        className={`w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4 transition-all group-hover:scale-110 group-hover:bg-white group-hover:shadow-lg ${uploadingFront ? "animate-pulse" : ""}`}
-                      >
-                        <FiUploadCloud
-                          className={`w-8 h-8 ${uploadingFront ? "text-[#8814B1]" : "text-gray-300 group-hover:text-[#8814B1]"}`}
-                        />
-                      </span>
-                      <p className="text-sm font-bold text-gray-400 group-hover:text-gray-600">
-                        Загрузить принт
-                      </p>
-                      <p className="text-[10px] text-gray-300 font-bold uppercase mt-1 tracking-widest">
-                        Front View
-                      </p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          handleImageUpload(
-                            e,
-                            setFrontImageUrl,
-                            setUploadingFront,
-                            "Переднее фото",
-                          )
-                        }
-                        className="hidden"
-                        disabled={uploadingFront}
-                      />
-                    </label>
-                  )}
+                  {/* Front Preview */}
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-bold uppercase text-gray-400 ml-1">Preview</p>
+                    <div
+                      className={`relative aspect-square rounded-[24px] border-2 border-dashed transition-all overflow-hidden cursor-pointer group ${
+                        frontImagePreviewUrl
+                          ? "border-gray-100"
+                          : "border-gray-200 hover:border-[#8814B1] hover:bg-purple-50/30"
+                      }`}
+                    >
+                      {frontImagePreviewUrl ? (
+                        <>
+                          <Image
+                            src={frontImagePreviewUrl}
+                            alt="Front Preview"
+                            fill
+                            className="object-cover opacity-60"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setFrontImagePreviewUrl("")}
+                              className="p-3 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-red-500 transition-all"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <label className="absolute inset-0 flex flex-col items-center justify-center p-4 cursor-pointer">
+                          <span className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center mb-2 transition-all group-hover:bg-white group-hover:shadow-md">
+                            <FiUploadCloud className="w-5 h-5 text-gray-300 group-hover:text-[#8814B1]" />
+                          </span>
+                          <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-600 text-center">
+                            Превью
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              formData.append("folder", "art-lavka/prints/previews");
+                              formData.append("withPreview", "false");
+                              const data = await uploadFileAction(formData);
+                              if (data.success && data.url) {
+                                setFrontImagePreviewUrl(data.url);
+                                toast.success("Превью загружено");
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                {errors.imageFront && <p className="text-[11px] text-red-500 font-bold uppercase mt-2 ml-1">{errors.imageFront}</p>}
+                {errors.imageFront && (
+                  <p className="text-[11px] text-red-500 font-bold uppercase mt-2 ml-1">
+                    {errors.imageFront}
+                  </p>
+                )}
               </div>
 
-              {/* Back Image */}
-              <div className="space-y-4">
-                <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 ml-1">
-                  Задняя сторона (опт.)
-                </p>
-                <div
-                  className={`relative aspect-square rounded-[32px] border-2 border-dashed transition-all overflow-hidden cursor-pointer group ${
-                    backImageUrl
-                      ? "border-gray-100"
-                      : "border-gray-200 hover:border-[#8814B1] hover:bg-purple-50/30"
-                  }`}
-                >
-                  {backImageUrl ? (
-                    <>
-                      <Image
-                        src={backImageUrl}
-                        alt="Back"
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={() => setBackImageUrl("")}
-                          className="p-4 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-red-500 transition-all font-bold text-xs flex items-center gap-2"
-                        >
-                          <FiTrash2 /> Очистить
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <label className="absolute inset-0 flex flex-col items-center justify-center p-8 cursor-pointer">
-                      <span
-                        className={`w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4 transition-all group-hover:scale-110 group-hover:bg-white group-hover:shadow-lg ${uploadingBack ? "animate-pulse" : ""}`}
-                      >
-                        <FiUploadCloud
-                          className={`w-8 h-8 ${uploadingBack ? "text-[#8814B1]" : "text-gray-300 group-hover:text-[#8814B1]"}`}
-                        />
-                      </span>
-                      <p className="text-sm font-bold text-gray-400 group-hover:text-gray-600 text-center">
-                        Загрузить принт
-                      </p>
-                      <p className="text-[10px] text-gray-300 font-bold uppercase mt-1 tracking-widest">
-                        Back View
-                      </p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          handleImageUpload(
-                            e,
-                            setBackImageUrl,
-                            setUploadingBack,
-                            "Заднее фото",
-                          )
-                        }
-                        className="hidden"
-                        disabled={uploadingBack}
-                      />
-                    </label>
-                  )}
+              {/* Back Side Group */}
+              <div className="space-y-6">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+                  Задняя сторона
+                </h3>
+                <div className="max-w-[200px]">
+                  {/* Back High Res */}
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-bold uppercase text-gray-400 ml-1">High-Res</p>
+                    <div
+                      className={`relative aspect-square rounded-[24px] border-2 border-dashed transition-all overflow-hidden cursor-pointer group ${
+                        backImageUrl
+                          ? "border-gray-100"
+                          : "border-gray-200 hover:border-[#8814B1] hover:bg-purple-50/30"
+                      }`}
+                    >
+                      {backImageUrl ? (
+                        <>
+                          <Image
+                            src={backImageUrl}
+                            alt="Back High Res"
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setBackImageUrl("")}
+                              className="p-3 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-red-500 transition-all"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <label className="absolute inset-0 flex flex-col items-center justify-center p-4 cursor-pointer">
+                          <span
+                            className={`w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center mb-2 transition-all group-hover:scale-110 group-hover:bg-white group-hover:shadow-lg ${uploadingBack ? "animate-pulse" : ""}`}
+                          >
+                            <FiUploadCloud
+                              className={`w-6 h-6 ${uploadingBack ? "text-[#8814B1]" : "text-gray-300 group-hover:text-[#8814B1]"}`}
+                            />
+                          </span>
+                          <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-600 text-center">
+                            Загрузить
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleImageUpload(
+                                e,
+                                setBackImageUrl,
+                                () => {}, // No preview field for back image
+                                setUploadingBack,
+                                "Заднее High-Res фото",
+                              )
+                            }
+                            className="hidden"
+                            disabled={uploadingBack}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

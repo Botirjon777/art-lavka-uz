@@ -5,6 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const withPreview = formData.get("withPreview") === "true";
     const targetFolder = (formData.get("folder") as string) || "art-lavka/uploads";
 
     if (!file) {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use the centralized upload utility (handles validation and compression)
-    const result = await uploadToStorage(file, targetFolder);
+    const result = await uploadToStorage(file, targetFolder, withPreview);
 
     if (!result.success) {
       return NextResponse.json(
@@ -23,7 +24,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      url: result.url 
+      url: result.url,
+      previewUrl: result.previewUrl
     });
     
   } catch (error: any) {
