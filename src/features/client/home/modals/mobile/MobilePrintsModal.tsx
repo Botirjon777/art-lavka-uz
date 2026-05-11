@@ -158,7 +158,7 @@ export default function MobilePrintsModal({
                   >
                     <div className="relative bg-white h-[85%] w-[85%] rounded-xl overflow-hidden shadow-sm">
                         <Image
-                          src={print.frontImage}
+                          src={print.frontImagePreview || print.frontImage}
                           alt={getTranslated(print, lang)}
                           fill
                           sizes="(max-width: 768px) 33vw, 120px"

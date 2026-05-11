@@ -321,7 +321,8 @@ export default function CheckoutModal({
               _id: (item.print._id || item.print.id || "").toString(),
               name: getTranslated(item.print, lang),
               frontImage: item.print.frontImage,
-              backImage: item.print.backImage || "",
+              frontImagePreview: item.print.frontImagePreview,
+              backImage: item.print.backImage,
             }
           : null,
         color: item.color,
@@ -880,7 +881,7 @@ export default function CheckoutModal({
                 {selectedBranch && (
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t.streetAddress}
+                      {t.branchAddress}
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600 text-sm h-[42px] flex items-center">
                       {selectedBranch.address}

@@ -419,7 +419,7 @@ export default function TrackOrder() {
                             <div className="mt-2 flex items-center gap-2">
                               <div className="relative w-8 h-8 bg-white rounded-lg overflow-hidden border border-purple-100 shadow-xs shrink-0">
                                   <Image
-                                    src={item.print.frontImage}
+                                    src={item.print.frontImagePreview || item.print.frontImage}
                                     alt={item.print.name}
                                     fill
                                     sizes="32px"

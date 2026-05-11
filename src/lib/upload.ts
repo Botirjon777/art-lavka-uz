@@ -7,6 +7,7 @@ import sharp from "sharp";
 export interface UploadResult {
   success: boolean;
   url?: string;
+  previewUrl?: string;
   error?: string;
 }
 
@@ -15,7 +16,8 @@ export interface UploadResult {
  */
 export async function uploadToStorage(
   file: File,
-  folder: string = "art-lavka/uploads"
+  folder: string = "art-lavka/uploads",
+  withPreview: boolean = false
 ): Promise<UploadResult> {
   try {
     // Validate file type
@@ -48,6 +50,14 @@ export async function uploadToStorage(
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    let previewBuffer: Buffer | null = null;
+    if (withPreview) {
+      previewBuffer = await sharp(buffer)
+        .resize({ width: 400, withoutEnlargement: true })
+        .webp({ quality: 70 })
+        .toBuffer();
+    }
+
     // Production: Upload to Cloudinary
     if (process.env.NODE_ENV === "production" || process.env.USE_CLOUDINARY === "true") {
       try {
@@ -65,9 +75,28 @@ export async function uploadToStorage(
         });
 
         const result = uploadResponse as any;
+        let previewUrl = undefined;
+
+        if (previewBuffer) {
+          const previewUploadResponse = await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+              {
+                folder: `${folder}/previews`,
+                resource_type: "auto",
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            ).end(previewBuffer);
+          });
+          previewUrl = (previewUploadResponse as any).secure_url;
+        }
+
         return { 
           success: true, 
-          url: result.secure_url 
+          url: result.secure_url,
+          previewUrl
         };
       } catch (cloudinaryError: any) {
         console.error("Cloudinary upload error:", cloudinaryError);
@@ -79,6 +108,7 @@ export async function uploadToStorage(
     const timestamp = Date.now();
     const originalName = parse(file.name).name.replace(/\s+/g, "-");
     const filename = `${timestamp}-${originalName}.webp`;
+    const previewFilename = `preview-${timestamp}-${originalName}.webp`;
     
     const uploadDir = join(process.cwd(), "public", "uploads");
     
@@ -89,8 +119,15 @@ export async function uploadToStorage(
     const filepath = join(uploadDir, filename);
     await writeFile(filepath, buffer);
 
+    let previewUrl = undefined;
+    if (previewBuffer) {
+      const previewFilepath = join(uploadDir, previewFilename);
+      await writeFile(previewFilepath, previewBuffer);
+      previewUrl = `/uploads/${previewFilename}`;
+    }
+
     const url = `/uploads/${filename}`;
-    return { success: true, url };
+    return { success: true, url, previewUrl };
     
   } catch (error: any) {
     console.error("Error uploading file:", error);
