@@ -23,6 +23,7 @@ interface TShirtSceneProps {
   selectedColor: string;
   onProductClick?: () => void;
   onPrintClick?: () => void;
+  onGalleryClick?: () => void;
   showUI?: boolean;
   modelScale?: number;
   modelPosition?: [number, number, number];
@@ -37,9 +38,10 @@ export default function TShirtScene({
   selectedColor,
   onProductClick,
   onPrintClick,
+  onGalleryClick,
   showUI = true,
   modelScale = 1.5,
-  modelPosition = [0, -1, 0],
+  modelPosition = [0, -0.6, 0],
   cameraPosition = [0, 0, 5],
 }: TShirtSceneProps) {
   const isMobile = useIsMobile();
@@ -203,21 +205,29 @@ export default function TShirtScene({
               </div>
 
               {/* Buttons */}
-              <div className="grid grid-cols-2 gap-2.5 px-5">
-                <button
-                  onClick={onPrintClick}
-                  className="py-[15px] bg-white rounded-xl text-[13px]/[16px] text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                >
-                  Выбрать принт
-                </button>
-                {onProductClick && (
+              <div className="flex flex-col gap-2 px-5 pb-8">
+                <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={onProductClick}
-                    className="py-[15px] bg-white rounded-xl text-[13px]/[16px] text-[#333333] hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                    onClick={onPrintClick}
+                    className="py-[12px] bg-[#00C6F1] rounded-xl text-[12px] text-white hover:bg-[#00C6F1]/90 active:scale-95 transition-all shadow-sm font-bold"
                   >
-                    Выбрать продукт
+                    Выбрать принт
                   </button>
-                )}
+                  {onProductClick && (
+                    <button
+                      onClick={onProductClick}
+                      className="py-[12px] bg-white rounded-xl text-[12px] text-[#333333] hover:bg-gray-50 active:scale-95 transition-all shadow-sm border border-gray-100"
+                    >
+                      Выбрать продукт
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={onGalleryClick}
+                  className="w-full py-[12px] bg-white/80 backdrop-blur-sm rounded-xl text-[12px] text-[#333333] hover:bg-white active:scale-95 transition-all shadow-sm border border-gray-100 font-medium"
+                >
+                  Смотреть галерею
+                </button>
               </div>
             </div>
           )}

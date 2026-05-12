@@ -29,7 +29,7 @@ export default function LanguageSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 bg-white/70 backdrop-blur-md rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 hover:bg-white/90 hover:shadow-md transition-all duration-300 active:scale-95 group justify-center"
+        className="flex items-center gap-1 bg-white/70 backdrop-blur-md rounded-xl px-1.5 py-1.5 shadow-sm border border-gray-100 hover:bg-white/90 hover:shadow-md transition-all duration-300 active:scale-95 group justify-center"
       >
         <img src={currentLanguage.flag} alt={currentLanguage.label} className="w-6 h-4 object-cover rounded-sm shrink-0" />
         <HiChevronDown

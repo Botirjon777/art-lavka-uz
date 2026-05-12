@@ -337,6 +337,7 @@ export default function HomeContainer() {
                   : undefined
               }
               onPrintClick={() => setActiveModal("prints")}
+              onGalleryClick={() => setActiveModal("gallery")}
             />
           </div>
         </>
