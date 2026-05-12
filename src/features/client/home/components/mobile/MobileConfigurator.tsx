@@ -136,8 +136,8 @@ export default function MobileConfigurator({
             onProductClick={onProductClick}
             onPrintClick={onPrintClick}
             onGalleryClick={onGalleryClick}
-            modelScale={2.1}
-            modelPosition={[0, -0.7, 0]}
+            modelScale={1.2}
+            modelPosition={[0, -0.4, 0]}
           />
         </div>
       </div>
