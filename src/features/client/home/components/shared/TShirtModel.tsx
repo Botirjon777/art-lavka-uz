@@ -136,7 +136,9 @@ export function TShirtModel({
                   transparent
                   polygonOffset
                   polygonOffsetFactor={-1}
-                  roughness={0.8}
+                  roughness={1}
+                  color="#B3B3B3" // 30% darkening
+                  metalness={0}
                 />
               </Decal>
             )}
@@ -154,7 +156,9 @@ export function TShirtModel({
                   transparent
                   polygonOffset
                   polygonOffsetFactor={-1}
-                  roughness={0.8}
+                  color="#B3B3B3" // 30% darkening
+                  roughness={1}
+                  metalness={0}
                 />
               </Decal>
             )}
