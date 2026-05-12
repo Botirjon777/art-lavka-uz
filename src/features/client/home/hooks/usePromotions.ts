@@ -8,10 +8,11 @@ const fetchPromotions = async () => {
   return data.data as Promotion[];
 };
 
-export const usePromotions = () => {
+export const usePromotions = (options = {}) => {
   return useQuery({
     queryKey: ["promotions"],
     queryFn: fetchPromotions,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    ...options
   });
 };

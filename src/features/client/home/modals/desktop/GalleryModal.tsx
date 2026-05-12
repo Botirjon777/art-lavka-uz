@@ -6,6 +6,7 @@ import { Product } from "@/types";
 import Image from "next/image";
 import { useGallery } from "../../hooks/useGallery";
 import { useTranslation } from "@/hooks/useTranslation";
+import ImageLightbox from "../../components/shared/ImageLightbox";
 
 interface GalleryImage {
   _id: string;
@@ -26,7 +27,15 @@ export default function GalleryModal({
   onSelectProduct,
 }: GalleryModalProps) {
   const { t } = useTranslation();
-  const { data: gallery = [], isLoading: loading } = useGallery();
+  const { data: gallery = [], isLoading: loading } = useGallery({ enabled: isOpen });
+  
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const handleImageClick = (index: number) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -48,9 +57,12 @@ export default function GalleryModal({
                 <p className="text-gray-600">{t.noGalleryImages}</p>
               </div>
             ) : (
-              gallery.map((item) => (
+              gallery.map((item, index) => (
                 <div key={item._id} className="group text-center">
-                  <div className="relative">
+                  <div 
+                    className="relative cursor-zoom-in"
+                    onClick={() => handleImageClick(index)}
+                  >
                     <Image
                       src={item.image}
                       alt={item.name}
@@ -69,7 +81,13 @@ export default function GalleryModal({
           </>
         )}
       </div>
-      
+
+      <ImageLightbox
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        images={gallery.map((item) => item.image)}
+        initialIndex={lightboxIndex}
+      />
     </Modal>
   );
 }

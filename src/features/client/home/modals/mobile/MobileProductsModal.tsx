@@ -24,8 +24,8 @@ export default function MobileProductsModal({
 }: MobileProductsModalProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
-  const { data: products = [], isLoading: loading } = useProducts();
-  const { data: settings } = useSettings();
+  const { data: products = [], isLoading: loading } = useProducts({ enabled: isOpen });
+  const { data: settings } = useSettings({ enabled: isOpen });
 
   const [activeTab, setActiveTab] = useState<string>("");
   const [selectedProductInfo, setSelectedProductInfo] =

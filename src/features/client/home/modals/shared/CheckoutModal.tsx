@@ -23,6 +23,8 @@ import { calculateBTSDelivery } from "@/lib/deliveryDataBTS";
 // import btsOffices from "@/lib/btsOffices.json"; // Removed static import
 import PromotionNudge from "../../components/PromotionNudge";
 import { Promotion, Office } from "@/types";
+import { useOffices } from "@/features/client/home/hooks/useOffices";
+import { useSettings } from "@/features/client/home/hooks/useSettings";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -76,33 +78,24 @@ export default function CheckoutModal({
     null,
   );
 
-  // Load dynamic offices
+  // Use hooks for data fetching
+  const { data: offices = [] } = useOffices({ enabled: isOpen });
+  const { data: settings } = useSettings({ enabled: isOpen });
+
   useEffect(() => {
-    const fetchOffices = async () => {
-      try {
-        const [officesRes, settingsRes] = await Promise.all([
-          fetch("/api/offices"),
-          fetch("/api/settings"),
-        ]);
+    if (offices.length > 0) {
+      setAllOffices(offices);
+    }
+  }, [offices]);
 
-        const officesData = await officesRes.json();
-        if (officesData.success) {
-          setAllOffices(officesData.data);
-        }
-
-        const settingsData = await settingsRes.json();
-        if (settingsData.success && settingsData.data) {
-          setDeliverySettings({
-            deliveryPrices: settingsData.data.deliveryPrices,
-            courierFees: settingsData.data.courierFees,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch data:", err);
-      }
-    };
-    fetchOffices();
-  }, []);
+  useEffect(() => {
+    if (settings) {
+      setDeliverySettings({
+        deliveryPrices: settings.deliveryPrices,
+        courierFees: settings.courierFees,
+      });
+    }
+  }, [settings]);
 
   // Get regions list from locations data (Russian keys)
   const regionKeys = Object.keys(LOCATIONS);
@@ -134,7 +127,7 @@ export default function CheckoutModal({
     (sum, item) => sum + (item.product.weight || 0.5) * item.quantity,
     0,
   );
-  const { data: activePromotions = [] } = usePromotions();
+  const { data: activePromotions = [] } = usePromotions({ enabled: isOpen });
 
   // Nudge Detection Effect
   useEffect(() => {

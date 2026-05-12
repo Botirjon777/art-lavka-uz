@@ -16,6 +16,7 @@ interface MobileConfiguratorProps {
   onBuyOneClick: (config: ConfiguratorState) => void;
   onProductClick?: () => void;
   onPrintClick?: () => void;
+  onGalleryClick?: () => void;
 }
 
 export default function MobileConfigurator({
@@ -25,6 +26,7 @@ export default function MobileConfigurator({
   onBuyOneClick,
   onProductClick,
   onPrintClick,
+  onGalleryClick,
 }: MobileConfiguratorProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
@@ -122,8 +124,8 @@ export default function MobileConfigurator({
   return (
     <div className="flex flex-col bg-white min-h-screen">
       {/* T-Shirt Scene */}
-      <div className="relative bg-image flex items-center justify-center py-8">
-        <div className="w-full max-w-md">
+      <div className="relative bg-image flex items-center justify-center py-4 min-h-[480px]">
+        <div className="w-full max-w-md h-[480px]">
           <TShirtScene
             key={selectedProduct.id}
             selectedProduct={selectedProduct.model}
@@ -133,6 +135,9 @@ export default function MobileConfigurator({
             selectedColor={selectedColor.hex}
             onProductClick={onProductClick}
             onPrintClick={onPrintClick}
+            onGalleryClick={onGalleryClick}
+            modelScale={2.1}
+            modelPosition={[0, -0.7, 0]}
           />
         </div>
       </div>

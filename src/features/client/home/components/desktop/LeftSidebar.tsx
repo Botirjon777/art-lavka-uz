@@ -9,6 +9,8 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
+import { usePrints } from "../../hooks/usePrints";
+import { usePrintCategories } from "../../hooks/usePrintCategories";
 
 interface LeftSidebarProps {
   onGalleryClick: () => void;
@@ -30,43 +32,21 @@ export default function LeftSidebar({
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
 
+  const { data: printsData = [], isLoading: printsLoading } = usePrints();
+  const { data: categoriesData = [] } = usePrintCategories();
+
   const categories = [
     { id: "all", label: t.all },
-    ...printCategories.map((cat) => ({
+    ...(categoriesData || printCategories).map((cat) => ({
       id: cat.slug,
       label: getTranslated(cat, lang),
     })),
   ];
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [prints, setPrints] = useState<PrintDesign[]>(initialPrints || []);
-  const [loading, setLoading] = useState(initialLoading ?? true);
 
-  useEffect(() => {
-    if (initialPrints && initialPrints.length > 0) {
-      setPrints(initialPrints);
-      setLoading(false);
-    } else {
-      fetchPrints();
-    }
-  }, [initialPrints, initialLoading]);
-
-  const fetchPrints = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/prints?limit=100", {
-        next: { revalidate: 3600 },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setPrints(data.data.map((item: any) => ({ ...item, id: item._id })));
-      }
-    } catch (error) {
-      console.error("Error fetching prints:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const prints = printsData.length > 0 ? printsData : (initialPrints || []);
+  const loading = printsLoading && prints.length === 0;
 
   const filteredPrints = prints.filter((p) => {
     const matchesCategory =

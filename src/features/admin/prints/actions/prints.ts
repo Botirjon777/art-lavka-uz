@@ -36,6 +36,7 @@ export async function createPrint(formData: FormData) {
     const printData: any = {
       name: formData.get("name") as string,
       frontImage: formData.get("frontImage") as string,
+      frontImagePreview: formData.get("frontImagePreview") as string || "",
       category: formData.get("category") as string,
       active: formData.get("active") === "true",
       translations: JSON.parse((formData.get("translations") as string) || "{}"),
@@ -63,6 +64,7 @@ export async function updatePrint(id: string, formData: FormData) {
     const printData: any = {
       name: formData.get("name") as string,
       frontImage: formData.get("frontImage") as string,
+      frontImagePreview: formData.get("frontImagePreview") as string || "",
       category: formData.get("category") as string,
       active: formData.get("active") === "true",
       translations: JSON.parse((formData.get("translations") as string) || "{}"),

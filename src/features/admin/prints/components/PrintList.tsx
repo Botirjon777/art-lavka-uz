@@ -115,24 +115,6 @@ export default function PrintList() {
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                 />
 
-                {/* Overlay Actions */}
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                  <Link
-                    href={`/admin/prints/${print._id}/edit`}
-                    className="p-3 bg-white text-gray-900 rounded-2xl hover:bg-[#8814B1] hover:text-white transition-all transform hover:scale-110"
-                    title="Редактировать"
-                  >
-                    <FiEdit2 className="w-5 h-5 font-bold" />
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(print._id)}
-                    className="p-3 bg-white text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all transform hover:scale-110"
-                    title="Удалить"
-                  >
-                    <FiTrash2 className="w-5 h-5" />
-                  </button>
-                </div>
-
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex flex-col gap-2">
                   <span
@@ -165,6 +147,26 @@ export default function PrintList() {
                       <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" title="Задняя часть" />
                     )}
                   </div>
+                </div>
+
+                {/* Always-visible action buttons */}
+                <div className="flex gap-2 mt-3">
+                  <Link
+                    href={`/admin/prints/${print._id}/edit`}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-50 text-gray-700 rounded-xl hover:bg-[#8814B1] hover:text-white transition-all text-xs font-bold"
+                    title="Редактировать"
+                  >
+                    <FiEdit2 className="w-3.5 h-3.5" />
+                    Изменить
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(print._id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all text-xs font-bold"
+                    title="Удалить"
+                  >
+                    <FiTrash2 className="w-3.5 h-3.5" />
+                    Удалить
+                  </button>
                 </div>
               </div>
             </div>
