@@ -22,6 +22,10 @@ import MobileProductsModal from "../modals/mobile/MobileProductsModal";
 import MobilePrintsModal from "../modals/mobile/MobilePrintsModal";
 import CheckoutModal from "../modals/shared/CheckoutModal";
 import OrderSuccessModal from "../modals/shared/OrderSuccessModal";
+import { useSettings } from "../hooks/useSettings";
+import { useProducts } from "../hooks/useProducts";
+import { usePrints } from "../hooks/usePrints";
+import { usePrintCategories } from "../hooks/usePrintCategories";
 
 // Shared Types
 import {
@@ -31,6 +35,7 @@ import {
   ConfiguratorState,
   PrintCategory,
 } from "@/types";
+import { fetchProducts } from "../api/products";
 
 export default function HomeContainer() {
   const { t } = useTranslation();
@@ -46,11 +51,14 @@ export default function HomeContainer() {
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [oneClickItem, setOneClickItem] = useState<CartItem | null>(null);
-  const [settings, setSettings] = useState<any>(null);
-  const [prints, setPrints] = useState<PrintDesign[]>([]);
-  const [printsLoading, setPrintsLoading] = useState(true);
-  const [printCategories, setPrintCategories] = useState<PrintCategory[]>([]);
   const [hasMultipleProducts, setHasMultipleProducts] = useState(false);
+
+  // Use hooks for consolidated fetching
+  const { data: settings } = useSettings();
+  const { data: productsData, isLoading: productsLoading } = useProducts();
+  const { data: printsData = [], isLoading: printsLoading } = usePrints();
+  const { data: printCategories = [] } = usePrintCategories();
+
   const selectedProductRef = useRef(selectedProduct);
   const settingsRef = useRef(settings);
 
@@ -63,137 +71,53 @@ export default function HomeContainer() {
     settingsRef.current = settings;
   }, [settings]);
 
-  // Fetch products on mount and set up auto-refresh
+  // Handle initial product selection when products are loaded
   useEffect(() => {
-    const initialize = async () => {
-      setLoading(true);
-      const currentSettings = await fetchSettings();
-      await Promise.all([
-        fetchProducts(currentSettings),
-        fetchPrints(),
-        fetchPrintCategories(),
-      ]);
-    };
+    if (productsData && productsData.length > 0) {
+      const normalizedProducts = productsData.map((item: any) => ({
+        ...item,
+        id: item._id,
+      }));
 
-    initialize();
-    fetchPrints();
+      setHasMultipleProducts(normalizedProducts.length > 1);
 
-    // Auto-refresh every 60 seconds (1 minute)
-    const interval = setInterval(() => {
-      fetchProducts();
-    }, 60000);
+      if (!selectedProductRef.current) {
+        // Priority 1: Default Product
+        const defaultProduct = normalizedProducts.find(
+          (p: Product) => p.isDefault,
+        );
+        if (defaultProduct) {
+          setSelectedProduct(defaultProduct);
+        } else {
+          // Priority 2: Active Category Match
+          if (settings) {
+            const categoryOrder = ["women", "men", "kids"] as const;
+            const firstActiveCategory = categoryOrder.find(
+              (cat) => settings.categoryStatuses?.[cat] === "active",
+            );
 
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchSettings = async () => {
-    try {
-      const response = await fetch("/api/settings");
-      const data = await response.json();
-      if (data.success) {
-        setSettings(data.data);
-        return data.data;
-      }
-    } catch (error) {
-      console.error("Error fetching settings:", error);
-    }
-    return null;
-  };
-
-  const fetchProducts = async (currentSettings?: any) => {
-    try {
-      const response = await fetch("/api/products", {
-        cache: "no-store",
-      });
-      const data = await response.json();
-
-      if (data.success && data.data.length > 0) {
-        const normalizedProducts = data.data.map((item: any) => ({
-          ...item,
-          id: item._id,
-        }));
-
-        setHasMultipleProducts(normalizedProducts.length > 1);
-
-        if (!selectedProductRef.current) {
-          // Priority 1: Default Product
-          const defaultProduct = normalizedProducts.find((p: Product) => p.isDefault);
-          if (defaultProduct) {
-            setSelectedProduct(defaultProduct);
-          } else {
-            // Priority 2: Active Category Match
-            const activeSettings = currentSettings || settingsRef.current;
-            if (activeSettings) {
-              const categoryOrder = ["women", "men", "kids"] as const;
-              const firstActiveCategory = categoryOrder.find(
-                (cat) => activeSettings.categoryStatuses?.[cat] === "active",
+            if (firstActiveCategory) {
+              const match = normalizedProducts.find(
+                (p: Product) => p.category === firstActiveCategory,
               );
-
-              if (firstActiveCategory) {
-                const match = normalizedProducts.find(
-                  (p: Product) => p.category === firstActiveCategory,
-                );
-                if (match) {
-                  setSelectedProduct(match);
-                } else {
-                  setSelectedProduct(normalizedProducts[0]);
-                }
+              if (match) {
+                setSelectedProduct(match);
               } else {
                 setSelectedProduct(normalizedProducts[0]);
               }
             } else {
               setSelectedProduct(normalizedProducts[0]);
             }
-          }
-        } else {
-          const updated = normalizedProducts.find(
-            (p: Product) =>
-              p.id === selectedProductRef.current?.id || p._id === selectedProductRef.current?._id,
-          );
-          if (updated) {
-            setSelectedProduct(updated);
+          } else {
+            setSelectedProduct(normalizedProducts[0]);
           }
         }
       }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      if (!selectedProduct) {
-        toast.error(t.errorLoadProducts);
-      }
-    } finally {
       setLoading(false);
     }
-  };
+  }, [productsData, settings]);
 
-  const fetchPrints = async () => {
-    try {
-      setPrintsLoading(true);
-      const response = await fetch("/api/prints?limit=100", {
-        next: { revalidate: 3600 },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setPrints(data.data.map((item: any) => ({ ...item, id: item._id })));
-      }
-    } catch (error) {
-      console.error("Error fetching prints:", error);
-    } finally {
-      setPrintsLoading(false);
-    }
-  };
-
-  const fetchPrintCategories = async () => {
-    try {
-      const response = await fetch("/api/prints/categories");
-      const data = await response.json();
-      if (data.success) {
-        setPrintCategories(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching print categories:", error);
-    }
-  };
+  const prints = printsData; // Alias for compatibility with existing code
 
   const handleAddToCart = (config: ConfiguratorState) => {
     if (!selectedProduct) return;
@@ -213,7 +137,11 @@ export default function HomeContainer() {
     );
 
     const selectedVariant = selectedProduct.colors
-      ?.find((c) => getTranslated(c, lang) === config.selectedColor || c.hex === config.selectedColor)
+      ?.find(
+        (c) =>
+          getTranslated(c, lang) === config.selectedColor ||
+          c.hex === config.selectedColor,
+      )
       ?.variants?.find((v) => v.size === config.selectedSize);
 
     const maxStock = selectedVariant?.stock || 0;
@@ -279,7 +207,7 @@ export default function HomeContainer() {
 
     // Find stock for this specific item configuration
     const color = item.product.colors?.find(
-      (c) => getTranslated(c, lang) === item.color
+      (c) => getTranslated(c, lang) === item.color,
     );
     const variant = color?.variants?.find((v) => v.size === item.size);
     const maxStock = variant?.stock || 0;
@@ -312,12 +240,12 @@ export default function HomeContainer() {
     setOrderNumber(orderNum);
     setShowCheckout(false);
     setShowOrderSuccess(true);
-    
+
     // Only clear the main cart if this WASN'T a one-click purchase
     if (!oneClickItem) {
       setCartItems([]);
     }
-    
+
     setOneClickItem(null); // Always clear the one-click state
   };
 

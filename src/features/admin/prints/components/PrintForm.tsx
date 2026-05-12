@@ -31,6 +31,7 @@ export default function PrintForm({
   const router = useRouter();
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack, setUploadingBack] = useState(false);
+  const [uploadingPreview, setUploadingPreview] = useState(false);
   const [frontImageUrl, setFrontImageUrl] = useState(
     initialData?.frontImage || "",
   );
@@ -310,6 +311,11 @@ export default function PrintForm({
                             fill
                             className="object-cover"
                           />
+                          {uploadingFront && (
+                            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10">
+                              <div className="w-8 h-8 border-3 border-purple-200 border-t-[#8814B1] rounded-full animate-spin" />
+                            </div>
+                          )}
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <button
                               type="button"
@@ -325,12 +331,16 @@ export default function PrintForm({
                           <span
                             className={`w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center mb-2 transition-all group-hover:scale-110 group-hover:bg-white group-hover:shadow-lg ${uploadingFront ? "animate-pulse" : ""}`}
                           >
-                            <FiUploadCloud
-                              className={`w-6 h-6 ${uploadingFront ? "text-[#8814B1]" : "text-gray-300 group-hover:text-[#8814B1]"}`}
-                            />
+                            {uploadingFront ? (
+                              <div className="w-6 h-6 border-2 border-purple-200 border-t-[#8814B1] rounded-full animate-spin" />
+                            ) : (
+                              <FiUploadCloud
+                                className="text-gray-300 group-hover:text-[#8814B1] w-6 h-6"
+                              />
+                            )}
                           </span>
                           <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-600 text-center">
-                            Загрузить
+                            {uploadingFront ? "Загрузка..." : "Загрузить"}
                           </p>
                           <input
                             type="file"
@@ -370,6 +380,11 @@ export default function PrintForm({
                             fill
                             className="object-cover opacity-60"
                           />
+                          {uploadingPreview && (
+                            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10">
+                              <div className="w-8 h-8 border-3 border-purple-200 border-t-[#8814B1] rounded-full animate-spin" />
+                            </div>
+                          )}
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <button
                               type="button"
@@ -383,10 +398,14 @@ export default function PrintForm({
                       ) : (
                         <label className="absolute inset-0 flex flex-col items-center justify-center p-4 cursor-pointer">
                           <span className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center mb-2 transition-all group-hover:bg-white group-hover:shadow-md">
-                            <FiUploadCloud className="w-5 h-5 text-gray-300 group-hover:text-[#8814B1]" />
+                            {uploadingPreview ? (
+                              <div className="w-5 h-5 border-2 border-purple-200 border-t-[#8814B1] rounded-full animate-spin" />
+                            ) : (
+                              <FiUploadCloud className="w-5 h-5 text-gray-300 group-hover:text-[#8814B1]" />
+                            )}
                           </span>
                           <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-600 text-center">
-                            Превью
+                            {uploadingPreview ? "Загрузка..." : "Превью"}
                           </p>
                           <input
                             type="file"
@@ -394,17 +413,27 @@ export default function PrintForm({
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (!file) return;
+                              setUploadingPreview(true);
                               const formData = new FormData();
                               formData.append("file", file);
                               formData.append("folder", "art-lavka/prints/previews");
                               formData.append("withPreview", "false");
-                              const data = await uploadFileAction(formData);
-                              if (data.success && data.url) {
-                                setFrontImagePreviewUrl(data.url);
-                                toast.success("Превью загружено");
+                              try {
+                                const data = await uploadFileAction(formData);
+                                if (data.success && data.url) {
+                                  setFrontImagePreviewUrl(data.url);
+                                  toast.success("Превью загружено");
+                                } else {
+                                  toast.error(data.error || "Ошибка при загрузке");
+                                }
+                              } catch (err) {
+                                toast.error("Ошибка при загрузке");
+                              } finally {
+                                setUploadingPreview(false);
                               }
                             }}
                             className="hidden"
+                            disabled={uploadingPreview}
                           />
                         </label>
                       )}
@@ -442,6 +471,11 @@ export default function PrintForm({
                             fill
                             className="object-cover"
                           />
+                          {uploadingBack && (
+                            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10">
+                              <div className="w-8 h-8 border-3 border-purple-200 border-t-[#8814B1] rounded-full animate-spin" />
+                            </div>
+                          )}
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <button
                               type="button"
@@ -457,12 +491,16 @@ export default function PrintForm({
                           <span
                             className={`w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center mb-2 transition-all group-hover:scale-110 group-hover:bg-white group-hover:shadow-lg ${uploadingBack ? "animate-pulse" : ""}`}
                           >
-                            <FiUploadCloud
-                              className={`w-6 h-6 ${uploadingBack ? "text-[#8814B1]" : "text-gray-300 group-hover:text-[#8814B1]"}`}
-                            />
+                            {uploadingBack ? (
+                              <div className="w-6 h-6 border-2 border-purple-200 border-t-[#8814B1] rounded-full animate-spin" />
+                            ) : (
+                              <FiUploadCloud
+                                className="text-gray-300 group-hover:text-[#8814B1] w-6 h-6"
+                              />
+                            )}
                           </span>
                           <p className="text-[10px] font-bold text-gray-400 group-hover:text-gray-600 text-center">
-                            Загрузить
+                            {uploadingBack ? "Загрузка..." : "Загрузить"}
                           </p>
                           <input
                             type="file"

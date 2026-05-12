@@ -7,6 +7,8 @@ import Image from "next/image";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
+import { usePrints } from "../../hooks/usePrints";
+import { usePrintCategories } from "../../hooks/usePrintCategories";
 
 interface MobilePrintsModalProps {
   isOpen: boolean;
@@ -29,44 +31,21 @@ export default function MobilePrintsModal({
 }: MobilePrintsModalProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
+  const { data: categoriesData = [] } = usePrintCategories({ enabled: isOpen });
+  const { data: printsData = [], isLoading: printsLoading } = usePrints({ enabled: isOpen });
+
   const categories = [
     { id: "all", label: t.all },
-    ...printCategories.map(cat => ({
+    ...(categoriesData.length > 0 ? categoriesData : printCategories).map(cat => ({
       id: cat.slug,
       label: getTranslated(cat, lang)
     }))
   ];
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [prints, setPrints] = useState<PrintDesign[]>(initialPrints || []);
-  const [loading, setLoading] = useState(initialLoading ?? true);
 
-  useEffect(() => {
-    if (initialPrints && initialPrints.length > 0) {
-      setPrints(initialPrints);
-      setLoading(false);
-    } else if (isOpen) {
-      fetchPrints();
-    }
-  }, [isOpen, initialPrints, initialLoading]);
-
-  const fetchPrints = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/prints?limit=100");
-      const data = await response.json();
-
-      if (data.success) {
-        setPrints(data.data.map((item: any) => ({ ...item, id: item._id })));
-      }
-    } catch (error) {
-      console.error("Error fetching prints:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
+  const prints = printsData.length > 0 ? printsData : (initialPrints || []);
+  const loading = (printsLoading || (isOpen && printsData.length === 0)) && prints.length === 0;
 
   const filteredPrints = prints.filter((p) => {
     const matchesCategory = activeTab === "all" || p.category === activeTab;
