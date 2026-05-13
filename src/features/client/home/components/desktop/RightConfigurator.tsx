@@ -121,10 +121,10 @@ export default function RightConfigurator({
   return (
     <div className="flex items-center justify-center">
       <div className="bg-image h-[calc(100vh-160px)] max-h-[886px] overflow-y-auto min-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
-        <div className="w-full relative z-10">
-          <div className="flex flex-col md:flex-row gap-8">
+        <div className="w-full h-full relative z-10 flex flex-col">
+          <div className="flex-1 flex flex-col md:flex-row gap-8">
             {/* Left - T-shirt 3D Preview */}
-            <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] min-w-[300px] md:min-w-[450px]">
+            <div className="flex-1 flex flex-col items-center justify-center min-w-[300px] md:min-w-[450px] self-stretch">
               <TShirtScene
                 key={selectedProduct.id}
                 selectedProduct={selectedProduct.model}

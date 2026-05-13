@@ -32,20 +32,26 @@ export default function MobilePrintsModal({
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
   const { data: categoriesData = [] } = usePrintCategories({ enabled: isOpen });
-  const { data: printsData = [], isLoading: printsLoading } = usePrints({ enabled: isOpen });
+  const { data: printsData = [], isLoading: printsLoading } = usePrints({
+    enabled: isOpen,
+  });
 
   const categories = [
     { id: "all", label: t.all },
-    ...(categoriesData.length > 0 ? categoriesData : printCategories).map(cat => ({
-      id: cat.slug,
-      label: getTranslated(cat, lang)
-    }))
+    ...(categoriesData.length > 0 ? categoriesData : printCategories).map(
+      (cat) => ({
+        id: cat.slug,
+        label: getTranslated(cat, lang),
+      }),
+    ),
   ];
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const prints = printsData.length > 0 ? printsData : (initialPrints || []);
-  const loading = (printsLoading || (isOpen && printsData.length === 0)) && prints.length === 0;
+  const prints = printsData.length > 0 ? printsData : initialPrints || [];
+  const loading =
+    (printsLoading || (isOpen && printsData.length === 0)) &&
+    prints.length === 0;
 
   const filteredPrints = prints.filter((p) => {
     const matchesCategory = activeTab === "all" || p.category === activeTab;
@@ -96,7 +102,7 @@ export default function MobilePrintsModal({
         ) : (
           <>
             {/* Prints Grid */}
-            <div className="grid grid-cols-3 gap-3 px-5">
+            <div className="grid grid-cols-3 gap-3 px-5 max-h-[60vh] overflow-y-auto pb-6">
               {/* No Print Option */}
               <button
                 onClick={() => {
@@ -136,13 +142,13 @@ export default function MobilePrintsModal({
                     }`}
                   >
                     <div className="relative bg-white h-[85%] w-[85%] rounded-xl overflow-hidden shadow-sm">
-                        <Image
-                          src={print.frontImagePreview || print.frontImage}
-                          alt={getTranslated(print, lang)}
-                          fill
-                          sizes="(max-width: 768px) 33vw, 120px"
-                          className="object-contain p-2"
-                        />
+                      <Image
+                        src={print.frontImagePreview || print.frontImage}
+                        alt={getTranslated(print, lang)}
+                        fill
+                        sizes="(max-width: 768px) 33vw, 120px"
+                        className="object-contain p-2"
+                      />
                     </div>
                   </button>
                 ))
