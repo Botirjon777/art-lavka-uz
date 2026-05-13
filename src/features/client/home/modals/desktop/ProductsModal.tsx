@@ -34,9 +34,9 @@ export default function ProductsModal({
     useState<Product | null>(null);
 
   const categories: ICategory[] = settings?.categories || [
-    { id: "women", label: "Женский", status: "active" },
-    { id: "men", label: "Мужской", status: "soon" },
-    { id: "kids", label: "Детский", status: "soon" },
+    { id: "women", label: t.women, status: "active" },
+    { id: "men", label: t.men, status: "soon" },
+    { id: "kids", label: t.kids, status: "soon" },
   ];
 
   const tabs = categories.map((cat: ICategory) => ({
@@ -72,7 +72,7 @@ export default function ProductsModal({
           <div className="flex items-center justify-center min-h-[500px]">
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin"></div>
-              <p className="text-[#666666] text-sm">...</p>
+              <p className="text-[#666666] text-sm">{t.loadingProducts}</p>
             </div>
           </div>
         ) : allSoon ? (
@@ -81,11 +81,10 @@ export default function ProductsModal({
               <FiAlertTriangle className="w-16 h-16 text-[#8814B1]" />
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-3">
-              Извините, продуктов нет
+              {t.noProducts}
             </h3>
             <p className="text-gray-500 max-w-sm mx-auto text-lg">
-              Все категории временно недоступны. Пожалуйста, зайдите позже или
-              следите за обновлениями!
+              {t.categoriesUnavailable}
             </p>
           </div>
         ) : (
@@ -108,7 +107,7 @@ export default function ProductsModal({
                   disabled={tab.soon}
                 >
                   {tab.label}
-                  {tab.soon && <span className="text-[#8814B1]"> - Скоро</span>}
+                  {tab.soon && <span className="text-[#8814B1]"> - {t.soon}</span>}
                   {activeTab === tab.id && (
                     <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#333333]" />
                   )}
@@ -127,7 +126,7 @@ export default function ProductsModal({
                   return (
                     <div className="col-span-full text-center py-20 bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
                       <p className="text-gray-400 font-medium">
-                        Нет доступных товаров в этой категории
+                        {t.noAvailableItems}
                       </p>
                     </div>
                   );

@@ -71,7 +71,7 @@ export default function CheckoutModal({
   } | null>(null);
 
   // Delivery State
-  const [carrier, setCarrier] = useState<"bts" | "btsFergana">("bts");
+  const [carrier, setCarrier] = useState<"bts" | "btsFergana">("btsFergana");
   const [deliveryMethod, setDeliveryMethod] = useState<"door" | "pickup">(
     "pickup",
   );
@@ -377,7 +377,8 @@ export default function CheckoutModal({
         setCustomerPhone("");
         setRegion("");
         setVillage("");
-        setCarrier("bts");
+
+        setCarrier("btsFergana");
         setDeliveryMethod("door");
         setSelectedBranch(null);
         setStreetAddress("");
@@ -504,7 +505,7 @@ export default function CheckoutModal({
                   checked={carrier === "bts"}
                   className="accent-[#8814B1] shrink-0"
                 />
-                <span>BTS EXPRESS</span>
+                <span>{t.btsUzbekistanCarrier}</span>
               </button>
               {/* BTS Fergana */}
               <button
@@ -774,7 +775,7 @@ export default function CheckoutModal({
                   <span className="font-medium text-[#333333]">
                     {currentDeliveryPrice === 0 ? (
                       <span className="text-green-600 font-bold whitespace-nowrap">
-                        Бесплатно
+                        {t.free}
                       </span>
                     ) : (
                       `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
@@ -783,7 +784,7 @@ export default function CheckoutModal({
                 </div>
                 {totalDiscount > 0 && (
                   <div className="flex justify-between items-center text-green-600 font-bold mb-1">
-                    <span>Скидка по акции:</span>
+                    <span>{t.promoDiscount}</span>
                     <span>
                       -{totalDiscount.toLocaleString()} {t.currency}
                     </span>
@@ -930,7 +931,7 @@ export default function CheckoutModal({
                   checked={carrier === "bts"}
                   className="accent-[#8814B1] shrink-0"
                 />
-                BTS EXPRESS
+                {t.btsUzbekistanCarrier}
               </button>
               {/* BTS Fergana */}
               <button
@@ -1219,7 +1220,7 @@ export default function CheckoutModal({
                   <span className="font-medium text-[#333333]">
                     {currentDeliveryPrice === 0 ? (
                       <span className="text-green-600 font-bold whitespace-nowrap">
-                        Бесплатно
+                        {t.free}
                       </span>
                     ) : (
                       `${currentDeliveryPrice.toLocaleString()} ${t.currency}`
@@ -1228,7 +1229,7 @@ export default function CheckoutModal({
                 </div>
                 {totalDiscount > 0 && (
                   <div className="flex justify-between items-center text-green-600 font-bold mb-1">
-                    <span>Скидка по акции:</span>
+                    <span>{t.promoDiscount}</span>
                     <span>
                       -{totalDiscount.toLocaleString()} {t.currency}
                     </span>

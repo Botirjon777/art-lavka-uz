@@ -31,7 +31,7 @@ export default function RightConfigurator({
   );
   const [selectedColor, setSelectedColor] = useState<ProductColor>(
     firstAvailableColor ||
-      productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] },
+      productColors[0] || { name: t.colorWhite || "White", hex: "#FFFFFF", variants: [] },
   );
 
   const availableVariants = selectedColor.variants || [];
@@ -51,7 +51,7 @@ export default function RightConfigurator({
       const firstAvailable = colors.find((c: ProductColor) =>
         c.variants?.some((v) => v.stock > 0),
       );
-      const initialColor = firstAvailable || colors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] };
+      const initialColor = firstAvailable || colors[0] || { name: t.colorWhite || "White", hex: "#FFFFFF", variants: [] };
       setSelectedColor(initialColor);
       
       const firstInStock = initialColor.variants?.find((v) => v.stock > 0);
