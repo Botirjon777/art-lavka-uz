@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF, Decal, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { PrintDesign } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Global texture cache to prevent re-loading and re-uploading to GPU
 const textureCache: { [url: string]: THREE.Texture } = {};
@@ -24,6 +25,7 @@ export function TShirtModel({
   modelScale = 1.5,
   modelPosition = [0, -1, 0],
 }: TShirtModelProps) {
+  const { t } = useTranslation();
   const { scene } = useGLTF(selectedProduct || "/model/compressed/base.glb");
   const clonedScene = useMemo(() => scene.clone(), [scene]);
   const groupRef = useRef<THREE.Group>(null);
@@ -185,7 +187,7 @@ export function TShirtModel({
               ></div>
             </div>
             <p className="text-sm font-medium text-[#333333]">
-              Наносим принт...
+              {t.applyingPrint}
             </p>
           </div>
         </Html>
