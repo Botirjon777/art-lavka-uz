@@ -80,7 +80,7 @@ export default function CheckoutModal({
   );
 
   // BTS Fergana specific state
-  const [ferganaDistrict, setFerganaDistrict] = useState("");
+  const [ferganaDistrict, setFerganaDistrict] = useState("г.Фергана");
   const [ferganaAddress, setFerganaAddress] = useState("");
 
   // Use hooks for data fetching
@@ -385,7 +385,7 @@ export default function CheckoutModal({
         setHomeNumber("");
         setTelegramUsername("");
         setNotes("");
-        setFerganaDistrict("");
+        setFerganaDistrict("г.Фергана");
         setFerganaAddress("");
       } else {
         if (result.errors && Array.isArray(result.errors)) {
@@ -939,6 +939,7 @@ export default function CheckoutModal({
                 onClick={() => {
                   setCarrier("btsFergana");
                   setDeliveryMethod("door");
+                  setFerganaDistrict("г.Фергана");
                 }}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-bold ${
                   carrier === "btsFergana"
@@ -977,10 +978,12 @@ export default function CheckoutModal({
                       if (errors.ferganaDistrict)
                         setErrors({ ...errors, ferganaDistrict: "" });
                     }}
-                    options={ferganaDistricts.map((d) => ({
-                      value: d.ru,
-                      label: d[lang as keyof typeof d] || d.ru,
-                    }))}
+                    options={ferganaDistricts
+                      .filter((d) => d.ru === "г.Фергана")
+                      .map((d) => ({
+                        value: d.ru,
+                        label: d[lang as keyof typeof d] || d.ru,
+                      }))}
                     placeholder={t.ferganaDistrictPlaceholder}
                     buttonClassName="h-[42px] px-3 py-2 text-sm"
                   />

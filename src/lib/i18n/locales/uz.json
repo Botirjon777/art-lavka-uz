@@ -45,7 +45,7 @@
   "toPunct": "Topshirish punkti",
   "btsUzbekistanCarrier": "O'zbekiston bo'ylab yetkazib berish (BTS EXPRESS)",
   "btsFerganaCarrier": "Farg'ona shahri bo'ylab yetkazib berish",
-  "btsFerganaDesc": "Farg'ona bo'ylab bepul yetkazib berish",
+  "btsFerganaDesc": "Bepul yetkazib berish (faqat Farg'ona sh.)",
   "ferganaDistrict": "Tuman / Shahar (Farg'ona)",
   "ferganaDistrictPlaceholder": "Tumanni tanlang",
   "ferganaAddress": "Yetkazib berish manzili",

@@ -45,7 +45,7 @@
   "toPunct": "Пункт выдачи",
   "btsUzbekistanCarrier": "Доставка по Узбекистану (BTS EXPRESS)",
   "btsFerganaCarrier": "Доставка по г. Фергана",
-  "btsFerganaDesc": "Бесплатная доставка по Фергане",
+  "btsFerganaDesc": "Бесплатная доставка (только г. Фергана)",
   "ferganaDistrict": "Район / Город (Фергана)",
   "ferganaDistrictPlaceholder": "Выберите район",
   "ferganaAddress": "Адрес доставки",

@@ -45,7 +45,7 @@
   "toPunct": "Pickup Point",
   "btsUzbekistanCarrier": "Delivery across Uzbekistan (BTS EXPRESS)",
   "btsFerganaCarrier": "Delivery within Fergana city",
-  "btsFerganaDesc": "Free delivery within Fergana",
+  "btsFerganaDesc": "Free delivery (Fergana city only)",
   "ferganaDistrict": "District / City (Fergana)",
   "ferganaDistrictPlaceholder": "Select district",
   "ferganaAddress": "Delivery Address",
