@@ -45,7 +45,7 @@ export default function LeftSidebar({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const prints = printsData.length > 0 ? printsData : (initialPrints || []);
+  const prints = printsData.length > 0 ? printsData : initialPrints || [];
   const loading = printsLoading && prints.length === 0;
 
   const filteredPrints = prints.filter((p) => {
@@ -130,13 +130,7 @@ export default function LeftSidebar({
         </div>
 
         {/* Print Grid - Scrollable Container */}
-        <div
-          className="flex-1"
-          style={{
-            scrollbarWidth: "thin",
-            scrollbarColor: "#8814B1 transparent",
-          }}
-        >
+        <div className="flex-1 overflow-y-auto pr-2 max-h-[400px]">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-10">
             {/* No Print Option */}
             <button

@@ -71,12 +71,17 @@ export default function CheckoutModal({
   } | null>(null);
 
   // Delivery State
+  const [carrier, setCarrier] = useState<"bts" | "btsFergana">("bts");
   const [deliveryMethod, setDeliveryMethod] = useState<"door" | "pickup">(
     "pickup",
   );
   const [selectedBranch, setSelectedBranch] = useState<DeliveryBranch | null>(
     null,
   );
+
+  // BTS Fergana specific state
+  const [ferganaDistrict, setFerganaDistrict] = useState("");
+  const [ferganaAddress, setFerganaAddress] = useState("");
 
   // Use hooks for data fetching
   const { data: offices = [] } = useOffices({ enabled: isOpen });
@@ -168,14 +173,20 @@ export default function CheckoutModal({
     }
   }, [region, activePromotions, items, hasShownNudgeForRegion]);
 
-  let currentDeliveryPrice = calculateBTSDelivery(
-    region,
-    village,
-    totalWeight,
-    deliveryMethod,
-    deliverySettings?.deliveryPrices,
-    deliverySettings?.courierFees,
-  );
+  // Fergana region districts from LOCATIONS
+  const ferganaDistricts = LOCATIONS["Ферганская область"] || [];
+
+  let currentDeliveryPrice =
+    carrier === "btsFergana"
+      ? 0
+      : calculateBTSDelivery(
+          region,
+          village,
+          totalWeight,
+          deliveryMethod,
+          deliverySettings?.deliveryPrices,
+          deliverySettings?.courierFees,
+        );
   let productsDiscount = 0;
 
   // Apply Promotions
@@ -265,24 +276,33 @@ export default function CheckoutModal({
       newErrors.customerPhone = t.errorPhoneInvalid;
     }
 
-    if (!region) {
-      newErrors.region = t.errorRegionRequired;
-    }
-
-    if (!village) {
-      newErrors.village = t.villagePlaceholder;
-    }
-
-    if (deliveryMethod === "door") {
-      if (!streetAddress.trim()) {
-        newErrors.streetAddress = t.errorStreetRequired;
+    if (carrier === "btsFergana") {
+      if (!ferganaDistrict) {
+        newErrors.ferganaDistrict = t.errorFerganaDistrictRequired;
       }
-      if (!homeNumber.trim()) {
-        newErrors.homeNumber = t.errorHomeRequired;
+      if (!ferganaAddress.trim()) {
+        newErrors.ferganaAddress = t.errorFerganaAddressRequired;
       }
     } else {
-      if (!selectedBranch) {
-        newErrors.branch = t.selectBranch;
+      if (!region) {
+        newErrors.region = t.errorRegionRequired;
+      }
+
+      if (!village) {
+        newErrors.village = t.villagePlaceholder;
+      }
+
+      if (deliveryMethod === "door") {
+        if (!streetAddress.trim()) {
+          newErrors.streetAddress = t.errorStreetRequired;
+        }
+        if (!homeNumber.trim()) {
+          newErrors.homeNumber = t.errorHomeRequired;
+        }
+      } else {
+        if (!selectedBranch) {
+          newErrors.branch = t.selectBranch;
+        }
       }
     }
 
@@ -324,21 +344,29 @@ export default function CheckoutModal({
         price: item.price,
       }));
 
+      const isFergana = carrier === "btsFergana";
       const result = await createOrder({
         customerName,
         customerPhone: normalizePhoneNumber(customerPhone),
-        region,
-        village,
-        deliveryMethod,
-        branch: selectedBranch?.name,
+        region: isFergana ? "Ферганская область" : region,
+        village: isFergana ? ferganaDistrict : village,
+        deliveryMethod: isFergana ? "door" : deliveryMethod,
+        branch: isFergana ? undefined : selectedBranch?.name,
         deliveryPrice: currentDeliveryPrice,
-        customerAddress:
-          deliveryMethod === "door"
+        customerAddress: isFergana
+          ? ferganaAddress
+          : deliveryMethod === "door"
             ? `${streetAddress}, ${homeNumber}`
             : selectedBranch?.address || "",
         items: orderItems,
         totalAmount: finalTotal,
-        notes: notes || `Telegram: ${telegramUsername}`,
+        notes: notes
+          ? notes
+          : telegramUsername
+            ? `Telegram: ${telegramUsername}`
+            : isFergana
+              ? "BTS Express Fergana"
+              : "",
       });
 
       if (result.success && result.order) {
@@ -349,12 +377,15 @@ export default function CheckoutModal({
         setCustomerPhone("");
         setRegion("");
         setVillage("");
+        setCarrier("bts");
         setDeliveryMethod("door");
         setSelectedBranch(null);
         setStreetAddress("");
         setHomeNumber("");
         setTelegramUsername("");
         setNotes("");
+        setFerganaDistrict("");
+        setFerganaAddress("");
       } else {
         if (result.errors && Array.isArray(result.errors)) {
           result.errors.forEach((error: string) => {
@@ -452,146 +483,244 @@ export default function CheckoutModal({
               )}
             </div>
 
-            {/* Delivery Method Selection */}
-            <div>
-              <div className="flex flex-col gap-2 mb-3">
-                <div className="flex items-center gap-2 text-[#8814B1] font-bold text-[12px] bg-purple-50 px-2 py-1.5 rounded-lg w-fit">
-                  <input
-                    type="radio"
-                    checked
-                    readOnly
-                    className="accent-[#8814B1]"
-                  />
-                  BTS EXPRESS
-                </div>
-              </div>
-              <Dropdown
-                label={t.deliveryMethod}
-                value={deliveryMethod}
-                onChange={(val) => setDeliveryMethod(val as "door" | "pickup")}
-                options={[
-                  { value: "door", label: t.toDoor },
-                  { value: "pickup", label: t.toPunct },
-                ]}
-                required
-                buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
-              />
+            {/* Carrier Selection */}
+            <div className="flex gap-2">
+              {/* BTS Express */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCarrier("bts");
+                  setDeliveryMethod("pickup");
+                }}
+                className={`flex-1 flex items-center gap-2 px-2.5 py-2 rounded-xl border-2 transition-all text-[12px] font-bold ${
+                  carrier === "bts"
+                    ? "border-[#8814B1] bg-purple-50 text-[#8814B1]"
+                    : "border-gray-200 text-gray-400 bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  readOnly
+                  checked={carrier === "bts"}
+                  className="accent-[#8814B1] shrink-0"
+                />
+                <span>BTS EXPRESS</span>
+              </button>
+              {/* BTS Fergana */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCarrier("btsFergana");
+                  setDeliveryMethod("door");
+                }}
+                className={`flex-1 flex items-center gap-2 px-2.5 py-2 rounded-xl border-2 transition-all text-[12px] font-bold ${
+                  carrier === "btsFergana"
+                    ? "border-[#059669] bg-emerald-50 text-[#059669]"
+                    : "border-gray-200 text-gray-400 bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  readOnly
+                  checked={carrier === "btsFergana"}
+                  className="accent-[#059669] shrink-0"
+                />
+                <span>{t.btsFerganaCarrier}</span>
+              </button>
             </div>
 
-            {/* Region */}
-            <Dropdown
-              label={t.region}
-              value={region}
-              error={errors.region}
-              onChange={(value) => {
-                setRegion(value);
-                setVillage("");
-                setSelectedBranch(null);
-                if (errors.region)
-                  setErrors({ ...errors, region: "", village: "" });
-              }}
-              options={regionKeys.map((key, index) => ({
-                value: key,
-                label: uzbekistanRegions[index] || key,
-              }))}
-              placeholder={t.regionPlaceholder}
-              buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
-            />
+            {carrier === "btsFergana" ? (
+              <>
+                {/* Free delivery badge */}
+                <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
+                  <span className="text-emerald-600 text-[11px]">✓</span>
+                  <span className="text-emerald-700 text-[12px] font-medium">
+                    {t.btsFerganaDesc}
+                  </span>
+                </div>
 
-            {/* Village / District */}
-            <Dropdown
-              label={t.village}
-              value={village}
-              error={errors.village}
-              onChange={(value) => {
-                setVillage(value);
-                setSelectedBranch(null);
-                setStreetAddress("");
-                if (errors.village) setErrors({ ...errors, village: "" });
-              }}
-              options={availableDistricts.map((d) => ({
-                value: d.ru,
-                label: d[lang as keyof typeof d] || d.ru,
-              }))}
-              placeholder={t.villagePlaceholder}
-              disabled={!region}
-              buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
-            />
+                {/* Fergana District */}
+                <Dropdown
+                  label={t.ferganaDistrict}
+                  value={ferganaDistrict}
+                  error={errors.ferganaDistrict}
+                  onChange={(value) => {
+                    setFerganaDistrict(value);
+                    if (errors.ferganaDistrict)
+                      setErrors({ ...errors, ferganaDistrict: "" });
+                  }}
+                  options={ferganaDistricts.map((d) => ({
+                    value: d.ru,
+                    label: d[lang as keyof typeof d] || d.ru,
+                  }))}
+                  placeholder={t.ferganaDistrictPlaceholder}
+                  buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
+                />
 
-            {/* Delivery Details */}
-            {deliveryMethod === "pickup" ? (
-              <Dropdown
-                label={t.selectBranch}
-                value={selectedBranch?.id || ""}
-                error={errors.branch}
-                onChange={(id) => {
-                  const branch = branches.find((b) => b.id === id);
-                  if (branch) {
-                    setSelectedBranch(branch);
-                    setStreetAddress(branch.address);
-                    if (errors.branch) setErrors({ ...errors, branch: "" });
-                  }
-                }}
-                options={branches.map((b) => ({
-                  value: b.id,
-                  label: b.name,
-                }))}
-                placeholder={t.selectBranch}
-                disabled={!village}
-                buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
-              />
+                {/* Fergana Address */}
+                <div>
+                  <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                    {t.ferganaAddress} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={ferganaAddress}
+                    onChange={(e) => {
+                      setFerganaAddress(e.target.value);
+                      if (errors.ferganaAddress)
+                        setErrors({ ...errors, ferganaAddress: "" });
+                    }}
+                    className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#059669] text-[14px]/[17px] ${
+                      errors.ferganaAddress
+                        ? "border-red-500 focus:ring-red-200"
+                        : "border-gray-300"
+                    }`}
+                    placeholder={t.ferganaAddressPlaceholder}
+                  />
+                  {errors.ferganaAddress && (
+                    <p className="text-red-500 text-[11px] mt-1">
+                      {errors.ferganaAddress}
+                    </p>
+                  )}
+                </div>
+              </>
             ) : (
               <>
-                <div>
-                  <label className="block text-[13px]/[16px] text-[#333333] mb-1">
-                    {t.streetAddress} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={streetAddress}
-                    onChange={(e) => {
-                      setStreetAddress(e.target.value);
-                      if (errors.streetAddress)
-                        setErrors({ ...errors, streetAddress: "" });
+                {/* BTS Method Dropdown */}
+                <Dropdown
+                  label={t.deliveryMethod}
+                  value={deliveryMethod}
+                  onChange={(val) =>
+                    setDeliveryMethod(val as "door" | "pickup")
+                  }
+                  options={[
+                    { value: "door", label: t.toDoor },
+                    { value: "pickup", label: t.toPunct },
+                  ]}
+                  required
+                  buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
+                />
+
+                {/* Region */}
+                <Dropdown
+                  label={t.region}
+                  value={region}
+                  error={errors.region}
+                  onChange={(value) => {
+                    setRegion(value);
+                    setVillage("");
+                    setSelectedBranch(null);
+                    if (errors.region)
+                      setErrors({ ...errors, region: "", village: "" });
+                  }}
+                  options={regionKeys.map((key, index) => ({
+                    value: key,
+                    label: uzbekistanRegions[index] || key,
+                  }))}
+                  placeholder={t.regionPlaceholder}
+                  buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
+                />
+
+                {/* Village / District */}
+                <Dropdown
+                  label={t.village}
+                  value={village}
+                  error={errors.village}
+                  onChange={(value) => {
+                    setVillage(value);
+                    setSelectedBranch(null);
+                    setStreetAddress("");
+                    if (errors.village)
+                      setErrors({ ...errors, village: "" });
+                  }}
+                  options={availableDistricts.map((d) => ({
+                    value: d.ru,
+                    label: d[lang as keyof typeof d] || d.ru,
+                  }))}
+                  placeholder={t.villagePlaceholder}
+                  disabled={!region}
+                  buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
+                />
+
+                {/* Delivery Details */}
+                {deliveryMethod === "pickup" ? (
+                  <Dropdown
+                    label={t.selectBranch}
+                    value={selectedBranch?.id || ""}
+                    error={errors.branch}
+                    onChange={(id) => {
+                      const branch = branches.find((b) => b.id === id);
+                      if (branch) {
+                        setSelectedBranch(branch);
+                        setStreetAddress(branch.address);
+                        if (errors.branch)
+                          setErrors({ ...errors, branch: "" });
+                      }
                     }}
-                    className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
-                      errors.streetAddress
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-300"
-                    }`}
-                    placeholder={t.streetAddressPlaceholder}
+                    options={branches.map((b) => ({
+                      value: b.id,
+                      label: b.name,
+                    }))}
+                    placeholder={t.selectBranch}
+                    disabled={!village}
+                    buttonClassName="px-2.5 py-2 text-[14px]/[17px]"
                   />
-                  {errors.streetAddress && (
-                    <p className="text-red-500 text-[11px] mt-1">
-                      {errors.streetAddress}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-[13px]/[16px] text-[#333333] mb-1">
-                    {t.homeNumber} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={homeNumber}
-                    onChange={(e) => {
-                      setHomeNumber(e.target.value);
-                      if (errors.homeNumber)
-                        setErrors({ ...errors, homeNumber: "" });
-                    }}
-                    className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
-                      errors.homeNumber
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-300"
-                    }`}
-                    placeholder={t.homeNumberPlaceholder}
-                  />
-                  {errors.homeNumber && (
-                    <p className="text-red-500 text-[11px] mt-1">
-                      {errors.homeNumber}
-                    </p>
-                  )}
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                        {t.streetAddress}{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={streetAddress}
+                        onChange={(e) => {
+                          setStreetAddress(e.target.value);
+                          if (errors.streetAddress)
+                            setErrors({ ...errors, streetAddress: "" });
+                        }}
+                        className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
+                          errors.streetAddress
+                            ? "border-red-500 focus:ring-red-200"
+                            : "border-gray-300"
+                        }`}
+                        placeholder={t.streetAddressPlaceholder}
+                      />
+                      {errors.streetAddress && (
+                        <p className="text-red-500 text-[11px] mt-1">
+                          {errors.streetAddress}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-[13px]/[16px] text-[#333333] mb-1">
+                        {t.homeNumber}{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={homeNumber}
+                        onChange={(e) => {
+                          setHomeNumber(e.target.value);
+                          if (errors.homeNumber)
+                            setErrors({ ...errors, homeNumber: "" });
+                        }}
+                        className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[14px]/[17px] ${
+                          errors.homeNumber
+                            ? "border-red-500 focus:ring-red-200"
+                            : "border-gray-300"
+                        }`}
+                        placeholder={t.homeNumberPlaceholder}
+                      />
+                      {errors.homeNumber && (
+                        <p className="text-red-500 text-[11px] mt-1">
+                          {errors.homeNumber}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             )}
 
@@ -636,7 +765,11 @@ export default function CheckoutModal({
                 <div className="flex justify-between items-center text-[#666666]">
                   <span>
                     {t.deliveryPrice} (
-                    {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
+                    {carrier === "btsFergana"
+                      ? t.btsFerganaCarrier
+                      : deliveryMethod === "door"
+                        ? t.toDoor
+                        : t.toPunct}):
                   </span>
                   <span className="font-medium text-[#333333]">
                     {currentDeliveryPrice === 0 ? (
@@ -776,165 +909,263 @@ export default function CheckoutModal({
               </div>
             </div>
 
-            {/* Delivery Method Selection */}
-            <div>
-              <div className="flex flex-col gap-3 mb-4">
-                <div className="flex items-center gap-2 text-[#8814B1] font-bold text-sm bg-purple-50 px-3 py-2 rounded-lg w-fit">
-                  <input
-                    type="radio"
-                    checked
-                    readOnly
-                    className="accent-[#8814B1]"
-                  />
-                  BTS EXPRESS
+            {/* Carrier Selection */}
+            <div className="flex gap-3">
+              {/* BTS Express */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCarrier("bts");
+                  setDeliveryMethod("pickup");
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-bold ${
+                  carrier === "bts"
+                    ? "border-[#8814B1] bg-purple-50 text-[#8814B1]"
+                    : "border-gray-200 text-gray-400 bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  readOnly
+                  checked={carrier === "bts"}
+                  className="accent-[#8814B1] shrink-0"
+                />
+                BTS EXPRESS
+              </button>
+              {/* BTS Fergana */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCarrier("btsFergana");
+                  setDeliveryMethod("door");
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-sm font-bold ${
+                  carrier === "btsFergana"
+                    ? "border-[#059669] bg-emerald-50 text-[#059669]"
+                    : "border-gray-200 text-gray-400 bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  readOnly
+                  checked={carrier === "btsFergana"}
+                  className="accent-[#059669] shrink-0"
+                />
+                {t.btsFerganaCarrier}
+              </button>
+              {carrier === "btsFergana" && (
+                <div className="ml-2 flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1">
+                  <span className="text-emerald-600 text-xs">✓</span>
+                  <span className="text-emerald-700 text-xs font-medium">
+                    {t.btsFerganaDesc}
+                  </span>
                 </div>
-              </div>
-              <Dropdown
-                label={t.deliveryMethod}
-                value={deliveryMethod}
-                onChange={(val) => setDeliveryMethod(val as "door" | "pickup")}
-                options={[
-                  { value: "door", label: t.toDoor },
-                  { value: "pickup", label: t.toPunct },
-                ]}
-                required
-                buttonClassName="h-[42px] px-3 py-2 text-sm"
-              />
+              )}
             </div>
 
-            {/* Region & Village */}
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Dropdown
-                  label={t.region}
-                  value={region}
-                  error={errors.region}
-                  onChange={(value) => {
-                    setRegion(value);
-                    setVillage("");
-                    setSelectedBranch(null);
-                    if (errors.region)
-                      setErrors({ ...errors, region: "", village: "" });
-                  }}
-                  options={regionKeys.map((key, index) => ({
-                    value: key,
-                    label: uzbekistanRegions[index] || key,
-                  }))}
-                  placeholder={t.regionPlaceholder}
-                  buttonClassName="h-[42px] px-3 py-2 text-sm"
-                />
-              </div>
-              <div className="flex-1">
-                <Dropdown
-                  label={t.village}
-                  value={village}
-                  error={errors.village}
-                  onChange={(value) => {
-                    setVillage(value);
-                    setSelectedBranch(null);
-                    setStreetAddress("");
-                    if (errors.village) setErrors({ ...errors, village: "" });
-                  }}
-                  options={availableDistricts.map((d) => ({
-                    value: d.ru,
-                    label: d[lang as keyof typeof d] || d.ru,
-                  }))}
-                  placeholder={t.villagePlaceholder}
-                  disabled={!region}
-                  buttonClassName="h-[42px] px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Delivery Details */}
-            {deliveryMethod === "pickup" ? (
+            {carrier === "btsFergana" ? (
+              /* BTS Fergana: district + address */
               <div className="flex gap-4">
                 <div className="flex-1">
                   <Dropdown
-                    label={t.selectBranch}
-                    value={selectedBranch?.id || ""}
-                    error={errors.branch}
-                    onChange={(id) => {
-                      const branch = branches.find((b) => b.id === id);
-                      if (branch) {
-                        setSelectedBranch(branch);
-                        setStreetAddress(branch.address);
-                        if (errors.branch) setErrors({ ...errors, branch: "" });
-                      }
+                    label={t.ferganaDistrict}
+                    value={ferganaDistrict}
+                    error={errors.ferganaDistrict}
+                    onChange={(value) => {
+                      setFerganaDistrict(value);
+                      if (errors.ferganaDistrict)
+                        setErrors({ ...errors, ferganaDistrict: "" });
                     }}
-                    options={branches.map((b) => ({
-                      value: b.id,
-                      label: b.name,
+                    options={ferganaDistricts.map((d) => ({
+                      value: d.ru,
+                      label: d[lang as keyof typeof d] || d.ru,
                     }))}
-                    placeholder={t.selectBranch}
-                    disabled={!village}
+                    placeholder={t.ferganaDistrictPlaceholder}
                     buttonClassName="h-[42px] px-3 py-2 text-sm"
                   />
                 </div>
-                {selectedBranch && (
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t.ferganaAddress} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={ferganaAddress}
+                    onChange={(e) => {
+                      setFerganaAddress(e.target.value);
+                      if (errors.ferganaAddress)
+                        setErrors({ ...errors, ferganaAddress: "" });
+                    }}
+                    className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#059669] text-sm ${
+                      errors.ferganaAddress
+                        ? "border-red-500 focus:ring-red-200"
+                        : "border-gray-300"
+                    }`}
+                    placeholder={t.ferganaAddressPlaceholder}
+                  />
+                  {errors.ferganaAddress && (
+                    <p className="text-red-500 text-[10px] mt-0.5">
+                      {errors.ferganaAddress}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* BTS delivery method */}
+                <Dropdown
+                  label={t.deliveryMethod}
+                  value={deliveryMethod}
+                  onChange={(val) =>
+                    setDeliveryMethod(val as "door" | "pickup")
+                  }
+                  options={[
+                    { value: "door", label: t.toDoor },
+                    { value: "pickup", label: t.toPunct },
+                  ]}
+                  required
+                  buttonClassName="h-[42px] px-3 py-2 text-sm"
+                />
+
+                {/* Region & Village */}
+                <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t.branchAddress}
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600 text-sm h-[42px] flex items-center">
-                      {selectedBranch.address}
+                    <Dropdown
+                      label={t.region}
+                      value={region}
+                      error={errors.region}
+                      onChange={(value) => {
+                        setRegion(value);
+                        setVillage("");
+                        setSelectedBranch(null);
+                        if (errors.region)
+                          setErrors({ ...errors, region: "", village: "" });
+                      }}
+                      options={regionKeys.map((key, index) => ({
+                        value: key,
+                        label: uzbekistanRegions[index] || key,
+                      }))}
+                      placeholder={t.regionPlaceholder}
+                      buttonClassName="h-[42px] px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Dropdown
+                      label={t.village}
+                      value={village}
+                      error={errors.village}
+                      onChange={(value) => {
+                        setVillage(value);
+                        setSelectedBranch(null);
+                        setStreetAddress("");
+                        if (errors.village)
+                          setErrors({ ...errors, village: "" });
+                      }}
+                      options={availableDistricts.map((d) => ({
+                        value: d.ru,
+                        label: d[lang as keyof typeof d] || d.ru,
+                      }))}
+                      placeholder={t.villagePlaceholder}
+                      disabled={!region}
+                      buttonClassName="h-[42px] px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Delivery Details */}
+                {deliveryMethod === "pickup" ? (
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <Dropdown
+                        label={t.selectBranch}
+                        value={selectedBranch?.id || ""}
+                        error={errors.branch}
+                        onChange={(id) => {
+                          const branch = branches.find((b) => b.id === id);
+                          if (branch) {
+                            setSelectedBranch(branch);
+                            setStreetAddress(branch.address);
+                            if (errors.branch)
+                              setErrors({ ...errors, branch: "" });
+                          }
+                        }}
+                        options={branches.map((b) => ({
+                          value: b.id,
+                          label: b.name,
+                        }))}
+                        placeholder={t.selectBranch}
+                        disabled={!village}
+                        buttonClassName="h-[42px] px-3 py-2 text-sm"
+                      />
+                    </div>
+                    {selectedBranch && (
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {t.branchAddress}
+                        </label>
+                        <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600 text-sm h-[42px] flex items-center">
+                          {selectedBranch.address}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t.streetAddress}{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={streetAddress}
+                        onChange={(e) => {
+                          setStreetAddress(e.target.value);
+                          if (errors.streetAddress)
+                            setErrors({ ...errors, streetAddress: "" });
+                        }}
+                        className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
+                          errors.streetAddress
+                            ? "border-red-500 focus:ring-red-200"
+                            : "border-gray-300"
+                        }`}
+                        placeholder={t.streetAddressPlaceholder}
+                      />
+                      {errors.streetAddress && (
+                        <p className="text-red-500 text-[10px] mt-0.5">
+                          {errors.streetAddress}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t.homeNumber}{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={homeNumber}
+                        onChange={(e) => {
+                          setHomeNumber(e.target.value);
+                          if (errors.homeNumber)
+                            setErrors({ ...errors, homeNumber: "" });
+                        }}
+                        className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
+                          errors.homeNumber
+                            ? "border-red-500 focus:ring-red-200"
+                            : "border-gray-300"
+                        }`}
+                        placeholder={t.homeNumberPlaceholder}
+                      />
+                      {errors.homeNumber && (
+                        <p className="text-red-500 text-[10px] mt-0.5">
+                          {errors.homeNumber}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t.streetAddress} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={streetAddress}
-                    onChange={(e) => {
-                      setStreetAddress(e.target.value);
-                      if (errors.streetAddress)
-                        setErrors({ ...errors, streetAddress: "" });
-                    }}
-                    className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
-                      errors.streetAddress
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-300"
-                    }`}
-                    placeholder={t.streetAddressPlaceholder}
-                  />
-                  {errors.streetAddress && (
-                    <p className="text-red-500 text-[10px] mt-0.5">
-                      {errors.streetAddress}
-                    </p>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t.homeNumber} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={homeNumber}
-                    onChange={(e) => {
-                      setHomeNumber(e.target.value);
-                      if (errors.homeNumber)
-                        setErrors({ ...errors, homeNumber: "" });
-                    }}
-                    className={`w-full h-[42px] px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C6F1] text-sm ${
-                      errors.homeNumber
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-300"
-                    }`}
-                    placeholder={t.homeNumberPlaceholder}
-                  />
-                  {errors.homeNumber && (
-                    <p className="text-red-500 text-[10px] mt-0.5">
-                      {errors.homeNumber}
-                    </p>
-                  )}
-                </div>
-              </div>
+              </>
             )}
 
             <div className="flex gap-4">
@@ -979,7 +1210,11 @@ export default function CheckoutModal({
                 <div className="flex justify-between items-center text-[#666666]">
                   <span>
                     {t.deliveryPrice} (
-                    {deliveryMethod === "door" ? t.toDoor : t.toPunct}):
+                    {carrier === "btsFergana"
+                      ? t.btsFerganaCarrier
+                      : deliveryMethod === "door"
+                        ? t.toDoor
+                        : t.toPunct}):
                   </span>
                   <span className="font-medium text-[#333333]">
                     {currentDeliveryPrice === 0 ? (

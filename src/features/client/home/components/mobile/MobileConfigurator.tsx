@@ -36,15 +36,15 @@ export default function MobileConfigurator({
   );
   const [selectedColor, setSelectedColor] = useState<ProductColor>(
     firstAvailableColor ||
-      productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] }
+      productColors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] },
   );
 
   const availableVariants = selectedColor.variants || [];
-  const productSizes = availableVariants.map(v => v.size);
-  const firstInStockSize = availableVariants.find(v => v.stock > 0)?.size;
+  const productSizes = availableVariants.map((v) => v.size);
+  const firstInStockSize = availableVariants.find((v) => v.stock > 0)?.size;
 
   const [selectedSize, setSelectedSize] = useState(
-    firstInStockSize || productSizes[0] || ""
+    firstInStockSize || productSizes[0] || "",
   );
   const [quantity, setQuantity] = useState(1);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
@@ -56,9 +56,10 @@ export default function MobileConfigurator({
       const firstAvailable = colors.find((c: ProductColor) =>
         c.variants?.some((v) => v.stock > 0),
       );
-      const initialColor = firstAvailable || colors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] };
+      const initialColor = firstAvailable ||
+        colors[0] || { name: "Белый", hex: "#FFFFFF", variants: [] };
       setSelectedColor(initialColor);
-      
+
       const firstInStock = initialColor.variants?.find((v) => v.stock > 0);
       if (firstInStock) {
         setSelectedSize(firstInStock.size);
@@ -70,7 +71,6 @@ export default function MobileConfigurator({
       setQuantity(1);
     }
   }, [selectedProduct]);
-
 
   const handleColorChange = (color: ProductColor) => {
     setSelectedColor(color);
@@ -85,17 +85,22 @@ export default function MobileConfigurator({
     setQuantity(1);
   };
 
-  const selectedVariant = selectedColor.variants.find(v => v.size === selectedSize);
+  const selectedVariant = selectedColor.variants.find(
+    (v) => v.size === selectedSize,
+  );
   const sizeStock = selectedVariant?.stock || 0;
   const isOutOfStock = sizeStock === 0;
 
-  const price = (selectedVariant?.price && selectedVariant.price > 0)
-    ? selectedVariant.price
-    : (selectedProduct.promoPrice || selectedProduct.price || 0);
+  const price =
+    selectedVariant?.price && selectedVariant.price > 0
+      ? selectedVariant.price
+      : selectedProduct.promoPrice || selectedProduct.price || 0;
 
-  const oldPrice = (selectedVariant?.oldPrice && selectedVariant.oldPrice > price)
-    ? selectedVariant.oldPrice
-    : (selectedProduct.oldPrice || (selectedProduct.promoPrice ? selectedProduct.price : 0));
+  const oldPrice =
+    selectedVariant?.oldPrice && selectedVariant.oldPrice > price
+      ? selectedVariant.oldPrice
+      : selectedProduct.oldPrice ||
+        (selectedProduct.promoPrice ? selectedProduct.price : 0);
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -130,7 +135,11 @@ export default function MobileConfigurator({
             key={selectedProduct.id}
             selectedProduct={selectedProduct.model}
             productName={getTranslated(selectedProduct, lang)}
-            productDescription={getTranslated(selectedProduct, lang, "description")}
+            productDescription={getTranslated(
+              selectedProduct,
+              lang,
+              "description",
+            )}
             selectedPrint={selectedPrint}
             selectedColor={selectedColor.hex}
             onProductClick={onProductClick}
@@ -161,9 +170,7 @@ export default function MobileConfigurator({
                       ? "border-[#00C6F1] ring-2 ring-[#00C6F1]/30 scale-110"
                       : "border-gray-300"
                   } ${
-                    !hasStock
-                      ? "cursor-pointer scale-90"
-                      : "active:scale-95"
+                    !hasStock ? "cursor-pointer scale-90" : "active:scale-95"
                   }`}
                   style={{
                     backgroundColor: color.hex,
@@ -204,9 +211,14 @@ export default function MobileConfigurator({
                     setQuantity(1);
                   }}
                   disabled={false}
-                  style={isOutOfStock ? {
-                    backgroundImage: "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)"
-                  } : {}}
+                  style={
+                    isOutOfStock
+                      ? {
+                          backgroundImage:
+                            "linear-gradient(45deg, transparent 48%, #9F9F9F 48%, #9F9F9F 52%, transparent 52%)",
+                        }
+                      : {}
+                  }
                   className={`py-[5px] text-[13px]/[16px] rounded-[5px] shadow-sm transition-all relative border min-h-[32px] flex items-center justify-center ${
                     isActive && !isOutOfStock
                       ? "bg-[#00C6F1] text-white border-[#00C6F1]"
@@ -230,10 +242,10 @@ export default function MobileConfigurator({
 
           {!isOutOfStock && (
             <p className="text-green-600 text-sm font-medium mt-5 flex items-center gap-1">
-              <span className="text-lg">✓</span> 
+              <span className="text-lg">✓</span>
               <span className="inline-block min-w-[100px]">
-                {selectedVariant?.hideExactStock 
-                  ? t.inStock 
+                {selectedVariant?.hideExactStock
+                  ? t.inStock
                   : `${sizeStock} ${t.pcs}`}
               </span>
             </p>
@@ -243,7 +255,8 @@ export default function MobileConfigurator({
         {/* Quantity */}
         <div>
           <p className="text-[13px]/[16px] text-[#333333] mb-3">
-            {t.quantity}: {quantity}{t.pcs}
+            {t.quantity}: {quantity}
+            {t.pcs}
           </p>
           <div className="flex items-center gap-4">
             <button
@@ -251,8 +264,18 @@ export default function MobileConfigurator({
               disabled={quantity <= 1}
               className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 12H4"
+                />
               </svg>
             </button>
 
@@ -265,15 +288,25 @@ export default function MobileConfigurator({
               disabled={quantity >= sizeStock}
               className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
             </button>
 
             {!isOutOfStock && (
               <span className="text-sm text-green-600 font-medium ml-2 inline-block min-w-[100px]">
-                {selectedVariant?.hideExactStock 
-                  ? t.inStock 
+                {selectedVariant?.hideExactStock
+                  ? t.inStock
                   : `${sizeStock} ${t.pcs}`}
               </span>
             )}

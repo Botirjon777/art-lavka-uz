@@ -40,8 +40,8 @@ export default function TShirtScene({
   onPrintClick,
   onGalleryClick,
   showUI = true,
-  modelScale = 1.5,
-  modelPosition = [0, -0.6, 0],
+  modelScale = 1.4,
+  modelPosition = [0, -1.1, 0],
   cameraPosition = [0, 0, 5],
 }: TShirtSceneProps) {
   const isMobile = useIsMobile();
@@ -49,7 +49,7 @@ export default function TShirtScene({
   const [isDescModalOpen, setIsDescModalOpen] = useState(false);
 
   return (
-    <div className="w-full h-full min-h-[400px] relative overflow-hidden">
+    <div className="w-full h-full relative overflow-hidden">
       <Canvas
         camera={{ position: cameraPosition, fov: 50 }}
         gl={{ antialias: true, alpha: true }}
@@ -213,21 +213,30 @@ export default function TShirtScene({
                   >
                     Выбрать принт
                   </button>
-                  {onProductClick && (
+                  {onProductClick ? (
                     <button
                       onClick={onProductClick}
                       className="py-[12px] bg-white rounded-xl text-[12px] text-[#333333] hover:bg-gray-50 active:scale-95 transition-all shadow-sm border border-gray-100"
                     >
                       Выбрать продукт
                     </button>
+                  ) : (
+                    <button
+                      onClick={onGalleryClick}
+                      className="py-[12px] bg-white rounded-xl text-[12px] text-[#333333] hover:bg-gray-50 active:scale-95 transition-all shadow-sm border border-gray-100"
+                    >
+                      Смотреть галерею
+                    </button>
                   )}
                 </div>
-                <button
-                  onClick={onGalleryClick}
-                  className="w-full py-[12px] bg-white/80 backdrop-blur-sm rounded-xl text-[12px] text-[#333333] hover:bg-white active:scale-95 transition-all shadow-sm border border-gray-100 font-medium"
-                >
-                  Смотреть галерею
-                </button>
+                {onProductClick && (
+                  <button
+                    onClick={onGalleryClick}
+                    className="w-full py-[12px] bg-white/80 backdrop-blur-sm rounded-xl text-[12px] text-[#333333] hover:bg-white active:scale-95 transition-all shadow-sm border border-gray-100 font-medium"
+                  >
+                    Смотреть галерею
+                  </button>
+                )}
               </div>
             </div>
           )}
