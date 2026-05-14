@@ -9,7 +9,7 @@ import Loader from "@/components/Loader";
 
 export default function OrderList() {
   const { data: orders = [], isLoading: loading } = useAdminOrders();
-  const [filter, setFilter] = useState<OrderStatus | "all">("all");
+  const [filter, setFilter] = useState<OrderStatus | "all">("pending");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredOrders = orders.filter((order: Order) => {
