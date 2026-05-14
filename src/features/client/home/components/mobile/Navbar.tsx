@@ -67,7 +67,10 @@ export default function Navbar({
         </div>
 
         {/* Logo - Centered */}
-        <div className="shrink-0 flex justify-center px-2">
+        <div 
+          className="shrink-0 flex justify-center px-2 cursor-pointer active:scale-95 transition-transform"
+          onClick={() => window.location.href = '/'}
+        >
           <Image
             src="/art-lavka.png"
             alt="ART LAVKA.UZ"

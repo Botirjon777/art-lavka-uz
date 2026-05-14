@@ -182,5 +182,6 @@
   "errorLoadOrderDetails": "Buyurtma tafsilotlarini yuklashda xatolik",
   "backToHome": "Asosiy sahifaga",
   "rotateModel": "Modelni sichqoncha bilan aylantiring",
-  "zoomScroll": "Masshtabni o'zgartirish uchun sichqoncha g'ildiragidan foydalaning"
+  "zoomScroll": "Masshtabni o'zgartirish uchun sichqoncha g'ildiragidan foydalaning",
+  "selectOption": "Tanlang"
 }

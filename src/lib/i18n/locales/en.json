@@ -182,5 +182,6 @@
   "errorLoadOrderDetails": "Error loading order details",
   "backToHome": "Back to Home",
   "rotateModel": "Rotate the model with your mouse",
-  "zoomScroll": "Use the mouse wheel to zoom"
+  "zoomScroll": "Use the mouse wheel to zoom",
+  "selectOption": "Select an option"
 }

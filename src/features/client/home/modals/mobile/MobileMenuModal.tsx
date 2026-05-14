@@ -24,7 +24,7 @@ export default function MobileMenuModal({
 }: MobileMenuModalProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
-  const [openSection, setOpenSection] = useState<string | null>("delivery");
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const { data: settings, isLoading } = useSettings();
 
   const toggleSection = (section: string) => {
@@ -80,13 +80,13 @@ export default function MobileMenuModal({
                   <div key={section.id} className="space-y-2">
                     <button
                       onClick={() => toggleSection(section.id)}
-                      className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${
+                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
                         openSection === section.id
                           ? "bg-[#8814B1] text-white shadow-lg shadow-purple-100"
                           : "bg-gray-50 text-[#333333] hover:bg-gray-100"
                       }`}
                     >
-                      <span className="text-lg font-bold">{section.label}</span>
+                      <span className="text-base font-bold">{section.label}</span>
                       <motion.svg
                         animate={{ rotate: openSection === section.id ? 180 : 0 }}
                         className="w-5 h-5"
@@ -182,11 +182,11 @@ export default function MobileMenuModal({
             </div>
 
             {/* Footer Buttons */}
-            <div className="p-5 border-t border-gray-100 space-y-3 bg-gray-50/30">
+            <div className="p-5 border-t border-gray-100 space-y-2 bg-gray-50/30">
               <Link
                 href="/track-order"
                 onClick={onClose}
-                className="flex items-center justify-center w-full py-4 bg-[#8814B1] text-white rounded-2xl font-bold shadow-lg shadow-purple-100"
+                className="flex items-center justify-center w-full py-3 bg-[#8814B1] text-white rounded-xl font-bold shadow-lg shadow-purple-100 text-sm"
               >
                 {t.trackOrder}
               </Link>
@@ -195,7 +195,7 @@ export default function MobileMenuModal({
                   onGalleryClick();
                   onClose();
                 }}
-                className="flex items-center justify-center w-full py-4 border-2 border-[#8814B1] text-[#8814B1] rounded-2xl font-bold hover:bg-purple-50"
+                className="flex items-center justify-center w-full py-3 border-2 border-[#8814B1] text-[#8814B1] rounded-xl font-bold hover:bg-purple-50 text-sm"
               >
                 {t.gallery}
               </button>

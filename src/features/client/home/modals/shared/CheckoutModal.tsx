@@ -503,6 +503,7 @@ export default function CheckoutModal({
                   <Dropdown
                     label={t.deliveryMethod}
                     value={deliveryMethod}
+                    placeholder={t.selectOption}
                     onChange={(val) =>
                       setDeliveryMethod(val as "door" | "pickup")
                     }
@@ -515,6 +516,7 @@ export default function CheckoutModal({
                   <Dropdown
                     label={t.region}
                     value={region}
+                    placeholder={t.regionPlaceholder}
                     onChange={(val) => {
                       setRegion(val);
                       if (val === "Ферганская область") setVillage("г.Фергана");
@@ -530,6 +532,7 @@ export default function CheckoutModal({
                   <Dropdown
                     label={t.village}
                     value={village}
+                    placeholder={t.villagePlaceholder}
                     disabled={!region || region === "Ферганская область"}
                     onChange={setVillage}
                     options={availableDistricts.map((d) => ({
@@ -543,6 +546,8 @@ export default function CheckoutModal({
                     <Dropdown
                       label={t.selectBranch}
                       value={selectedBranch?.id || ""}
+                      placeholder={t.selectBranch}
+                      disabled={!village}
                       onChange={(id) =>
                         setSelectedBranch(
                           branches.find((b) => b.id === id) || null,
@@ -552,6 +557,7 @@ export default function CheckoutModal({
                         key: b.id,
                         value: b.id,
                         label: b.name,
+                        description: b.address,
                       }))}
                       buttonClassName="px-3 py-2.5 text-base"
                     />
@@ -728,6 +734,7 @@ export default function CheckoutModal({
                     <Dropdown
                       label={t.deliveryMethod}
                       value={deliveryMethod}
+                      placeholder={t.selectOption}
                       onChange={(v) => setDeliveryMethod(v as any)}
                       options={[
                         { value: "door", label: t.toDoor },
@@ -738,6 +745,7 @@ export default function CheckoutModal({
                       <Dropdown
                         label={t.region}
                         value={region}
+                        placeholder={t.regionPlaceholder}
                         onChange={(v) => {
                           setRegion(v);
                           if (v === "Ферганская область")
@@ -753,6 +761,7 @@ export default function CheckoutModal({
                       <Dropdown
                         label={t.village}
                         value={village}
+                        placeholder={t.villagePlaceholder}
                         disabled={!region || region === "Ферганская область"}
                         onChange={setVillage}
                         options={availableDistricts.map((d) => ({
@@ -766,6 +775,8 @@ export default function CheckoutModal({
                       <Dropdown
                         label={t.selectBranch}
                         value={selectedBranch?.id || ""}
+                        placeholder={t.selectBranch}
+                        disabled={!village}
                         onChange={(id) =>
                           setSelectedBranch(
                             branches.find((b) => b.id === id) || null,
@@ -775,6 +786,7 @@ export default function CheckoutModal({
                           key: b.id,
                           value: b.id,
                           label: b.name,
+                          description: b.address,
                         }))}
                       />
                     ) : (
