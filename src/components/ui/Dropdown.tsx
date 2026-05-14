@@ -55,9 +55,26 @@ export default function Dropdown({
   const updateCoords = () => {
     if (dropdownRef.current) {
       const rect = dropdownRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const menuHeight = 240; // max-h-60 is 240px
+      
+      let top = rect.bottom + window.scrollY;
+      let left = rect.left + window.scrollX;
+      const windowWidth = window.innerWidth;
+      
+      // If menu would go off bottom of screen, show above
+      if (rect.bottom + menuHeight > windowHeight && rect.top > menuHeight) {
+        top = rect.top + window.scrollY - menuHeight - 8;
+      }
+
+      // If menu would go off right side of screen, align to right
+      if (rect.left + rect.width > windowWidth) {
+        left = windowWidth - rect.width - 16 + window.scrollX;
+      }
+
       setCoords({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        top,
+        left: Math.max(8, left),
         width: rect.width,
       });
     }
@@ -149,12 +166,12 @@ export default function Dropdown({
           } border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 text-left flex items-center justify-between ${
             error
               ? "border-red-500 focus:ring-red-500"
-              : "border-gray-300 focus:ring-[#00C6F1]"
+              : "border-gray-300 focus:ring-[#8814B1]"
           } ${
             disabled
               ? "bg-gray-100 cursor-not-allowed text-gray-400"
-              : "bg-white hover:border-[#00C6F1] cursor-pointer"
-          } ${isOpen ? "ring-2 ring-[#00C6F1] border-[#00C6F1]" : ""}`}
+              : "bg-white hover:border-[#8814B1] cursor-pointer"
+          } ${isOpen ? "ring-2 ring-[#8814B1] border-[#8814B1]" : ""}`}
         >
           <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
             {selectedOption ? selectedOption.label : placeholder}
@@ -185,7 +202,7 @@ export default function Dropdown({
           createPortal(
             <div
               id={`${dropdownId}-menu`}
-              className="fixed z-9999 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+              className="absolute z-9999 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
               style={{
                 top: coords.top + 8,
                 left: coords.left,
@@ -204,7 +221,7 @@ export default function Dropdown({
                     onClick={() => handleSelect(option.value)}
                     className={`w-full px-4 py-3 text-left transition-colors duration-150 ${
                       option.value === value
-                        ? "bg-[#00C6F1]/10 text-[#00C6F1] font-medium"
+                        ? "bg-[#8814B1]/10 text-[#8814B1] font-medium"
                         : "text-gray-700 hover:bg-gray-50"
                     } ${index === 0 ? "rounded-t-lg" : ""} ${
                       index === options.length - 1 ? "rounded-b-lg" : ""
@@ -212,7 +229,7 @@ export default function Dropdown({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="text-sm">{option.label}</div>
+                        <div className="text-base">{option.label}</div>
                         {option.description && (
                           <div className="text-xs text-gray-500 mt-0.5">
                             {option.description}
@@ -223,7 +240,7 @@ export default function Dropdown({
                       {/* Checkmark for selected option */}
                       {option.value === value && (
                         <svg
-                          className="w-5 h-5 text-[#00C6F1] ml-2 shrink-0"
+                          className="w-5 h-5 text-[#8814B1] ml-2 shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"

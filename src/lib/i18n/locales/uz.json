@@ -1,5 +1,6 @@
 {
   "gallery": "Foto Galereya",
+  "menu": "Menyu",
   "trackOrder": "Buyurtmani kuzatish",
   "selectPrint": "Print tanlang",
   "noPrint": "Printsiz",
@@ -40,6 +41,7 @@
   "checkoutTitle": "Buyurtmani rasmiylashtirish",
   "orderSummary": "Buyurtma xulosasi",
   "product": "ta mahsulot",
+  "selectDeliveryOption": "Yetkazib berish usulini tanlang",
   "deliveryMethod": "Yetkazib berish usuli",
   "toDoor": "Eshikkacha yetkazish",
   "toPunct": "Topshirish punkti",
@@ -51,7 +53,6 @@
   "ferganaAddress": "Yetkazib berish manzili",
   "ferganaAddressPlaceholder": "Ko'cha, uy, kvartira",
   "errorFerganaDistrictRequired": "Tumanni tanlang",
-  "errorFerganaAddressRequired": "Yetkazib berish manzilini kiriting",
   "itemsTotal": "Mahsulotlar narxi",
   "deliveryPrice": "Yetkazib berish narxi",
   "selectBranch": "Topshirish punktini tanlang",
@@ -135,6 +136,8 @@
   "errorRegionRequired": "Viloyatni tanlang",
   "errorStreetRequired": "Ko'cha manzilini kiriting",
   "errorHomeRequired": "Uy/kvartira raqamini kiriting",
+  "errorCarrierRequired": "Yetkazib berish usulini tanlang",
+  "errorFerganaAddressRequired": "Farg'onadagi yetkazib berish manzilini kiriting",
   "errorFormFix": "Iltimos, forma xatolarini to'g'rilang",
   "regions": [
     "Toshkent shahri",
@@ -179,5 +182,6 @@
   "errorLoadOrderDetails": "Buyurtma tafsilotlarini yuklashda xatolik",
   "backToHome": "Asosiy sahifaga",
   "rotateModel": "Modelni sichqoncha bilan aylantiring",
-  "zoomScroll": "Masshtabni o'zgartirish uchun sichqoncha g'ildiragidan foydalaning"
+  "zoomScroll": "Masshtabni o'zgartirish uchun sichqoncha g'ildiragidan foydalaning",
+  "selectOption": "Tanlang"
 }

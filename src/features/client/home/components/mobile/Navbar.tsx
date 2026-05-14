@@ -1,20 +1,23 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { PiShoppingCartSimpleBold } from "react-icons/pi";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 interface NavbarProps {
   onMenuClick: () => void;
   onCartClick: () => void;
+  onCloseModal: () => void;
   cartItemCount: number;
-  activeModal: "menu" | "cart" | "gallery" | "products" | "prints" | null;
+  activeModal: "menu" | "cart" | "gallery" | "products" | "prints" | "sizes" | null;
   hidden?: boolean;
 }
 
 export default function Navbar({
   onMenuClick,
   onCartClick,
+  onCloseModal,
   cartItemCount,
   activeModal,
   hidden,
@@ -28,7 +31,7 @@ export default function Navbar({
         <div className="flex-1 flex justify-start">
           <button
             onClick={onMenuClick}
-            className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-colors"
+            className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-colors relative z-10"
             aria-label={activeModal === "menu" ? "Close menu" : "Open menu"}
           >
             {activeModal === "menu" ? (
@@ -64,7 +67,10 @@ export default function Navbar({
         </div>
 
         {/* Logo - Centered */}
-        <div className="shrink-0 flex justify-center px-2">
+        <div 
+          className="shrink-0 flex justify-center px-2 cursor-pointer active:scale-95 transition-transform"
+          onClick={() => window.location.href = '/'}
+        >
           <Image
             src="/art-lavka.png"
             alt="ART LAVKA.UZ"
@@ -79,38 +85,23 @@ export default function Navbar({
         <div className="flex-1 flex items-center justify-end gap-1.5">
           <LanguageSwitcher />
           
-          <button
-            onClick={onCartClick}
-            className="relative w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-colors"
-            aria-label={activeModal === "cart" ? "Close cart" : "Open cart"}
+          <Link
+            href="/cart"
+            onClick={onCloseModal}
+            className="relative w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 text-white rounded-xl transition-colors z-20"
+            aria-label="Open cart"
           >
-            {activeModal === "cart" ? (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            ) : (
-              <>
-                <PiShoppingCartSimpleBold size={20} />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#00C6F1] text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                    {cartItemCount}
-                  </span>
-                )}
-              </>
+            <PiShoppingCartSimpleBold size={20} />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#00C6F1] text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                {cartItemCount}
+              </span>
             )}
-          </button>
+          </Link>
         </div>
       </div>
     </nav>
   );
 }
+
+

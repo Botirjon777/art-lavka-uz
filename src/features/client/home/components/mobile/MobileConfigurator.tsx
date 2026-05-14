@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "../shared/TShirtScene";
-import SizeTableModal from "@/components/SizeTableModal";
 import { MobileFooter } from "./MobileFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
@@ -17,6 +16,7 @@ interface MobileConfiguratorProps {
   onProductClick?: () => void;
   onPrintClick?: () => void;
   onGalleryClick?: () => void;
+  onSizeClick?: () => void;
 }
 
 export default function MobileConfigurator({
@@ -27,6 +27,7 @@ export default function MobileConfigurator({
   onProductClick,
   onPrintClick,
   onGalleryClick,
+  onSizeClick,
 }: MobileConfiguratorProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
@@ -47,7 +48,6 @@ export default function MobileConfigurator({
     firstInStockSize || productSizes[0] || "",
   );
   const [quantity, setQuantity] = useState(1);
-  const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
   // Reset selection when product changes
   useEffect(() => {
@@ -234,7 +234,7 @@ export default function MobileConfigurator({
           </div>
 
           <button
-            onClick={() => setIsSizeModalOpen(true)}
+            onClick={onSizeClick}
             className="text-[13px]/[16px] text-[#333333] underline mt-[15px]"
           >
             {t.sizeChart}
@@ -357,12 +357,6 @@ export default function MobileConfigurator({
 
       {/* Footer */}
       <MobileFooter />
-
-      <SizeTableModal
-        isOpen={isSizeModalOpen}
-        onClose={() => setIsSizeModalOpen(false)}
-        data={selectedProduct.sizeTable}
-      />
     </div>
   );
 }

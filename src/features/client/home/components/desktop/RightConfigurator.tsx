@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
 import TShirtScene from "../shared/TShirtScene";
-import SizeTableModal from "@/components/SizeTableModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
@@ -14,6 +13,7 @@ interface RightConfiguratorProps {
   onAddToCart: (config: ConfiguratorState) => void;
   onBuyOneClick: (config: ConfiguratorState) => void;
   onProductClick?: () => void;
+  onSizeClick?: () => void;
 }
 
 export default function RightConfigurator({
@@ -22,6 +22,7 @@ export default function RightConfigurator({
   onAddToCart,
   onBuyOneClick,
   onProductClick,
+  onSizeClick,
 }: RightConfiguratorProps) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
@@ -42,7 +43,6 @@ export default function RightConfigurator({
     firstInStockSize || productSizes[0] || "",
   );
   const [quantity, setQuantity] = useState(1);
-  const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
 
   // Reset selection when product changes
   useEffect(() => {
@@ -225,7 +225,7 @@ export default function RightConfigurator({
                 </div>
 
                 <button
-                  onClick={() => setIsSizeModalOpen(true)}
+                  onClick={onSizeClick}
                   className="text-[16px]/[22px] text-[#333333] hover:text-[#333333]/80 underline mt-[15px] cursor-pointer"
                 >
                   {t.sizeChart}
@@ -359,11 +359,6 @@ export default function RightConfigurator({
           </div>
         </div>
       </div>
-      <SizeTableModal
-        isOpen={isSizeModalOpen}
-        onClose={() => setIsSizeModalOpen(false)}
-        data={selectedProduct.sizeTable}
-      />
     </div>
   );
 }

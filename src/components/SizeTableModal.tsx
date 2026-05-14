@@ -30,18 +30,19 @@ export default function SizeTableModal({
 }: SizeTableModalProps) {
   const isMobile = useIsMobile();
   const { t } = useTranslation();
-  
+
   const displayData = data && data.length > 0 ? data : sizeData;
 
   // Mobile version
   if (isMobile) {
     return (
-      <MobileModal isOpen={isOpen} onClose={onClose}>
+      <MobileModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onBack={onClose}
+        title={t.sizeChart}
+      >
         <div className="px-4 py-4">
-          <h2 className="text-xl font-semibold text-[#333333] mb-6">
-            {t.sizeChart}
-          </h2>
-
           {/* Size Table */}
           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white mb-6">
             <table className="w-full text-left border-collapse">
@@ -65,10 +66,20 @@ export default function SizeTableModal({
                       {item.size}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {item.width} {t.pcs ? (t.pcs === "шт" || t.pcs === "dona" ? "см" : "cm") : "cm"}
+                      {item.width}{" "}
+                      {t.pcs
+                        ? t.pcs === "шт" || t.pcs === "dona"
+                          ? "см"
+                          : "cm"
+                        : "cm"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {item.height} {t.pcs ? (t.pcs === "шт" || t.pcs === "dona" ? "см" : "cm") : "cm"}
+                      {item.height}{" "}
+                      {t.pcs
+                        ? t.pcs === "шт" || t.pcs === "dona"
+                          ? "см"
+                          : "cm"
+                        : "cm"}
                     </td>
                   </tr>
                 ))}
@@ -80,9 +91,7 @@ export default function SizeTableModal({
           <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
             <p className="text-sm text-purple-800">
               <span className="font-bold block mb-2">{t.howToMeasure}:</span>
-              <span className="opacity-80">
-                {t.howToMeasureDesc}
-              </span>
+              <span className="opacity-80">{t.howToMeasureDesc}</span>
             </p>
           </div>
         </div>
@@ -145,9 +154,7 @@ export default function SizeTableModal({
         <div className="mt-8 p-6 bg-purple-50 rounded-2xl border border-purple-100">
           <p className="text-[14px]/[20px] text-purple-800">
             <span className="font-bold mr-1 block mb-1">{t.howToMeasure}:</span>
-            <span className="opacity-80">
-              {t.howToMeasureDesc}
-            </span>
+            <span className="opacity-80">{t.howToMeasureDesc}</span>
           </p>
         </div>
       </div>

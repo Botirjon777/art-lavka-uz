@@ -1,5 +1,6 @@
 {
   "gallery": "Photo Gallery",
+  "menu": "Menu",
   "trackOrder": "Track Order",
   "selectPrint": "Select a Print",
   "noPrint": "No Print",
@@ -40,6 +41,7 @@
   "checkoutTitle": "Checkout",
   "orderSummary": "Order Summary",
   "product": "item(s)",
+  "selectDeliveryOption": "Select delivery option",
   "deliveryMethod": "Delivery Method",
   "toDoor": "Deliver to Door",
   "toPunct": "Pickup Point",
@@ -51,7 +53,6 @@
   "ferganaAddress": "Delivery Address",
   "ferganaAddressPlaceholder": "Street, house, apartment",
   "errorFerganaDistrictRequired": "Please select a district",
-  "errorFerganaAddressRequired": "Please enter a delivery address",
   "itemsTotal": "Items Total",
   "deliveryPrice": "Delivery Price",
   "selectBranch": "Select Pickup Point",
@@ -135,6 +136,8 @@
   "errorRegionRequired": "Please select a region",
   "errorStreetRequired": "Please enter a street address",
   "errorHomeRequired": "Please enter a house/apt number",
+  "errorCarrierRequired": "Please select a delivery option",
+  "errorFerganaAddressRequired": "Please enter a delivery address in Fergana",
   "errorFormFix": "Please fix the errors in the form",
   "regions": [
     "Tashkent City",
@@ -179,5 +182,6 @@
   "errorLoadOrderDetails": "Error loading order details",
   "backToHome": "Back to Home",
   "rotateModel": "Rotate the model with your mouse",
-  "zoomScroll": "Use the mouse wheel to zoom"
+  "zoomScroll": "Use the mouse wheel to zoom",
+  "selectOption": "Select an option"
 }

@@ -1,5 +1,6 @@
 {
   "gallery": "Фото Галерея",
+  "menu": "Меню",
   "trackOrder": "Отследить заказ",
   "selectPrint": "Выберите принт",
   "noPrint": "Без принта",
@@ -40,6 +41,7 @@
   "checkoutTitle": "Оформление заказа",
   "orderSummary": "Сводка заказа",
   "product": "товар(ов)",
+  "selectDeliveryOption": "Выберите вариант доставки",
   "deliveryMethod": "Способ доставки",
   "toDoor": "Доставка до двери",
   "toPunct": "Пункт выдачи",
@@ -51,7 +53,6 @@
   "ferganaAddress": "Адрес доставки",
   "ferganaAddressPlaceholder": "Улица, дом, квартира",
   "errorFerganaDistrictRequired": "Выберите район",
-  "errorFerganaAddressRequired": "Введите адрес доставки",
   "itemsTotal": "Стоимость товаров",
   "deliveryPrice": "Стоимость доставки",
   "selectBranch": "Выберите пункт выдачи",
@@ -135,6 +136,8 @@
   "errorRegionRequired": "Выберите область",
   "errorStreetRequired": "Введите адрес улицы",
   "errorHomeRequired": "Введите номер дома/квартиры",
+  "errorCarrierRequired": "Выберите вариант доставки",
+  "errorFerganaAddressRequired": "Введите адрес доставки в Фергане",
   "errorFormFix": "Пожалуйста, исправьте ошибки в форме",
   "regions": [
     "город Ташкент",
@@ -179,5 +182,6 @@
   "errorLoadOrderDetails": "Ошибка при загрузке деталей заказа",
   "backToHome": "На главную",
   "rotateModel": "Вращайте модель мышкой",
-  "zoomScroll": "Колесико для масштабирования"
+  "zoomScroll": "Колесико для масштабирования",
+  "selectOption": "Выберите вариант"
 }

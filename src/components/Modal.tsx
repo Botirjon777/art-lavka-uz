@@ -51,7 +51,16 @@ export default function Modal({
           showBackgroundImage ? "bg-image" : ""
         }`}
       >
-        <div className="p-10">{children}</div>
+        <div className="p-10 relative">
+          <button
+            onClick={onClose}
+            className="absolute -right-4 -top-4 w-12 h-12 flex items-center justify-center bg-white text-gray-400 hover:text-[#8814B1] hover:shadow-xl rounded-full transition-all text-3xl z-50 border border-gray-100 shadow-lg group active:scale-90"
+            aria-label="Close modal"
+          >
+            <span className="group-hover:rotate-90 transition-transform duration-300">×</span>
+          </button>
+          {children}
+        </div>
       </div>
     </div>
   );
