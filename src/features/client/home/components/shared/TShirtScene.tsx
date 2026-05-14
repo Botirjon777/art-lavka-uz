@@ -14,6 +14,7 @@ import { TShirtModel } from "./TShirtModel";
 import Modal from "@/components/Modal";
 import MobileModal from "@/features/client/home/modals/mobile/MobileModal";
 import { FiX } from "react-icons/fi";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface TShirtSceneProps {
   selectedProduct?: string;
@@ -32,7 +33,7 @@ interface TShirtSceneProps {
 
 export default function TShirtScene({
   selectedProduct,
-  productName = "Продукт",
+  productName = "",
   productDescription = "",
   selectedPrint,
   selectedColor,
@@ -44,6 +45,7 @@ export default function TShirtScene({
   modelPosition = [0, -1.1, 0],
   cameraPosition = [0, 0, 5],
 }: TShirtSceneProps) {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDescModalOpen, setIsDescModalOpen] = useState(false);
@@ -106,7 +108,7 @@ export default function TShirtScene({
       <button
         onClick={() => setIsFullscreen(true)}
         className="absolute top-4 right-4 z-10 p-3 bg-white/80 backdrop-blur-sm rounded-full text-[#333333] hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-lg group"
-        title="Развернуть"
+        title={t.maximize}
       >
         <LuMaximize size={22} className="group-hover:text-[#00C6F1]" />
       </button>
@@ -128,20 +130,20 @@ export default function TShirtScene({
             <MobileModal
               isOpen={isDescModalOpen}
               onClose={() => setIsDescModalOpen(false)}
-              title={productName}
+              title={productName || t.defaultProductTitle}
             >
               <div className="flex flex-col h-full bg-white">
                 <div className="px-6 py-4 flex-1">
                   <div className="inline-block px-3 py-1 bg-[#8814B1]/10 rounded-full mb-4">
                     <span className="text-[12px] font-bold text-[#8814B1] uppercase tracking-wider">
-                      Oписание товара
+                      {t.productDescriptionTitle}
                     </span>
                   </div>
                   <h2 className="text-2xl font-bold text-[#333333] mb-6">
-                    {productName}
+                    {productName || t.defaultProductTitle}
                   </h2>
                   <div className="prose prose-sm max-w-none text-[#666666] leading-relaxed text-[15px]">
-                    {productDescription || "Нет описания."}
+                    {productDescription || t.noDescription}
                   </div>
                 </div>
               </div>
@@ -157,11 +159,11 @@ export default function TShirtScene({
                   <div className="space-y-2">
                     <div className="inline-block px-3 py-1 bg-[#8814B1]/10 rounded-full">
                       <span className="text-[12px] font-bold text-[#8814B1] uppercase tracking-wider">
-                        Oписание товара
+                        {t.productDescriptionTitle}
                       </span>
                     </div>
                     <h2 className="text-[32px]/[40px] font-bold text-[#333333]">
-                      {productName}
+                      {productName || t.defaultProductTitle}
                     </h2>
                   </div>
                   <button
@@ -175,7 +177,7 @@ export default function TShirtScene({
                 <div className="relative">
                   <div className="absolute -left-6 top-0 bottom-0 w-1 bg-linear-to-b from-[#8814B1] to-[#00C6F1] rounded-full opacity-20" />
                   <div className="text-[17px]/[28px] text-[#555555] whitespace-pre-wrap font-medium">
-                    {productDescription || "Нет описания."}
+                    {productDescription || t.noDescription}
                   </div>
                 </div>
 
@@ -184,7 +186,7 @@ export default function TShirtScene({
                     onClick={() => setIsDescModalOpen(false)}
                     className="px-8 py-3 bg-[#333333] text-white rounded-xl hover:bg-[#333333]/90 transition-all font-medium cursor-pointer"
                   >
-                    Закрыть
+                    {t.close}
                   </button>
                 </div>
               </div>
@@ -199,7 +201,7 @@ export default function TShirtScene({
                   onClick={() => setIsDescModalOpen(true)}
                   className="text-[13px]/[16px] text-[#333333] flex items-center gap-2 cursor-pointer"
                 >
-                  {productName}
+                  {productName || t.defaultProductTitle}
                   <AiFillQuestionCircle size={18} className="text-[#666666]" />
                 </div>
               </div>
@@ -211,21 +213,21 @@ export default function TShirtScene({
                     onClick={onPrintClick}
                     className="py-[12px] bg-[#00C6F1] rounded-xl text-[12px] text-white hover:bg-[#00C6F1]/90 active:scale-95 transition-all shadow-sm font-bold"
                   >
-                    Выбрать принт
+                    {t.btnSelectPrint}
                   </button>
                   {onProductClick ? (
                     <button
                       onClick={onProductClick}
                       className="py-[12px] bg-white rounded-xl text-[12px] text-[#333333] hover:bg-gray-50 active:scale-95 transition-all shadow-sm border border-gray-100"
                     >
-                      Выбрать продукт
+                      {t.btnSelectProduct}
                     </button>
                   ) : (
                     <button
                       onClick={onGalleryClick}
                       className="py-[12px] bg-white rounded-xl text-[12px] text-[#333333] hover:bg-gray-50 active:scale-95 transition-all shadow-sm border border-gray-100"
                     >
-                      Смотреть галерею
+                      {t.viewGallery}
                     </button>
                   )}
                 </div>
@@ -234,7 +236,7 @@ export default function TShirtScene({
                     onClick={onGalleryClick}
                     className="w-full py-[12px] bg-white/80 backdrop-blur-sm rounded-xl text-[12px] text-[#333333] hover:bg-white active:scale-95 transition-all shadow-sm border border-gray-100 font-medium"
                   >
-                    Смотреть галерею
+                    {t.viewGallery}
                   </button>
                 )}
               </div>
@@ -247,7 +249,7 @@ export default function TShirtScene({
                 onClick={() => setIsDescModalOpen(true)}
                 className="text-[16px]/[20px] underline text-[#333333] flex items-center gap-[5px] cursor-pointer"
               >
-                {productName}{" "}
+                {productName || t.defaultProductTitle}{" "}
                 <AiFillQuestionCircle
                   size={20}
                   className="text-gray-400 group-hover:text-white"
@@ -258,7 +260,7 @@ export default function TShirtScene({
                   onClick={onProductClick}
                   className="text-[16px]/[20px] py-[15px] px-[35px] cursor-pointer rounded-xl bg-white text-[#333333] hover:text-[#333333]/80"
                 >
-                  Выбрать продукт
+                  {t.btnSelectProduct}
                 </button>
               )}
             </div>

@@ -1,7 +1,13 @@
 "use client";
 
-import { FiBox, FiArrowRight, FiShoppingBag, FiCheckCircle } from "react-icons/fi";
+import {
+  FiBox,
+  FiArrowRight,
+  FiShoppingBag,
+  FiCheckCircle,
+} from "react-icons/fi";
 import { Promotion } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface PromotionNudgeProps {
   promotion: Promotion;
@@ -16,14 +22,15 @@ export default function PromotionNudge({
   currentCount,
   onContinue,
   onShopMore,
-  region
+  region,
 }: PromotionNudgeProps) {
+  const { t } = useTranslation();
   const targetCount = promotion.conditionValue;
   const remaining = Math.max(0, targetCount - currentCount);
   const progress = Math.min(100, (currentCount / targetCount) * 100);
 
   return (
-    <div className="absolute inset-0 bg-white/95 backdrop-blur-md z-[60] flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300 rounded-[30px]">
+    <div className="absolute inset-0 bg-white/95 backdrop-blur-md z-60 flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300 rounded-[30px]">
       <div className="max-w-md w-full text-center space-y-8">
         {/* Icon & Message */}
         <div className="flex flex-col items-center gap-6">
@@ -35,14 +42,21 @@ export default function PromotionNudge({
               <FiCheckCircle size={20} />
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <h2 className="text-3xl font-black text-gray-800 leading-tight">
-              Почти готово! 🎉
+              {t.almostDone}
             </h2>
             <p className="text-gray-600 font-medium px-4">
-              Добавьте еще <span className="text-[#8814B1] font-bold">{remaining} {remaining === 1 ? 'товар' : 'товара'}</span>, 
-              чтобы получить <span className="text-green-600 font-bold uppercase tracking-wider">бесплатную доставку</span> в {region}!
+              {t.addMoreItems}{" "}
+              <span className="text-[#8814B1] font-bold">
+                {remaining} {t.pcs}
+              </span>
+              ,{t.toGetFreeDelivery}{" "}
+              <span className="text-green-600 font-bold uppercase tracking-wider">
+                {region}
+              </span>
+              !
             </p>
           </div>
         </div>
@@ -50,12 +64,14 @@ export default function PromotionNudge({
         {/* Progress Bar */}
         <div className="space-y-3 px-4">
           <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-widest">
-            <span>Прогресс</span>
-            <span>{currentCount} / {targetCount}</span>
+            <span>{t.nudgeProgress}</span>
+            <span>
+              {currentCount} / {targetCount}
+            </span>
           </div>
           <div className="h-4 bg-gray-100 rounded-full overflow-hidden border border-gray-100 p-0.5">
-            <div 
-              className="h-full bg-gradient-to-r from-[#8814B1] to-[#00C6F1] rounded-full transition-all duration-1000 ease-out shadow-sm"
+            <div
+              className="h-full bg-linear-to-r from-[#8814B1] to-[#00C6F1] rounded-full transition-all duration-1000 ease-out shadow-sm"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -68,15 +84,15 @@ export default function PromotionNudge({
             className="w-full py-5 bg-[#8814B1] hover:bg-[#8814B1]/90 text-white rounded-2xl font-black text-lg transition-all shadow-xl shadow-purple-100 active:scale-95 flex items-center justify-center gap-3 group"
           >
             <FiShoppingBag size={24} />
-            <span>Выбрать еще товары</span>
+            <span>{t.shopMore}</span>
             <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
           </button>
-          
+
           <button
             onClick={onContinue}
             className="w-full py-4 text-gray-400 hover:text-gray-600 font-bold text-sm transition-all"
           >
-            Продолжить оформление без акции
+            {t.continueCheckoutWithoutPromo}
           </button>
         </div>
       </div>

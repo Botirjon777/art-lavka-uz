@@ -32,9 +32,9 @@ export default function MobileProductsModal({
     useState<Product | null>(null);
 
   const categories: ICategory[] = settings?.categories || [
-    { id: "women", label: "Женский", status: "active" },
-    { id: "men", label: "Мужской", status: "soon" },
-    { id: "kids", label: "Детский", status: "soon" },
+    { id: "women", label: t.women, status: "active" },
+    { id: "men", label: t.men, status: "soon" },
+    { id: "kids", label: t.kids, status: "soon" },
   ];
 
   const tabs = categories.map((cat: ICategory) => ({
@@ -82,7 +82,7 @@ export default function MobileProductsModal({
               <span className="text-[13px]/[16px]">{tab.label}</span>
               {tab.soon && (
                 <span className="text-[13px]/[16px] ml-1 text-[#8814B1]">
-                  - Скоро
+                  - {t.soon}
                 </span>
               )}
             </button>
@@ -93,7 +93,7 @@ export default function MobileProductsModal({
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin mb-4"></div>
-            <p className="text-[#666666] text-sm">Загрузка продуктов...</p>
+            <p className="text-[#666666] text-sm">{t.loadingProducts}</p>
           </div>
         ) : allSoon ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-5">
@@ -101,11 +101,10 @@ export default function MobileProductsModal({
               <FiAlertTriangle className="w-12 h-12 text-[#8814B1]" />
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Извините, продуктов нет
+              {t.noProducts}
             </h3>
             <p className="text-gray-500 text-sm">
-              Все категории временно недоступны. Пожалуйста, зайдите позже или
-              следите за обновлениями!
+              {t.categoriesUnavailable}
             </p>
           </div>
         ) : (
@@ -121,7 +120,7 @@ export default function MobileProductsModal({
                   return (
                     <div className="col-span-2 text-center py-12 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
                       <p className="text-gray-400 text-sm">
-                        Нет доступных товаров
+                        {t.noAvailableItems}
                       </p>
                     </div>
                   );
