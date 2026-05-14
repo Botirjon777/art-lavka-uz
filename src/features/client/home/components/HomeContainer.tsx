@@ -16,7 +16,6 @@ import MobileMenuModal from "../modals/mobile/MobileMenuModal";
 import GalleryModal from "../modals/desktop/GalleryModal";
 import MobileGalleryModal from "../modals/mobile/MobileGalleryModal";
 import CartModal from "../modals/desktop/CartModal";
-import MobileCartModal from "../modals/mobile/MobileCartModal";
 import ProductsModal from "../modals/desktop/ProductsModal";
 import MobileProductsModal from "../modals/mobile/MobileProductsModal";
 import MobilePrintsModal from "../modals/mobile/MobilePrintsModal";
@@ -26,6 +25,9 @@ import { useSettings } from "../hooks/useSettings";
 import { useProducts } from "../hooks/useProducts";
 import { usePrints } from "../hooks/usePrints";
 import { usePrintCategories } from "../hooks/usePrintCategories";
+import { useCartStore } from "@/stores/cartStore";
+import { useConfiguratorStore } from "@/stores/configuratorStore";
+import SizeTableModal from "@/components/SizeTableModal";
 
 // Shared Types
 import {
@@ -41,23 +43,29 @@ export default function HomeContainer() {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
   const [activeModal, setActiveModal] = useState<
-    "menu" | "cart" | "gallery" | "products" | "prints" | null
+    "menu" | "cart" | "gallery" | "products" | "prints" | "sizes" | null
   >(null);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedPrint, setSelectedPrint] = useState<PrintDesign | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [showOrderSuccess, setShowOrderSuccess] = useState(false);
-  const [orderNumber, setOrderNumber] = useState("");
-  const [oneClickItem, setOneClickItem] = useState<CartItem | null>(null);
-  const [hasMultipleProducts, setHasMultipleProducts] = useState(false);
-
+  const { cartItems, addItem, removeItem, updateQuantity, clearCart, totalAmount: calculateTotal } = useCartStore();
+  const {
+    selectedProduct,
+    selectedPrint,
+    setSelectedProduct,
+    setSelectedPrint,
+    _hasHydrated,
+  } = useConfiguratorStore();
+  
   // Use hooks for consolidated fetching
   const { data: settings } = useSettings();
   const { data: productsData, isLoading: productsLoading } = useProducts();
   const { data: printsData = [], isLoading: printsLoading } = usePrints();
   const { data: printCategories = [] } = usePrintCategories();
+
+  const [loading, setLoading] = useState(!productsData);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showOrderSuccess, setShowOrderSuccess] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
+  const [oneClickItem, setOneClickItem] = useState<CartItem | null>(null);
+  const [hasMultipleProducts, setHasMultipleProducts] = useState(false);
 
   const selectedProductRef = useRef(selectedProduct);
   const settingsRef = useRef(settings);
@@ -74,6 +82,7 @@ export default function HomeContainer() {
   // Handle initial product selection when products are loaded
   useEffect(() => {
     if (productsData && productsData.length > 0) {
+      setLoading(false);
       const normalizedProducts = productsData.map((item: any) => ({
         ...item,
         id: item._id,
@@ -113,6 +122,19 @@ export default function HomeContainer() {
           }
         }
       }
+
+      // Preload all product models for instant switching
+      normalizedProducts.forEach((p: Product) => {
+        if (p.model) {
+          try {
+            const { useGLTF } = require("@react-three/drei");
+            useGLTF.preload(p.model);
+          } catch (e) {
+            // Ignore if not in browser or three.js context
+          }
+        }
+      });
+
       setLoading(false);
     }
   }, [productsData, settings]);
@@ -121,20 +143,6 @@ export default function HomeContainer() {
 
   const handleAddToCart = (config: ConfiguratorState) => {
     if (!selectedProduct) return;
-
-    // Check if item already exists in cart (same product, print, color, size)
-    const existingItemIndex = cartItems.findIndex(
-      (item) =>
-        (item.product.id === selectedProduct.id ||
-          item.product._id === selectedProduct._id) &&
-        ((!item.print && !config.selectedPrint) ||
-          (item.print &&
-            config.selectedPrint &&
-            (item.print.id === config.selectedPrint.id ||
-              item.print._id === config.selectedPrint._id))) &&
-        item.color === config.selectedColor &&
-        item.size === config.selectedSize,
-    );
 
     const selectedVariant = selectedProduct.colors
       ?.find(
@@ -146,40 +154,23 @@ export default function HomeContainer() {
 
     const maxStock = selectedVariant?.stock || 0;
 
-    if (existingItemIndex > -1) {
-      const existingItem = cartItems[existingItemIndex];
-      const newQuantity = existingItem.quantity + config.quantity;
-
-      if (newQuantity > maxStock) {
-        toast.error(`${t.inStock}: ${maxStock}`);
-        return;
-      }
-
-      const updatedCart = [...cartItems];
-      updatedCart[existingItemIndex] = {
-        ...existingItem,
-        quantity: newQuantity,
-      };
-      setCartItems(updatedCart);
-    } else {
-      if (config.quantity > maxStock) {
-        toast.error(`${t.inStock}: ${maxStock}`);
-        return;
-      }
-
-      const newItem: CartItem = {
-        id: Date.now().toString(),
-        product: selectedProduct,
-        print: config.selectedPrint,
-        color: config.selectedColor,
-        size: config.selectedSize,
-        quantity: config.quantity,
-        price: config.price || selectedProduct.price,
-        oldPrice: config.oldPrice,
-      };
-
-      setCartItems([...cartItems, newItem]);
+    if (config.quantity > maxStock) {
+      toast.error(`${t.inStock}: ${maxStock}`);
+      return;
     }
+
+    const newItem: CartItem = {
+      id: Date.now().toString(),
+      product: selectedProduct,
+      print: config.selectedPrint,
+      color: config.selectedColor,
+      size: config.selectedSize,
+      quantity: config.quantity,
+      price: config.price || selectedProduct.price,
+      oldPrice: config.oldPrice,
+    };
+
+    addItem(newItem);
     toast.success(t.productAddedToCart);
   };
 
@@ -202,33 +193,20 @@ export default function HomeContainer() {
   };
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
-    const item = cartItems.find((i) => i.id === id);
-    if (!item) return;
-
-    // Find stock for this specific item configuration
-    const color = item.product.colors?.find(
-      (c) => getTranslated(c, lang) === item.color,
-    );
-    const variant = color?.variants?.find((v) => v.size === item.size);
-    const maxStock = variant?.stock || 0;
-
-    if (quantity > maxStock) {
-      toast.error(`${t.inStock}: ${maxStock}`);
-      return;
-    }
-
-    setCartItems(
-      cartItems.map((item) => (item.id === id ? { ...item, quantity } : item)),
-    );
+    updateQuantity(id, quantity);
   };
 
   const handleRemoveItem = (id: string) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+    removeItem(id);
   };
 
   const handleSelectProduct = (product: Product) => {
     setSelectedProduct(product);
     setActiveModal(null);
+  };
+
+  const handleSelectPrint = (print: PrintDesign | null) => {
+    setSelectedPrint(print);
   };
 
   const handleCheckout = () => {
@@ -243,7 +221,7 @@ export default function HomeContainer() {
 
     // Only clear the main cart if this WASN'T a one-click purchase
     if (!oneClickItem) {
-      setCartItems([]);
+      clearCart();
     }
 
     setOneClickItem(null); // Always clear the one-click state
@@ -254,10 +232,7 @@ export default function HomeContainer() {
     setOrderNumber("");
   };
 
-  const totalAmount = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
+  const totalAmount = calculateTotal();
 
   return (
     <MainLayout
@@ -268,7 +243,7 @@ export default function HomeContainer() {
       activeModal={activeModal}
       isCheckoutOpen={showCheckout}
     >
-      {loading ? (
+      {loading || !_hasHydrated ? (
         <div className="flex items-center justify-center min-h-[600px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
@@ -305,7 +280,7 @@ export default function HomeContainer() {
             <LeftSidebar
               onGalleryClick={() => setActiveModal("gallery")}
               selectedPrint={selectedPrint}
-              onPrintSelect={setSelectedPrint}
+              onPrintSelect={handleSelectPrint}
               initialPrints={prints}
               initialLoading={printsLoading}
               printCategories={printCategories}
@@ -321,11 +296,12 @@ export default function HomeContainer() {
                   ? () => setActiveModal("products")
                   : undefined
               }
+              onSizeClick={() => setActiveModal("sizes")}
             />
           </div>
 
           {/* Mobile Layout */}
-          <div className="md:hidden animate-in slide-in-from-bottom duration-500">
+          <div className="md:hidden">
             <MobileConfigurator
               selectedProduct={selectedProduct}
               selectedPrint={selectedPrint}
@@ -338,6 +314,7 @@ export default function HomeContainer() {
               }
               onPrintClick={() => setActiveModal("prints")}
               onGalleryClick={() => setActiveModal("gallery")}
+              onSizeClick={() => setActiveModal("sizes")}
             />
           </div>
         </>
@@ -376,15 +353,6 @@ export default function HomeContainer() {
         onCheckout={handleCheckout}
       />
 
-      <MobileCartModal
-        isOpen={activeModal === "cart"}
-        onClose={() => setActiveModal(null)}
-        items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onCheckout={handleCheckout}
-      />
-
       <ProductsModal
         isOpen={activeModal === "products"}
         onClose={() => setActiveModal(null)}
@@ -400,11 +368,17 @@ export default function HomeContainer() {
       <MobilePrintsModal
         isOpen={activeModal === "prints"}
         onClose={() => setActiveModal(null)}
-        onSelectPrint={setSelectedPrint}
+        onSelectPrint={handleSelectPrint}
         selectedPrint={selectedPrint}
         initialPrints={prints}
         initialLoading={printsLoading}
         printCategories={printCategories}
+      />
+
+      <SizeTableModal
+        isOpen={activeModal === "sizes"}
+        onClose={() => setActiveModal(null)}
+        data={selectedProduct?.sizeTable}
       />
 
       <CheckoutModal

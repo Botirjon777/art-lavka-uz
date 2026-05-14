@@ -63,8 +63,8 @@ export default function MobilePrintsModal({
   });
 
   return (
-    <MobileModal isOpen={isOpen} onClose={onClose}>
-      <div className="pt-16">
+    <MobileModal isOpen={isOpen} onClose={onClose} title={t.selectPrint}>
+      <div className="pt-4">
         {/* Tabs */}
         <div className="flex px-5 gap-2.5 mb-4">
           {categories.map((cat) => (

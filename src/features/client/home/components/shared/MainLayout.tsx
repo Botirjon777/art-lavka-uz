@@ -11,7 +11,7 @@ interface MainLayoutProps {
   onCartClick: () => void;
   onCloseModal: () => void;
   cartItemCount: number;
-  activeModal: "menu" | "cart" | "gallery" | "products" | "prints" | null;
+  activeModal: "menu" | "cart" | "gallery" | "products" | "prints" | "sizes" | null;
   isCheckoutOpen?: boolean;
 }
 
@@ -30,6 +30,7 @@ export default function MainLayout({
       <Navbar
         onMenuClick={onMenuClick}
         onCartClick={onCartClick}
+        onCloseModal={onCloseModal}
         cartItemCount={cartItemCount}
         activeModal={isCheckoutOpen ? null : activeModal}
         hidden={isCheckoutOpen}

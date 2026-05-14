@@ -38,11 +38,8 @@ export default function MobileGalleryModal({
   };
 
   return (
-    <MobileModal isOpen={isOpen} onClose={onClose}>
+    <MobileModal isOpen={isOpen} onClose={onClose} title={t.gallery}>
       <div className="px-4 py-4">
-        {/* Title */}
-        <h2 className="text-xl font-semibold text-[#333333] mb-6">{t.gallery}</h2>
-
         {/* Loading State */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">

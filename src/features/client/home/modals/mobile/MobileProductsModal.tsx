@@ -64,8 +64,8 @@ export default function MobileProductsModal({
   }, [settings]);
 
   return (
-    <MobileModal isOpen={isOpen} onClose={onClose}>
-      <div className="px-5 pt-16">
+    <MobileModal isOpen={isOpen} onClose={onClose} title={t.selectProduct}>
+      <div className="px-5 pt-4">
         {/* Tabs */}
         <div className="flex gap-2.5 mb-6">
           {tabs.map((tab: { id: string; label: string; soon: boolean }) => (

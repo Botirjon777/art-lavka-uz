@@ -32,7 +32,12 @@ export default function MobileCartModal({
   );
 
   return (
-    <MobileModal isOpen={isOpen} onClose={onClose} showCloseButton={false}>
+    <MobileModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t.cart}
+      onBack={onClose}
+    >
       <div className="flex flex-col h-full">
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto px-5">
