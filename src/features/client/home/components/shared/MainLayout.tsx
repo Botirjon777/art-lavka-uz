@@ -36,13 +36,13 @@ export default function MainLayout({
         hidden={isCheckoutOpen}
       />
 
-      <div className="min-h-screen bg-[#F5F5F5] pt-15 md:pt-0 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F5F5] pt-15 lg:pt-0 flex items-center justify-center">
         {/* Centered Container */}
         <div className="relative w-full max-w-[1600px]">
           {/* Menu Icon - Top Left of Container */}
           <button
             onClick={activeModal ? onCloseModal : onMenuClick}
-            className={`absolute top-20 -left-20 w-14 h-14 ${isCheckoutOpen ? "hidden" : "hidden md:flex"} items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-99`}
+            className={`absolute top-20 -left-20 w-14 h-14 ${isCheckoutOpen ? "hidden" : "hidden lg:flex"} items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-99`}
             aria-label="Open menu"
           >
             <svg
@@ -63,7 +63,7 @@ export default function MainLayout({
           {/* Cart Icon / Close Button - Top Right of Container */}
           <button
             onClick={activeModal ? onCloseModal : onCartClick}
-            className={`absolute top-20 -right-20 w-14 h-14 ${isCheckoutOpen ? "hidden" : "hidden md:flex"} items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-99`}
+            className={`absolute top-20 -right-20 w-14 h-14 ${isCheckoutOpen ? "hidden" : "hidden lg:flex"} items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 cursor-pointer text-white rounded-xl transition-colors shadow-lg z-99`}
             aria-label={activeModal ? "Close modal" : "Open cart"}
           >
             {activeModal ? (

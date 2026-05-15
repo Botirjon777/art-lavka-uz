@@ -45,7 +45,7 @@ export default function MobileMenuModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-100 md:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-100 lg:hidden"
           />
 
           {/* Sidebar */}
@@ -54,7 +54,7 @@ export default function MobileMenuModal({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-white z-101 shadow-2xl flex flex-col md:hidden"
+            className="fixed top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-white z-101 shadow-2xl flex flex-col lg:hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-6 border-b border-gray-100">
@@ -121,6 +121,7 @@ export default function MobileMenuModal({
                                         width={60}
                                         height={30}
                                         className="object-contain"
+                                        style={{ height: "auto" }}
                                       />
                                     </div>
                                   ))}

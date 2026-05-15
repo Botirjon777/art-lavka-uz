@@ -25,7 +25,7 @@ export default function Navbar({
   if (hidden) return null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 md:hidden">
+    <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 lg:hidden">
       <div className="flex items-center justify-between px-4 py-2.5">
         {/* Menu Button / Close Button */}
         <div className="flex-1 flex justify-start">
@@ -77,6 +77,7 @@ export default function Navbar({
             width={110}
             height={42}
             className="object-contain"
+            style={{ height: "auto" }}
             priority
           />
         </div>
