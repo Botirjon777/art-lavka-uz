@@ -116,7 +116,7 @@ export default function ProductsModal({
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 pb-10">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 pb-10 modal-scrollbar overflow-y-auto max-h-[600px]">
               {(() => {
                 const filteredProducts = products.filter(
                   (product) => product.category === activeTab,

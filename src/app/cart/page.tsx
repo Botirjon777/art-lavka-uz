@@ -31,7 +31,7 @@ export default function CartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pb-40 md:hidden">
+    <div className="min-h-screen bg-gray-50 flex flex-col pb-40 lg:hidden">
       <div className="bg-white h-14 border-b border-gray-100 sticky top-0 z-20 flex items-center px-4">
         <div className="flex-1 flex items-center">
           <button

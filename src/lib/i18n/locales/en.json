@@ -183,5 +183,14 @@
   "backToHome": "Back to Home",
   "rotateModel": "Rotate the model with your mouse",
   "zoomScroll": "Use the mouse wheel to zoom",
-  "selectOption": "Select an option"
+  "selectOption": "Select option",
+  "support": "Support",
+  "supportTitle": "Support Help",
+  "surname": "Surname",
+  "surnamePlaceholder": "Enter your surname",
+  "message": "Message",
+  "messagePlaceholder": "Describe your problem or question...",
+  "supportSuccess": "Request sent successfully!",
+  "supportSuccessDesc": "Our manager will contact you shortly.",
+  "send": "Send"
 }

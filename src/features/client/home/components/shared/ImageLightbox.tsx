@@ -93,14 +93,14 @@ export default function ImageLightbox({
         {/* Navigation Buttons - Desktop */}
         <button
           onClick={handlePrev}
-          className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/15 rounded-full text-white transition-all z-10 hover:scale-110 active:scale-90"
+          className="hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/15 rounded-full text-white transition-all z-10 hover:scale-110 active:scale-90"
         >
           <FiChevronLeft size={40} />
         </button>
 
         <button
           onClick={handleNext}
-          className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/15 rounded-full text-white transition-all z-10 hover:scale-110 active:scale-90"
+          className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/15 rounded-full text-white transition-all z-10 hover:scale-110 active:scale-90"
         >
           <FiChevronRight size={40} />
         </button>
@@ -124,7 +124,7 @@ export default function ImageLightbox({
         </div>
 
         {/* Navigation Buttons - Mobile */}
-        <div className="md:hidden absolute bottom-10 left-0 w-full flex justify-center gap-10 z-10">
+        <div className="lg:hidden absolute bottom-10 left-0 w-full flex justify-center gap-10 z-10">
           <button
             onClick={handlePrev}
             className="p-4 bg-white/10 rounded-full text-white active:bg-white/20 active:scale-90 transition-all"

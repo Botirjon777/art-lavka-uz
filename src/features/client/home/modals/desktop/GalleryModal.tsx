@@ -51,7 +51,7 @@ export default function GalleryModal({
           <>
             <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">{t.gallery}</h2>
             {/* Gallery Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 modal-scrollbar overflow-y-auto max-h-[600px]">
             {gallery.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <p className="text-gray-600">{t.noGalleryImages}</p>
@@ -60,14 +60,14 @@ export default function GalleryModal({
               gallery.map((item, index) => (
                 <div key={item._id} className="group text-center">
                   <div 
-                    className="relative cursor-zoom-in"
+                    className="relative aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in"
                     onClick={() => handleImageClick(index)}
                   >
                     <Image
                       src={item.image}
                       alt={item.name}
-                      width={210}
-                      height={200}
+                      fill
+                      sizes="(max-width: 1200px) 25vw, 210px"
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>

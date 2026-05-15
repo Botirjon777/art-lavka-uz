@@ -183,13 +183,22 @@ export default function TrackOrder() {
         <div className="relative text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
           <NextLink
             href="/"
-            className="absolute left-0 top-0 flex items-center gap-2 px-4 py-2 bg-white text-gray-500 border border-gray-100 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-xs active:scale-95 group"
+            className="absolute right-0 top-0 w-12 h-12 flex items-center justify-center bg-white text-gray-400 border border-gray-100 rounded-full font-bold hover:text-[#8814B1] hover:shadow-lg transition-all active:scale-90 group z-10"
+            aria-label={t.backToHome}
           >
-            <RiArrowLeftLine
-              size={18}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
-            <span className="hidden sm:inline text-sm">{t.backToHome}</span>
+            <svg
+              className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           </NextLink>
 
           <NextLink
@@ -202,6 +211,7 @@ export default function TrackOrder() {
               width={220}
               height={80}
               className="object-contain"
+              style={{ height: "auto" }}
             />
           </NextLink>
           <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tight">

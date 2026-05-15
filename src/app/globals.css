@@ -184,3 +184,27 @@ body {
 .slide-in-from-bottom {
   animation-name: slide-in-bottom;
 }
+
+/* Modal Scrollbar */
+.modal-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(136, 20, 177, 0.4);
+  border-radius: 20px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(136, 20, 177, 0.6);
+}
+
+.modal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(136, 20, 177, 0.4) transparent;
+}

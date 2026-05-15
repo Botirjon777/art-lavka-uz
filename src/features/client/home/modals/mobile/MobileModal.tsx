@@ -37,7 +37,7 @@ export default function MobileModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-100 md:hidden">
+        <div className="fixed inset-0 z-100 lg:hidden">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}

@@ -38,7 +38,7 @@ export default function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 hidden md:flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 hidden lg:flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
@@ -47,14 +47,14 @@ export default function Modal({
 
       {/* Modal Content */}
       <div
-        className={`relative z-10 w-fit max-w-[98vw] max-h-[95vh] animate-modal-enter overflow-auto rounded-[30px] bg-white shadow-2xl ${
+        className={`relative z-10 w-fit max-w-[98vw] max-h-[95vh] animate-modal-enter rounded-[30px] bg-white shadow-2xl overflow-hidden ${
           showBackgroundImage ? "bg-image" : ""
         }`}
       >
-        <div className="p-10 relative">
+        <div className="p-10 relative modal-scrollbar overflow-y-auto max-h-[95vh]">
           <button
             onClick={onClose}
-            className="absolute -right-4 -top-4 w-12 h-12 flex items-center justify-center bg-white text-gray-400 hover:text-[#8814B1] hover:shadow-xl rounded-full transition-all text-3xl z-50 border border-gray-100 shadow-lg group active:scale-90"
+            className="absolute -right-4 -top-4 w-12 h-12 hidden items-center justify-center bg-white text-gray-400 hover:text-[#8814B1] hover:shadow-xl rounded-full transition-all text-3xl z-50 border border-gray-100 shadow-lg group active:scale-90"
             aria-label="Close modal"
           >
             <span className="group-hover:rotate-90 transition-transform duration-300">×</span>

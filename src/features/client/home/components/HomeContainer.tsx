@@ -276,7 +276,7 @@ export default function HomeContainer() {
       ) : (
         <>
           {/* Desktop Layout */}
-          <div className="hidden md:flex flex-col justify-center md:flex-row gap-[78px] animate-in fade-in duration-700">
+          <div className="hidden lg:flex flex-col justify-center md:flex-row gap-[78px] animate-in fade-in duration-700">
             <LeftSidebar
               onGalleryClick={() => setActiveModal("gallery")}
               selectedPrint={selectedPrint}
@@ -301,7 +301,7 @@ export default function HomeContainer() {
           </div>
 
           {/* Mobile Layout */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <MobileConfigurator
               selectedProduct={selectedProduct}
               selectedPrint={selectedPrint}

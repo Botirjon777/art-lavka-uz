@@ -39,7 +39,6 @@ export default function SizeTableModal({
       <MobileModal
         isOpen={isOpen}
         onClose={onClose}
-        onBack={onClose}
         title={t.sizeChart}
       >
         <div className="px-4 py-4">
@@ -101,19 +100,11 @@ export default function SizeTableModal({
 
   // Desktop version
   return (
-    <Modal isOpen={isOpen} onClose={onClose} showBackgroundImage={false}>
-      <div className="w-[600px] max-w-full">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-[30px]/[37px] text-[#333333] font-bold">
-            {t.sizeChart}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
-          >
-            <FiX className="w-6 h-6" />
-          </button>
-        </div>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="w-[900px] max-w-full min-h-[500px]">
+        <h2 className="text-[30px]/[37px] text-[#333333] font-bold mb-7.5">
+          {t.sizeChart}
+        </h2>
 
         <div className="overflow-hidden rounded-2xl border border-gray-100 shadow-sm bg-white">
           <table className="w-full text-left border-collapse">
