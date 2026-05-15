@@ -193,5 +193,6 @@
   "messagePlaceholder": "Describe your problem or question...",
   "supportSuccess": "Request sent successfully!",
   "supportSuccessDesc": "Our manager will contact you shortly.",
-  "send": "Send"
+  "send": "Send",
+  "allPrintsLoaded": "All prints loaded"
 }

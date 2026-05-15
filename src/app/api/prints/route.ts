@@ -24,9 +24,13 @@ export async function GET(request: NextRequest) {
       query.category = category;
     }
 
-    // Fetch prints with pagination
+    // Fetch prints with pagination - only select fields needed for UI
     const [prints, total] = await Promise.all([
-      Print.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Print.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select("name frontImage frontImagePreview backImage category translations active"),
       Print.countDocuments(query),
     ]);
 
