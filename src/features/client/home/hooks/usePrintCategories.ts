@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PrintCategory } from "@/types";
 
 const fetchPrintCategories = async () => {
-  const response = await fetch("/api/prints/categories");
+  const response = await fetch("/api/print-categories");
   const data = await response.json();
   if (!data.success) throw new Error(data.error);
   return data.data as PrintCategory[];

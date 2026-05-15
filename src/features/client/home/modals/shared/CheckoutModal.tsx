@@ -16,9 +16,8 @@ import { getTranslated } from "@/lib/i18n/utils";
 import { LOCATIONS } from "@/lib/i18n/locations";
 import { DeliveryBranch } from "@/lib/deliveryData";
 import { usePromotions } from "@/features/client/home/hooks/usePromotions";
-import { calculateBTSDelivery as calculateBTSDeliveryV2 } from "@/lib/deliveryDataBTS";
-import PromotionNudge from "../../components/PromotionNudge";
-import { Promotion, Office } from "@/types";
+import { calculateBTSDelivery } from "@/lib/deliveryDataBTS";
+import { Office } from "@/types";
 import { useOffices } from "@/features/client/home/hooks/useOffices";
 import { useSettings } from "@/features/client/home/hooks/useSettings";
 
@@ -46,7 +45,6 @@ export default function CheckoutModal({
   const [region, setRegion] = useState("");
   const [village, setVillage] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
-  const [homeNumber, setHomeNumber] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,11 +54,6 @@ export default function CheckoutModal({
   const [allOffices, setAllOffices] = useState<Office[]>([]);
 
   // Nudge State
-  const [showNudge, setShowNudge] = useState(false);
-  const [nearMissPromo, setNearMissPromo] = useState<Promotion | null>(null);
-  const [hasShownNudgeForRegion, setHasShownNudgeForRegion] = useState<
-    string | null
-  >(null);
   const [deliverySettings, setDeliverySettings] = useState<{
     deliveryPrices: Record<string, number[]>;
     courierFees: { upto10kg: number; upto20kg: number };
@@ -130,40 +123,10 @@ export default function CheckoutModal({
   );
   const { data: activePromotions = [] } = usePromotions({ enabled: isOpen });
 
-  // Nudge Detection Effect
-  useEffect(() => {
-    if (
-      !region ||
-      !activePromotions.length ||
-      hasShownNudgeForRegion === region
-    )
-      return;
-
-    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-
-    const nearMiss = activePromotions.find((promo) => {
-      if (promo.discountType !== "free_delivery") return false;
-      const isRegionEligible =
-        !promo.selectedRegions ||
-        promo.selectedRegions.length === 0 ||
-        promo.selectedRegions.includes(region);
-      if (!isRegionEligible) return false;
-      if (promo.conditionType !== "min_items") return false;
-      const target = parseInt(promo.conditionValue) || 0;
-      return target > 1 && itemCount >= 2 && itemCount < target;
-    });
-
-    if (nearMiss) {
-      setNearMissPromo(nearMiss);
-      setShowNudge(true);
-      setHasShownNudgeForRegion(region);
-    }
-  }, [region, activePromotions, items, hasShownNudgeForRegion]);
-
   let currentDeliveryPrice =
     carrier === "btsFergana"
       ? 0
-      : calculateBTSDeliveryV2(
+      : calculateBTSDelivery(
           region,
           village,
           totalWeight,
@@ -191,13 +154,13 @@ export default function CheckoutModal({
       if (conditionMet) {
         if (promo.discountType === "free_delivery" && isRegionEligible) {
           const isFerganaRegion = region && region.includes("Ферган");
-          const isFerganaCity = village && (
-            village.includes("г.Фергана") || 
-            village.includes("г. Фергана") ||
-            village.includes("Farg'ona sh") ||
-            village.includes("Fergana city")
-          );
-          
+          const isFerganaCity =
+            village &&
+            (village.includes("г.Фергана") ||
+              village.includes("г. Фергана") ||
+              village.includes("Farg'ona sh") ||
+              village.includes("Fergana city"));
+
           if (!isFerganaRegion || isFerganaCity) {
             currentDeliveryPrice = 0;
           }
@@ -239,13 +202,13 @@ export default function CheckoutModal({
         isRegionEligible
       ) {
         const isFerganaRegion = region && region.includes("Ферган");
-        const isFerganaCity = village && (
-          village.includes("г.Фергана") || 
-          village.includes("г. Фергана") ||
-          village.includes("Farg'ona sh") ||
-          village.includes("Fergana city")
-        );
-        
+        const isFerganaCity =
+          village &&
+          (village.includes("г.Фергана") ||
+            village.includes("г. Фергана") ||
+            village.includes("Farg'ona sh") ||
+            village.includes("Fergana city"));
+
         if (!isFerganaRegion || isFerganaCity) {
           currentDeliveryPrice = 0;
         }
@@ -255,7 +218,6 @@ export default function CheckoutModal({
 
   const finalTotal =
     Math.max(0, totalAmount - productsDiscount) + currentDeliveryPrice;
-  const totalDiscount = productsDiscount;
 
   const isMobile = useIsMobile();
 
@@ -294,9 +256,6 @@ export default function CheckoutModal({
       if (deliveryMethod === "door") {
         if (!streetAddress.trim()) {
           newErrors.streetAddress = t.errorStreetRequired;
-        }
-        if (!homeNumber.trim()) {
-          newErrors.homeNumber = t.errorHomeRequired;
         }
       } else {
         if (!selectedBranch) {
@@ -353,7 +312,7 @@ export default function CheckoutModal({
         customerAddress: isFergana
           ? ferganaAddress
           : deliveryMethod === "door"
-            ? `${streetAddress}, ${homeNumber}`
+            ? streetAddress
             : selectedBranch?.address || "",
         items: orderItems,
         totalAmount: finalTotal,
@@ -378,11 +337,7 @@ export default function CheckoutModal({
 
   if (isMobile) {
     return (
-      <MobileModal
-        isOpen={isOpen}
-        onClose={onClose}
-        title={t.checkoutTitle}
-      >
+      <MobileModal isOpen={isOpen} onClose={onClose} title={t.checkoutTitle}>
         <div className="p-4 pb-10">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-3">
@@ -399,12 +354,16 @@ export default function CheckoutModal({
                       setErrors({ ...errors, customerName: "" });
                   }}
                   className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[16px] transition-all ${
-                    errors.customerName ? "border-red-500 bg-red-50" : "border-gray-300"
+                    errors.customerName
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300"
                   }`}
                   placeholder={t.fullNamePlaceholder}
                 />
                 {errors.customerName && (
-                  <p className="text-red-500 text-[11px] mt-1">{errors.customerName}</p>
+                  <p className="text-red-500 text-[11px] mt-1">
+                    {errors.customerName}
+                  </p>
                 )}
               </div>
 
@@ -433,7 +392,9 @@ export default function CheckoutModal({
                   />
                 </div>
                 {errors.customerPhone && (
-                  <p className="text-red-500 text-[11px] mt-1">{errors.customerPhone}</p>
+                  <p className="text-red-500 text-[11px] mt-1">
+                    {errors.customerPhone}
+                  </p>
                 )}
               </div>
             </div>
@@ -460,11 +421,6 @@ export default function CheckoutModal({
                   />
                   <div className="flex flex-col">
                     <span>{t.btsUzbekistanCarrier}</span>
-                    <span className="text-[11px] font-medium opacity-60">
-                      {currentDeliveryPrice > 0 
-                        ? `${currentDeliveryPrice.toLocaleString()} ${t.currency}` 
-                        : "25 000+ " + t.currency}
-                    </span>
                   </div>
                 </button>
 
@@ -485,9 +441,6 @@ export default function CheckoutModal({
                   />
                   <div className="flex flex-col">
                     <span>{t.btsFerganaCarrier}</span>
-                    <span className="text-[11px] font-black text-[#059669] uppercase tracking-wider">
-                      {t.free}
-                    </span>
                   </div>
                 </button>
               </div>
@@ -533,10 +486,13 @@ export default function CheckoutModal({
                       value={ferganaAddress}
                       onChange={(e) => {
                         setFerganaAddress(e.target.value);
-                        if (errors.ferganaAddress) setErrors({ ...errors, ferganaAddress: "" });
+                        if (errors.ferganaAddress)
+                          setErrors({ ...errors, ferganaAddress: "" });
                       }}
                       className={`w-full px-3 py-2.5 rounded-xl border transition-all outline-none ${
-                        errors.ferganaAddress ? "border-red-500 bg-red-50" : "border-gray-200 focus:border-[#8814B1]"
+                        errors.ferganaAddress
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-200 focus:border-[#8814B1]"
                       }`}
                       placeholder={t.ferganaAddressPlaceholder}
                     />
@@ -600,50 +556,43 @@ export default function CheckoutModal({
                   />
                   {deliveryMethod === "pickup" ? (
                     <>
-                    <Dropdown
-                      label={t.selectBranch}
-                      value={selectedBranch?.id || ""}
-                      placeholder={t.selectBranch}
-                      disabled={!village}
-                      onChange={(id) =>
-                        setSelectedBranch(
-                          branches.find((b) => b.id === id) || null,
-                        )
-                      }
-                      options={branches.map((b) => ({
-                        key: b.id,
-                        value: b.id,
-                        label: b.name,
-                        description: b.address,
-                      }))}
-                      buttonClassName="px-3 py-2.5 text-base"
-                    />
-                    {selectedBranch && (
-                      <div className="p-3 bg-purple-50 border border-purple-100 rounded-xl mt-2">
-                        <p className="text-[9px] font-black text-[#8814B1] uppercase tracking-[0.2em] mb-1">
-                          {t.deliveryAddress}
-                        </p>
-                        <p className="text-[#333333] font-bold text-[13px]">
-                          {selectedBranch.address}
-                        </p>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="space-y-3">
+                      <Dropdown
+                        label={t.selectBranch}
+                        value={selectedBranch?.id || ""}
+                        placeholder={t.selectBranch}
+                        disabled={!village}
+                        onChange={(id) =>
+                          setSelectedBranch(
+                            branches.find((b) => b.id === id) || null,
+                          )
+                        }
+                        options={branches.map((b) => ({
+                          key: b.id,
+                          value: b.id,
+                          label: b.name,
+                          description: b.address,
+                        }))}
+                        buttonClassName="px-3 py-2.5 text-base"
+                      />
+                      {selectedBranch && (
+                        <div className="p-3 bg-purple-50 border border-purple-100 rounded-xl mt-2">
+                          <p className="text-[9px] font-black text-[#8814B1] uppercase tracking-[0.2em] mb-1">
+                            {t.pickupPointAddress}
+                          </p>
+                          <p className="text-[#333333] font-bold text-[13px]">
+                            {selectedBranch.address}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="space-y-3">
                       <input
                         type="text"
                         value={streetAddress}
                         onChange={(e) => setStreetAddress(e.target.value)}
                         className="w-full px-2.5 py-2 border border-gray-300 rounded-lg text-base"
                         placeholder={t.streetAddressPlaceholder}
-                      />
-                      <input
-                        type="text"
-                        value={homeNumber}
-                        onChange={(e) => setHomeNumber(e.target.value)}
-                        className="w-full px-2.5 py-2 border border-gray-300 rounded-lg text-base"
-                        placeholder={t.homeNumberPlaceholder}
                       />
                     </div>
                   )}
@@ -654,12 +603,21 @@ export default function CheckoutModal({
             <div className="bg-gray-50 rounded-xl p-4 mt-2 space-y-2">
               <div className="flex justify-between items-center text-[13px] text-gray-500">
                 <span>{t.items}:</span>
-                <span>{(totalAmount - productsDiscount).toLocaleString()} {t.currency}</span>
+                <span>
+                  {(totalAmount - productsDiscount).toLocaleString()}{" "}
+                  {t.currency}
+                </span>
               </div>
               <div className="flex justify-between items-center text-[13px] text-gray-500">
                 <span>{t.delivery}:</span>
-                <span className={currentDeliveryPrice === 0 ? "text-[#059669] font-bold" : ""}>
-                  {currentDeliveryPrice === 0 ? t.free : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
+                <span
+                  className={
+                    currentDeliveryPrice === 0 ? "text-[#059669] font-bold" : ""
+                  }
+                >
+                  {currentDeliveryPrice === 0
+                    ? t.free
+                    : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
                 </span>
               </div>
               <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-[16px] font-bold text-[#8814B1]">
@@ -697,10 +655,10 @@ export default function CheckoutModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} showBackgroundImage={false}>
-      <div className="w-full max-w-6xl">
+      <div className="w-full max-w-7xl">
         <h2 className="text-2xl font-bold mb-6">{t.checkoutTitle}</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -711,15 +669,20 @@ export default function CheckoutModal({
                 value={customerName}
                 onChange={(e) => {
                   setCustomerName(e.target.value);
-                  if (errors.customerName) setErrors({ ...errors, customerName: "" });
+                  if (errors.customerName)
+                    setErrors({ ...errors, customerName: "" });
                 }}
                 className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
-                  errors.customerName ? "border-red-500 bg-red-50" : "border-gray-300 focus:ring-2 focus:ring-purple-500"
+                  errors.customerName
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300 focus:ring-2 focus:ring-purple-500"
                 }`}
                 placeholder={t.fullNamePlaceholder}
               />
               {errors.customerName && (
-                <p className="text-red-500 text-[12px] mt-1">{errors.customerName}</p>
+                <p className="text-red-500 text-[12px] mt-1">
+                  {errors.customerName}
+                </p>
               )}
             </div>
             <div>
@@ -735,16 +698,21 @@ export default function CheckoutModal({
                   value={customerPhone}
                   onChange={(e) => {
                     setCustomerPhone(applyPhoneMask(e.target.value));
-                    if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
+                    if (errors.customerPhone)
+                      setErrors({ ...errors, customerPhone: "" });
                   }}
                   className={`w-full h-11 pl-14 pr-4 border rounded-xl outline-none transition-all ${
-                    errors.customerPhone ? "border-red-500 bg-red-50" : "border-gray-300 focus:ring-2 focus:ring-purple-500"
+                    errors.customerPhone
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 focus:ring-2 focus:ring-purple-500"
                   }`}
                   placeholder="XX XXX XX XX"
                 />
               </div>
               {errors.customerPhone && (
-                <p className="text-red-500 text-[12px] mt-1">{errors.customerPhone}</p>
+                <p className="text-red-500 text-[12px] mt-1">
+                  {errors.customerPhone}
+                </p>
               )}
             </div>
           </div>
@@ -771,11 +739,6 @@ export default function CheckoutModal({
                 />
                 <div className="flex flex-col text-left">
                   <span>{t.btsUzbekistanCarrier}</span>
-                  <span className="text-[12px] font-medium opacity-70">
-                    {currentDeliveryPrice > 0 
-                      ? `${currentDeliveryPrice.toLocaleString()} ${t.currency}` 
-                      : "25 000+ " + t.currency}
-                  </span>
                 </div>
               </button>
               <button
@@ -795,9 +758,6 @@ export default function CheckoutModal({
                 />
                 <div className="flex flex-col text-left">
                   <span>{t.btsFerganaCarrier}</span>
-                  <span className="text-[12px] font-black text-[#059669] uppercase tracking-widest">
-                    {t.free}
-                  </span>
                 </div>
               </button>
             </div>
@@ -827,17 +787,21 @@ export default function CheckoutModal({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t.ferganaAddress} <span className="text-red-500">*</span>
+                        {t.ferganaAddress}{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={ferganaAddress}
                         onChange={(e) => {
                           setFerganaAddress(e.target.value);
-                          if (errors.ferganaAddress) setErrors({ ...errors, ferganaAddress: "" });
+                          if (errors.ferganaAddress)
+                            setErrors({ ...errors, ferganaAddress: "" });
                         }}
                         className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
-                          errors.ferganaAddress ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-[#8814B1]"
+                          errors.ferganaAddress
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-300 focus:border-[#8814B1]"
                         }`}
                         placeholder={t.ferganaAddressPlaceholder}
                       />
@@ -870,7 +834,8 @@ export default function CheckoutModal({
                         onChange={(v) => {
                           setRegion(v);
                           setVillage("");
-                          if (errors.region) setErrors({ ...errors, region: "" });
+                          if (errors.region)
+                            setErrors({ ...errors, region: "" });
                         }}
                         options={regionKeys.map((k, i) => ({
                           key: k,
@@ -887,7 +852,8 @@ export default function CheckoutModal({
                         disabled={!region}
                         onChange={(v) => {
                           setVillage(v);
-                          if (errors.village) setErrors({ ...errors, village: "" });
+                          if (errors.village)
+                            setErrors({ ...errors, village: "" });
                         }}
                         options={availableDistricts.map((d) => ({
                           key: d.ru,
@@ -909,7 +875,8 @@ export default function CheckoutModal({
                             setSelectedBranch(
                               branches.find((b) => b.id === id) || null,
                             );
-                            if (errors.branch) setErrors({ ...errors, branch: "" });
+                            if (errors.branch)
+                              setErrors({ ...errors, branch: "" });
                           }}
                           options={branches.map((b) => ({
                             key: b.id,
@@ -918,59 +885,43 @@ export default function CheckoutModal({
                             description: b.address,
                           }))}
                         />
-                      {selectedBranch && (
-                        <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-                          <p className="text-[10px] font-black text-[#8814B1] uppercase tracking-[0.2em] mb-1">
-                            {t.deliveryAddress}
+                        {selectedBranch && (
+                          <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                            <p className="text-[10px] font-black text-[#8814B1] uppercase tracking-[0.2em] mb-1">
+                              {t.pickupPointAddress}
+                            </p>
+                            <p className="text-[#333333] font-bold text-[14px]">
+                              {selectedBranch.address}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {t.streetAddress}{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={streetAddress}
+                          onChange={(e) => {
+                            setStreetAddress(e.target.value);
+                            if (errors.streetAddress)
+                              setErrors({ ...errors, streetAddress: "" });
+                          }}
+                          className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
+                            errors.streetAddress
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300 focus:border-[#8814B1]"
+                          }`}
+                          placeholder={t.streetAddressPlaceholder}
+                        />
+                        {errors.streetAddress && (
+                          <p className="text-red-500 text-[12px] mt-1">
+                            {errors.streetAddress}
                           </p>
-                          <p className="text-[#333333] font-bold text-[14px]">
-                            {selectedBranch.address}
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.streetAddress} <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={streetAddress}
-                            onChange={(e) => {
-                              setStreetAddress(e.target.value);
-                              if (errors.streetAddress) setErrors({ ...errors, streetAddress: "" });
-                            }}
-                            className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
-                              errors.streetAddress ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-[#8814B1]"
-                            }`}
-                            placeholder={t.streetAddressPlaceholder}
-                          />
-                          {errors.streetAddress && (
-                            <p className="text-red-500 text-[12px] mt-1">{errors.streetAddress}</p>
-                          )}
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.homeNumber} <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={homeNumber}
-                            onChange={(e) => {
-                              setHomeNumber(e.target.value);
-                              if (errors.homeNumber) setErrors({ ...errors, homeNumber: "" });
-                            }}
-                            className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
-                              errors.homeNumber ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-[#8814B1]"
-                            }`}
-                            placeholder={t.homeNumberPlaceholder}
-                          />
-                          {errors.homeNumber && (
-                            <p className="text-red-500 text-[12px] mt-1">{errors.homeNumber}</p>
-                          )}
-                        </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -982,12 +933,18 @@ export default function CheckoutModal({
           <div className="bg-gray-50 rounded-2xl p-6 space-y-3">
             <div className="flex justify-between items-center text-gray-600">
               <span>{t.items}:</span>
-              <span className="font-medium">{(totalAmount - productsDiscount).toLocaleString()} {t.currency}</span>
+              <span className="font-medium">
+                {(totalAmount - productsDiscount).toLocaleString()} {t.currency}
+              </span>
             </div>
             <div className="flex justify-between items-center text-gray-600">
               <span>{t.delivery}:</span>
-              <span className={`font-medium ${currentDeliveryPrice === 0 ? "text-[#059669]" : ""}`}>
-                {currentDeliveryPrice === 0 ? t.free : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
+              <span
+                className={`font-medium ${currentDeliveryPrice === 0 ? "text-[#059669]" : ""}`}
+              >
+                {currentDeliveryPrice === 0
+                  ? t.free
+                  : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
               </span>
             </div>
             <div className="pt-4 border-t border-gray-200 flex justify-between items-center text-xl font-bold text-[#8814B1]">
