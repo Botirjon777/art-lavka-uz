@@ -65,7 +65,7 @@ export default function LeftSidebar({
         <div className="shrink-0 w-[220px]">
           <Image
             src="/art-lavka.png"
-            alt="ART LAVKA.UZ"
+            alt="ART-LAVKA.UZ - Эксклюзивные дизайнерские футболки в Узбекистане"
             width={220}
             height={83}
             className="object-contain"

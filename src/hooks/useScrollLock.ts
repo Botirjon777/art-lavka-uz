@@ -8,9 +8,17 @@ export const useScrollLock = (isOpen: boolean) => {
 
     lockCount++;
     
-    // Prevent background scrolling
-    const originalStyle = window.getComputedStyle(document.body).overflow;
+    // Prevent background scrolling - more aggressive for mobile/iOS
+    const scrollY = window.scrollY;
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyHeight = document.body.style.height;
+    const originalHtmlHeight = document.documentElement.style.height;
+
     document.body.style.overflow = "hidden";
+    document.body.style.height = "100%";
+    document.documentElement.style.overflow = "hidden";
+    document.documentElement.style.height = "100%";
 
     // Handle scrollbar width for desktop to prevent layout shift
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -21,7 +29,10 @@ export const useScrollLock = (isOpen: boolean) => {
     return () => {
       lockCount--;
       if (lockCount <= 0) {
-        document.body.style.overflow = "unset";
+        document.body.style.overflow = originalBodyOverflow || "unset";
+        document.documentElement.style.overflow = originalHtmlOverflow || "unset";
+        document.body.style.height = originalBodyHeight || "unset";
+        document.documentElement.style.height = originalHtmlHeight || "unset";
         document.body.style.paddingRight = "0px";
         lockCount = 0;
       }

@@ -73,7 +73,7 @@ export default function Navbar({
         >
           <Image
             src="/art-lavka.png"
-            alt="ART LAVKA.UZ"
+            alt="ART-LAVKA.UZ - Эксклюзивные дизайнерские футболки в Узбекистане"
             width={110}
             height={42}
             className="object-contain"

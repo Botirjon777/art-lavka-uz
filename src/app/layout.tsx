@@ -11,15 +11,50 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://art-lavka.uz"),
-  title: "ART-LAVKA.UZ - Эксклюзивные дизайнерские футболки",
-  description:
-    "Интернет-магазин эксклюзивных дизайнерских футболок с авторскими иллюстрациями",
+  alternates: {
+    canonical: "/",
+  },
+  title: {
+    default: "ART-LAVKA.UZ - Эксклюзивные дизайнерские футболки в Узбекистане",
+    template: "%s | ART-LAVKA.UZ"
+  },
+  description: "Интернет-магазин эксклюзивных дизайнерских футболок с авторскими иллюстрациями в Узбекистане. Качественные принты, быстрая доставка по Ташкенту, Фергане и всему Узбекистану.",
+  keywords: ["футболки с принтами", "дизайнерские футболки", "купить футболку узбекистан", "art lavka", "арт лавка", "дизайн футболок", "футболки ташкент", "футболки фергана", "t-shirts uzbekistan", "futbolka sotib olish", "uzbekistan design"],
+  authors: [{ name: "ART-LAVKA" }],
+  creator: "ART-LAVKA",
+  publisher: "ART-LAVKA",
   openGraph: {
-    images: ["/art-lavka-square.png"],
+    title: "ART-LAVKA.UZ - Дизайнерские футболки в Узбекистане",
+    description: "Эксклюзивные принты на качественных футболках. Доставка по всему Узбекистану.",
+    url: "https://art-lavka.uz",
+    siteName: "ART-LAVKA.UZ",
+    images: [
+      {
+        url: "/art-lavka-square.png",
+        width: 800,
+        height: 800,
+        alt: "ART-LAVKA.UZ Logo",
+      },
+    ],
+    locale: "ru_UZ",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
+    title: "ART-LAVKA.UZ - Дизайнерские футболки в Узбекистане",
+    description: "Эксклюзивные принты на качественных футболках. Доставка по всему Узбекистану.",
     images: ["/art-lavka-square.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
