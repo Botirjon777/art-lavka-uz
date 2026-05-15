@@ -329,7 +329,6 @@ export default function HomeContainer() {
       <MobileMenuModal
         isOpen={activeModal === "menu"}
         onClose={() => setActiveModal(null)}
-        onGalleryClick={() => setActiveModal("gallery")}
       />
 
       <GalleryModal

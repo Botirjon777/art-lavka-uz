@@ -10,18 +10,18 @@ import { useSettings } from "@/features/client/home/hooks/useSettings";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 interface MobileMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGalleryClick: () => void;
 }
 
 export default function MobileMenuModal({
   isOpen,
   onClose,
-  onGalleryClick,
 }: MobileMenuModalProps) {
+  useScrollLock(isOpen);
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -211,8 +211,7 @@ export default function MobileMenuModal({
               </div>
             </div>
 
-            {/* Footer Buttons */}
-            <div className="p-5 border-t border-gray-100 space-y-2 bg-gray-50/30">
+            <div className="p-5 border-t border-gray-100 bg-gray-50/30">
               <Link
                 href="/track-order"
                 onClick={onClose}
@@ -220,15 +219,6 @@ export default function MobileMenuModal({
               >
                 {t.trackOrder}
               </Link>
-              <button
-                onClick={() => {
-                  onGalleryClick();
-                  onClose();
-                }}
-                className="flex items-center justify-center w-full py-3 border-2 border-[#8814B1] text-[#8814B1] rounded-xl font-bold hover:bg-purple-50 text-sm"
-              >
-                {t.gallery}
-              </button>
             </div>
           </motion.div>
         </>
