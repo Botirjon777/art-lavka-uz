@@ -1,8 +1,9 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileFooter } from "../../components/mobile/MobileFooter";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 interface MobileModalProps {
   isOpen: boolean;
@@ -23,16 +24,7 @@ export default function MobileModal({
   onBack,
   rightAction,
 }: MobileModalProps) {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   return (
     <AnimatePresence>

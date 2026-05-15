@@ -121,7 +121,20 @@ export function calculateBTSDelivery(
 ): number {
   if (!targetRegion) return 30000; // default base
 
-  // 1. Determine target city index
+  // 1. Handle Free Delivery for Fergana City
+  const isFerganaRegion = targetRegion === "Ферганская область";
+  const isFerganaCity = targetDistrict && (
+    targetDistrict.includes("г.Фергана") || 
+    targetDistrict.includes("г. Фергана") ||
+    targetDistrict.includes("sh. Farg'ona") ||
+    targetDistrict.includes("Fergana city")
+  );
+
+  if (isFerganaRegion && isFerganaCity) {
+    return 0;
+  }
+
+  // 2. Determine target city index
   let targetIndex = REGION_TO_BTS_HUB[targetRegion] ?? 9;
 
   // Handle specific city hubs within regions (e.g. Kokand in Fergana)
@@ -153,7 +166,15 @@ export function calculateBTSDelivery(
     courierFee = normalizedWeight <= 10 ? fees.upto10kg : fees.upto20kg;
   }
 
-  return basePrice + courierFee;
+  let totalPrice = basePrice + courierFee;
+
+  // Final check: Zone 0 (local) should only be free for Fergana City
+  // If it's local region (zone 0) but NOT the city, it MUST be paid
+  if (zone === 0 && !isFerganaCity) {
+    if (totalPrice === 0) totalPrice = 25000; // Force fee if somehow 0
+  }
+
+  return totalPrice;
 }
 
 // Map actual city index to Delivery Days Matrix Row/Col

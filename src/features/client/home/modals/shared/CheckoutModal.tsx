@@ -190,7 +190,17 @@ export default function CheckoutModal({
 
       if (conditionMet) {
         if (promo.discountType === "free_delivery" && isRegionEligible) {
-          currentDeliveryPrice = 0;
+          const isFerganaRegion = region && region.includes("Ферган");
+          const isFerganaCity = village && (
+            village.includes("г.Фергана") || 
+            village.includes("г. Фергана") ||
+            village.includes("Farg'ona sh") ||
+            village.includes("Fergana city")
+          );
+          
+          if (!isFerganaRegion || isFerganaCity) {
+            currentDeliveryPrice = 0;
+          }
         } else if (promo.discountType === "percentage") {
           productsDiscount += totalAmount * (promo.discountValue / 100);
         } else if (promo.discountType === "fixed") {
@@ -228,7 +238,17 @@ export default function CheckoutModal({
         promo.discountType === "free_delivery" &&
         isRegionEligible
       ) {
-        currentDeliveryPrice = 0;
+        const isFerganaRegion = region && region.includes("Ферган");
+        const isFerganaCity = village && (
+          village.includes("г.Фергана") || 
+          village.includes("г. Фергана") ||
+          village.includes("Farg'ona sh") ||
+          village.includes("Fergana city")
+        );
+        
+        if (!isFerganaRegion || isFerganaCity) {
+          currentDeliveryPrice = 0;
+        }
       }
     }
   });
@@ -378,11 +398,14 @@ export default function CheckoutModal({
                     if (errors.customerName)
                       setErrors({ ...errors, customerName: "" });
                   }}
-                  className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[16px] ${
-                    errors.customerName ? "border-red-500" : "border-gray-300"
+                  className={`w-full px-2.5 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-[16px] transition-all ${
+                    errors.customerName ? "border-red-500 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder={t.fullNamePlaceholder}
                 />
+                {errors.customerName && (
+                  <p className="text-red-500 text-[11px] mt-1">{errors.customerName}</p>
+                )}
               </div>
 
               <div>
@@ -401,14 +424,17 @@ export default function CheckoutModal({
                       if (errors.customerPhone)
                         setErrors({ ...errors, customerPhone: "" });
                     }}
-                    className={`w-full pl-13 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-base ${
+                    className={`w-full pl-13 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8814B1] text-base transition-all ${
                       errors.customerPhone
-                        ? "border-red-500"
+                        ? "border-red-500 bg-red-50"
                         : "border-gray-300"
                     }`}
                     placeholder="XX XXX XX XX"
                   />
                 </div>
+                {errors.customerPhone && (
+                  <p className="text-red-500 text-[11px] mt-1">{errors.customerPhone}</p>
+                )}
               </div>
             </div>
 
@@ -432,7 +458,14 @@ export default function CheckoutModal({
                     checked={carrier === "bts"}
                     className="accent-[#8814B1] shrink-0"
                   />
-                  <span>{t.btsUzbekistanCarrier}</span>
+                  <div className="flex flex-col">
+                    <span>{t.btsUzbekistanCarrier}</span>
+                    <span className="text-[11px] font-medium opacity-60">
+                      {currentDeliveryPrice > 0 
+                        ? `${currentDeliveryPrice.toLocaleString()} ${t.currency}` 
+                        : "25 000+ " + t.currency}
+                    </span>
+                  </div>
                 </button>
 
                 <button
@@ -450,7 +483,12 @@ export default function CheckoutModal({
                     checked={carrier === "btsFergana"}
                     className="accent-[#059669] shrink-0"
                   />
-                  <span>{t.btsFerganaCarrier}</span>
+                  <div className="flex flex-col">
+                    <span>{t.btsFerganaCarrier}</span>
+                    <span className="text-[11px] font-black text-[#059669] uppercase tracking-wider">
+                      {t.free}
+                    </span>
+                  </div>
                 </button>
               </div>
               {errors.carrier && (
@@ -475,20 +513,39 @@ export default function CheckoutModal({
                       {t.btsFerganaDesc}
                     </span>
                   </div>
-                  <Dropdown
-                    label={t.ferganaDistrict}
-                    value="г.Фергана"
-                    options={[{ value: "г.Фергана", label: "г.Фергана" }]}
-                    disabled={true}
-                    buttonClassName="px-3 py-2.5 text-base"
-                  />
-                  <input
-                    type="text"
-                    value={ferganaAddress}
-                    onChange={(e) => setFerganaAddress(e.target.value)}
-                    className="w-full px-2.5 py-2 border border-gray-300 rounded-lg text-base"
-                    placeholder={t.ferganaAddressPlaceholder}
-                  />
+                  <div>
+                    <label className="block text-[13px] text-[#333333] mb-1 font-medium">
+                      {t.ferganaDistrict}
+                    </label>
+                    <input
+                      type="text"
+                      value="г.Фергана"
+                      disabled
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 font-medium cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] text-[#333333] mb-1 font-medium">
+                      {t.ferganaAddress} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={ferganaAddress}
+                      onChange={(e) => {
+                        setFerganaAddress(e.target.value);
+                        if (errors.ferganaAddress) setErrors({ ...errors, ferganaAddress: "" });
+                      }}
+                      className={`w-full px-3 py-2.5 rounded-xl border transition-all outline-none ${
+                        errors.ferganaAddress ? "border-red-500 bg-red-50" : "border-gray-200 focus:border-[#8814B1]"
+                      }`}
+                      placeholder={t.ferganaAddressPlaceholder}
+                    />
+                    {errors.ferganaAddress && (
+                      <p className="text-red-500 text-[11px] mt-1">
+                        {errors.ferganaAddress}
+                      </p>
+                    )}
+                  </div>
                 </motion.div>
               )}
 
@@ -519,8 +576,7 @@ export default function CheckoutModal({
                     placeholder={t.regionPlaceholder}
                     onChange={(val) => {
                       setRegion(val);
-                      if (val === "Ферганская область") setVillage("г.Фергана");
-                      else setVillage("");
+                      setVillage("");
                     }}
                     options={regionKeys.map((k, i) => ({
                       key: k,
@@ -533,7 +589,7 @@ export default function CheckoutModal({
                     label={t.village}
                     value={village}
                     placeholder={t.villagePlaceholder}
-                    disabled={!region || region === "Ферганская область"}
+                    disabled={!region}
                     onChange={setVillage}
                     options={availableDistricts.map((d) => ({
                       key: d.ru,
@@ -543,6 +599,7 @@ export default function CheckoutModal({
                     buttonClassName="px-3 py-2.5 text-base"
                   />
                   {deliveryMethod === "pickup" ? (
+                    <>
                     <Dropdown
                       label={t.selectBranch}
                       value={selectedBranch?.id || ""}
@@ -561,8 +618,19 @@ export default function CheckoutModal({
                       }))}
                       buttonClassName="px-3 py-2.5 text-base"
                     />
-                  ) : (
-                    <div className="space-y-3">
+                    {selectedBranch && (
+                      <div className="p-3 bg-purple-50 border border-purple-100 rounded-xl mt-2">
+                        <p className="text-[9px] font-black text-[#8814B1] uppercase tracking-[0.2em] mb-1">
+                          {t.deliveryAddress}
+                        </p>
+                        <p className="text-[#333333] font-bold text-[13px]">
+                          {selectedBranch.address}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="space-y-3">
                       <input
                         type="text"
                         value={streetAddress}
@@ -583,8 +651,18 @@ export default function CheckoutModal({
               )}
             </AnimatePresence>
 
-            <div className="bg-gray-50 rounded-xl p-4 mt-2">
-              <div className="flex justify-between items-center text-[16px] font-bold text-[#8814B1]">
+            <div className="bg-gray-50 rounded-xl p-4 mt-2 space-y-2">
+              <div className="flex justify-between items-center text-[13px] text-gray-500">
+                <span>{t.items}:</span>
+                <span>{(totalAmount - productsDiscount).toLocaleString()} {t.currency}</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px] text-gray-500">
+                <span>{t.delivery}:</span>
+                <span className={currentDeliveryPrice === 0 ? "text-[#059669] font-bold" : ""}>
+                  {currentDeliveryPrice === 0 ? t.free : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-[16px] font-bold text-[#8814B1]">
                 <span>{t.total}:</span>
                 <span>
                   {finalTotal.toLocaleString()} {t.currency}
@@ -619,26 +697,34 @@ export default function CheckoutModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} showBackgroundImage={false}>
-      <div className="w-full max-w-4xl">
+      <div className="w-full max-w-6xl">
         <h2 className="text-2xl font-bold mb-6">{t.checkoutTitle}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t.fullName}
+                {t.fullName} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full h-11 px-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                onChange={(e) => {
+                  setCustomerName(e.target.value);
+                  if (errors.customerName) setErrors({ ...errors, customerName: "" });
+                }}
+                className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
+                  errors.customerName ? "border-red-500 bg-red-50" : "border-gray-300 focus:ring-2 focus:ring-purple-500"
+                }`}
                 placeholder={t.fullNamePlaceholder}
               />
+              {errors.customerName && (
+                <p className="text-red-500 text-[12px] mt-1">{errors.customerName}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t.phoneNumber}
+                {t.phoneNumber} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -647,13 +733,19 @@ export default function CheckoutModal({
                 <input
                   type="tel"
                   value={customerPhone}
-                  onChange={(e) =>
-                    setCustomerPhone(applyPhoneMask(e.target.value))
-                  }
-                  className="w-full h-11 pl-14 pr-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                  onChange={(e) => {
+                    setCustomerPhone(applyPhoneMask(e.target.value));
+                    if (errors.customerPhone) setErrors({ ...errors, customerPhone: "" });
+                  }}
+                  className={`w-full h-11 pl-14 pr-4 border rounded-xl outline-none transition-all ${
+                    errors.customerPhone ? "border-red-500 bg-red-50" : "border-gray-300 focus:ring-2 focus:ring-purple-500"
+                  }`}
                   placeholder="XX XXX XX XX"
                 />
               </div>
+              {errors.customerPhone && (
+                <p className="text-red-500 text-[12px] mt-1">{errors.customerPhone}</p>
+              )}
             </div>
           </div>
 
@@ -677,7 +769,14 @@ export default function CheckoutModal({
                   checked={carrier === "bts"}
                   className="accent-[#8814B1]"
                 />
-                {t.btsUzbekistanCarrier}
+                <div className="flex flex-col text-left">
+                  <span>{t.btsUzbekistanCarrier}</span>
+                  <span className="text-[12px] font-medium opacity-70">
+                    {currentDeliveryPrice > 0 
+                      ? `${currentDeliveryPrice.toLocaleString()} ${t.currency}` 
+                      : "25 000+ " + t.currency}
+                  </span>
+                </div>
               </button>
               <button
                 type="button"
@@ -694,7 +793,12 @@ export default function CheckoutModal({
                   checked={carrier === "btsFergana"}
                   className="accent-[#059669]"
                 />
-                {t.btsFerganaCarrier}
+                <div className="flex flex-col text-left">
+                  <span>{t.btsFerganaCarrier}</span>
+                  <span className="text-[12px] font-black text-[#059669] uppercase tracking-widest">
+                    {t.free}
+                  </span>
+                </div>
               </button>
             </div>
           </div>
@@ -710,23 +814,38 @@ export default function CheckoutModal({
               >
                 {carrier === "btsFergana" ? (
                   <div className="grid grid-cols-2 gap-6">
-                    <Dropdown
-                      label={t.ferganaDistrict}
-                      value="г.Фергана"
-                      options={[{ value: "г.Фергана", label: "г.Фергана" }]}
-                      disabled={true}
-                    />
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t.ferganaAddress}
+                        {t.ferganaDistrict}
+                      </label>
+                      <input
+                        type="text"
+                        value="г.Фергана"
+                        disabled
+                        className="w-full h-11 px-4 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 font-medium cursor-not-allowed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t.ferganaAddress} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={ferganaAddress}
-                        onChange={(e) => setFerganaAddress(e.target.value)}
-                        className="w-full h-11 px-4 border border-gray-300 rounded-xl outline-none"
+                        onChange={(e) => {
+                          setFerganaAddress(e.target.value);
+                          if (errors.ferganaAddress) setErrors({ ...errors, ferganaAddress: "" });
+                        }}
+                        className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
+                          errors.ferganaAddress ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-[#8814B1]"
+                        }`}
                         placeholder={t.ferganaAddressPlaceholder}
                       />
+                      {errors.ferganaAddress && (
+                        <p className="text-red-500 text-[12px] mt-1">
+                          {errors.ferganaAddress}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -745,12 +864,13 @@ export default function CheckoutModal({
                       <Dropdown
                         label={t.region}
                         value={region}
+                        required
+                        error={errors.region}
                         placeholder={t.regionPlaceholder}
                         onChange={(v) => {
                           setRegion(v);
-                          if (v === "Ферганская область")
-                            setVillage("г.Фергана");
-                          else setVillage("");
+                          setVillage("");
+                          if (errors.region) setErrors({ ...errors, region: "" });
                         }}
                         options={regionKeys.map((k, i) => ({
                           key: k,
@@ -761,9 +881,14 @@ export default function CheckoutModal({
                       <Dropdown
                         label={t.village}
                         value={village}
+                        required
+                        error={errors.village}
                         placeholder={t.villagePlaceholder}
-                        disabled={!region || region === "Ферганская область"}
-                        onChange={setVillage}
+                        disabled={!region}
+                        onChange={(v) => {
+                          setVillage(v);
+                          if (errors.village) setErrors({ ...errors, village: "" });
+                        }}
                         options={availableDistricts.map((d) => ({
                           key: d.ru,
                           value: d.ru,
@@ -772,39 +897,80 @@ export default function CheckoutModal({
                       />
                     </div>
                     {deliveryMethod === "pickup" ? (
-                      <Dropdown
-                        label={t.selectBranch}
-                        value={selectedBranch?.id || ""}
-                        placeholder={t.selectBranch}
-                        disabled={!village}
-                        onChange={(id) =>
-                          setSelectedBranch(
-                            branches.find((b) => b.id === id) || null,
-                          )
-                        }
-                        options={branches.map((b) => ({
-                          key: b.id,
-                          value: b.id,
-                          label: b.name,
-                          description: b.address,
-                        }))}
-                      />
-                    ) : (
+                      <>
+                        <Dropdown
+                          label={t.selectBranch}
+                          value={selectedBranch?.id || ""}
+                          required
+                          error={errors.branch}
+                          placeholder={t.selectBranch}
+                          disabled={!village}
+                          onChange={(id) => {
+                            setSelectedBranch(
+                              branches.find((b) => b.id === id) || null,
+                            );
+                            if (errors.branch) setErrors({ ...errors, branch: "" });
+                          }}
+                          options={branches.map((b) => ({
+                            key: b.id,
+                            value: b.id,
+                            label: b.name,
+                            description: b.address,
+                          }))}
+                        />
+                      {selectedBranch && (
+                        <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                          <p className="text-[10px] font-black text-[#8814B1] uppercase tracking-[0.2em] mb-1">
+                            {t.deliveryAddress}
+                          </p>
+                          <p className="text-[#333333] font-bold text-[14px]">
+                            {selectedBranch.address}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
                       <div className="grid grid-cols-2 gap-6">
-                        <input
-                          type="text"
-                          value={streetAddress}
-                          onChange={(e) => setStreetAddress(e.target.value)}
-                          className="w-full h-11 px-4 border border-gray-300 rounded-xl outline-none"
-                          placeholder={t.streetAddressPlaceholder}
-                        />
-                        <input
-                          type="text"
-                          value={homeNumber}
-                          onChange={(e) => setHomeNumber(e.target.value)}
-                          className="w-full h-11 px-4 border border-gray-300 rounded-xl outline-none"
-                          placeholder={t.homeNumberPlaceholder}
-                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t.streetAddress} <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={streetAddress}
+                            onChange={(e) => {
+                              setStreetAddress(e.target.value);
+                              if (errors.streetAddress) setErrors({ ...errors, streetAddress: "" });
+                            }}
+                            className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
+                              errors.streetAddress ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-[#8814B1]"
+                            }`}
+                            placeholder={t.streetAddressPlaceholder}
+                          />
+                          {errors.streetAddress && (
+                            <p className="text-red-500 text-[12px] mt-1">{errors.streetAddress}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t.homeNumber} <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={homeNumber}
+                            onChange={(e) => {
+                              setHomeNumber(e.target.value);
+                              if (errors.homeNumber) setErrors({ ...errors, homeNumber: "" });
+                            }}
+                            className={`w-full h-11 px-4 border rounded-xl outline-none transition-all ${
+                              errors.homeNumber ? "border-red-500 bg-red-50" : "border-gray-300 focus:border-[#8814B1]"
+                            }`}
+                            placeholder={t.homeNumberPlaceholder}
+                          />
+                          {errors.homeNumber && (
+                            <p className="text-red-500 text-[12px] mt-1">{errors.homeNumber}</p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -813,8 +979,18 @@ export default function CheckoutModal({
             )}
           </AnimatePresence>
 
-          <div className="bg-gray-50 rounded-2xl p-6">
-            <div className="flex justify-between items-center text-xl font-bold text-[#8814B1]">
+          <div className="bg-gray-50 rounded-2xl p-6 space-y-3">
+            <div className="flex justify-between items-center text-gray-600">
+              <span>{t.items}:</span>
+              <span className="font-medium">{(totalAmount - productsDiscount).toLocaleString()} {t.currency}</span>
+            </div>
+            <div className="flex justify-between items-center text-gray-600">
+              <span>{t.delivery}:</span>
+              <span className={`font-medium ${currentDeliveryPrice === 0 ? "text-[#059669]" : ""}`}>
+                {currentDeliveryPrice === 0 ? t.free : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
+              </span>
+            </div>
+            <div className="pt-4 border-t border-gray-200 flex justify-between items-center text-xl font-bold text-[#8814B1]">
               <span>{t.total}:</span>
               <span>
                 {finalTotal.toLocaleString()} {t.currency}

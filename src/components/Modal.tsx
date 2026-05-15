@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,25 +16,7 @@ export default function Modal({
   children,
   showBackgroundImage = true,
 }: ModalProps) {
-  useEffect(() => {
-    if (isOpen) {
-      // Get scrollbar width before hiding overflow
-      const scrollbarWidth =
-        window.innerWidth - document.documentElement.clientWidth;
-
-      // Set overflow hidden and add padding to prevent layout shift
-      document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    } else {
-      // Reset styles
-      document.body.style.overflow = "unset";
-      document.body.style.paddingRight = "0px";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-      document.body.style.paddingRight = "0px";
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   if (!isOpen) return null;
 

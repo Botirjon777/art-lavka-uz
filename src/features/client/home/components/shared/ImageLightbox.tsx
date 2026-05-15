@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 interface ImageLightboxProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export default function ImageLightbox({
   const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  useScrollLock(isOpen);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -31,11 +34,9 @@ export default function ImageLightbox({
       setCurrentIndex(initialIndex);
       // Small delay to trigger entry animation
       const timer = setTimeout(() => setIsVisible(true), 10);
-      document.body.style.overflow = "hidden";
       return () => clearTimeout(timer);
     } else {
       setIsVisible(false);
-      document.body.style.overflow = "unset";
     }
   }, [isOpen, initialIndex]);
 
