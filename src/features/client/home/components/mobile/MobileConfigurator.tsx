@@ -193,7 +193,11 @@ export default function MobileConfigurator({
         <div>
           <div className="flex justify-between items-center mb-[15px]">
             <p className="text-[13px]/[16px] text-[#333333]">
-              {t.size}: {selectedSize}
+              {t.size}: {selectedSize} {!isOutOfStock && (
+                <span className="text-green-600 font-medium ml-1">
+                  ({selectedVariant?.hideExactStock ? t.inStock : `${sizeStock} ${t.pcs}`})
+                </span>
+              )}
             </p>
           </div>
           <div className="grid grid-cols-4 gap-2.5">
@@ -239,93 +243,56 @@ export default function MobileConfigurator({
           >
             {t.sizeChart}
           </button>
+        </div>
 
-          {!isOutOfStock && (
-            <p className="text-green-600 text-sm font-medium mt-5 flex items-center gap-1">
-              <span className="text-lg">✓</span>
-              <span className="inline-block min-w-[100px]">
-                {selectedVariant?.hideExactStock
-                  ? t.inStock
-                  : `${sizeStock} ${t.pcs}`}
-              </span>
+        {/* Quantity & Price Row */}
+        <div className="flex items-start justify-between gap-4 pt-2">
+          {/* Quantity */}
+          <div className="flex-1">
+            <p className="text-[13px]/[16px] text-[#333333] mb-3 font-medium">
+              {t.quantity}: {quantity} {t.pcs}
             </p>
-          )}
-        </div>
-
-        {/* Quantity */}
-        <div>
-          <p className="text-[13px]/[16px] text-[#333333] mb-3">
-            {t.quantity}: {quantity}
-            {t.pcs}
-          </p>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              disabled={quantity <= 1}
-              className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                disabled={quantity <= 1}
+                className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 12H4"
-                />
-              </svg>
-            </button>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
 
-            <span className="text-[16px]/[20px] text-[#333333] min-w-[3ch] text-center">
-              {quantity}
-            </span>
-
-            <button
-              onClick={() => setQuantity(Math.min(sizeStock, quantity + 1))}
-              disabled={quantity >= sizeStock}
-              className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
-
-            {!isOutOfStock && (
-              <span className="text-sm text-green-600 font-medium ml-2 inline-block min-w-[100px]">
-                {selectedVariant?.hideExactStock
-                  ? t.inStock
-                  : `${sizeStock} ${t.pcs}`}
+              <span className="text-[16px]/[20px] text-[#333333] w-8 text-center font-bold">
+                {quantity}
               </span>
-            )}
+
+              <button
+                onClick={() => setQuantity(Math.min(sizeStock, quantity + 1))}
+                disabled={quantity >= sizeStock}
+                className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Price */}
-        <div>
-          <p className="text-[13px]/[16px] text-[#666666] mb-1">
-            {t.price}{" "}
-            {oldPrice && oldPrice > price && (
-              <span className="line-through text-[#9F9F9F]">
-                {(oldPrice * quantity).toLocaleString()} {t.currency}
-              </span>
-            )}
-          </p>
-          <p className="text-[20px]/[24px] text-[#333333] font-bold">
-            {(price * quantity).toLocaleString()} {t.currency}
-          </p>
+          {/* Price */}
+          <div className="text-right">
+            <p className="text-[13px]/[16px] text-[#666666] mb-1">
+              {t.price}{" "}
+              {oldPrice && oldPrice > price && (
+                <span className="line-through text-[#9F9F9F] ml-1">
+                  {(oldPrice * quantity).toLocaleString()} {t.currency}
+                </span>
+              )}
+            </p>
+            <p className="text-[20px]/[24px] text-[#333333] font-bold">
+              {(price * quantity).toLocaleString()} {t.currency}
+            </p>
+          </div>
         </div>
 
         {/* Action Buttons */}

@@ -183,5 +183,14 @@
   "backToHome": "Asosiy sahifaga",
   "rotateModel": "Modelni sichqoncha bilan aylantiring",
   "zoomScroll": "Masshtabni o'zgartirish uchun sichqoncha g'ildiragidan foydalaning",
-  "selectOption": "Tanlang"
+  "selectOption": "Variantni tanlang",
+  "support": "Qo'llab-quvvatlash",
+  "supportTitle": "Support Help",
+  "surname": "Familiya",
+  "surnamePlaceholder": "Familiyangizni kiriting",
+  "message": "Xabar",
+  "messagePlaceholder": "Muammo yoki savolingizni tavsiflang...",
+  "supportSuccess": "So'rov muvaffaqiyatli yuborildi!",
+  "supportSuccessDesc": "Menejerimiz tez orada siz bilan bog'lanadi.",
+  "send": "Yuborish"
 }

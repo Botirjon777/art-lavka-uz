@@ -183,5 +183,14 @@
   "backToHome": "На главную",
   "rotateModel": "Вращайте модель мышкой",
   "zoomScroll": "Колесико для масштабирования",
-  "selectOption": "Выберите вариант"
+  "selectOption": "Выберите вариант",
+  "support": "Поддержка",
+  "supportTitle": "Support Help",
+  "surname": "Фамилия",
+  "surnamePlaceholder": "Введите вашу фамилию",
+  "message": "Сообщение",
+  "messagePlaceholder": "Опишите вашу проблему или вопрос...",
+  "supportSuccess": "Запрос успешно отправлен!",
+  "supportSuccessDesc": "Наш менеджер свяжется с вами в ближайшее время.",
+  "send": "Отправить"
 }

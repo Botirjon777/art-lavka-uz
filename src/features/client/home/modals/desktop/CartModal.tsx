@@ -40,7 +40,7 @@ export default function CartModal({
             {t.cart} - {items.length}
           </h2>
 
-          <div className="space-y-5 max-h-[700px] overflow-y-auto pr-2">
+          <div className="space-y-5 max-h-[700px] overflow-y-auto modal-scrollbar pr-2">
             {items.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <svg

@@ -11,6 +11,63 @@ function escapeHTML(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
+
+export async function sendSupportNotification(support: any) {
+  try {
+    await dbConnect();
+
+    // Lazy import bot to avoid circular dependencies
+    const { default: bot } = await import("./bot");
+
+    // Format support notification message
+    let message = `🆘 <b>Запрос в службу поддержки!</b>\n\n`;
+    message += `<b>ID:</b> ${escapeHTML(support.orderNumber)}\n\n`;
+    
+    message += `👤 <b>Клиент:</b>\n`;
+    message += `Имя: ${escapeHTML(support.customerName.replace("[SUPPORT] ", ""))}\n`;
+    message += `Телефон: ${escapeHTML(support.customerPhone)}\n\n`;
+    
+    message += `📝 <b>Сообщение:</b>\n`;
+    message += `<i>${escapeHTML(support.notes)}</i>\n\n`;
+    
+    message += `📅 <b>Дата:</b> ${new Date().toLocaleString("ru-RU")}`;
+
+    // 1. Send notification to all authenticated admin sessions
+    const sessions = await TelegramSession.find({ isAuthenticated: true });
+    if (sessions.length > 0) {
+      for (const session of sessions) {
+        try {
+          await bot.sendMessage(session.chatId, message, {
+            parse_mode: "HTML",
+          });
+        } catch (error) {
+          console.error(
+            `Failed to send support notification to admin chat ${session.chatId}:`,
+            error,
+          );
+        }
+      }
+    }
+
+    // 2. Send notification to the specific order group if configured
+    const groupId = process.env.TELEGRAM_ORDER_GROUP_ID;
+    if (groupId) {
+      try {
+        await bot.sendMessage(groupId, message, {
+          parse_mode: "HTML",
+        });
+      } catch (error: any) {
+        console.error(
+          `Failed to send support notification to group ${groupId}:`,
+          error,
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Error sending support notification:", error);
+  }
+}
+
 export async function sendOrderNotification(order: any) {
   try {
     await dbConnect();
