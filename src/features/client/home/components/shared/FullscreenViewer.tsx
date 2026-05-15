@@ -9,6 +9,8 @@ import { TShirtModel, TShirtModelProps } from "./TShirtModel";
 import Loader from "@/components/Loader";
 import { useTranslation } from "@/hooks/useTranslation";
 
+import { useScrollLock } from "@/hooks/useScrollLock";
+
 interface FullscreenViewerProps extends TShirtModelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -23,6 +25,8 @@ export default function FullscreenViewer({
 }: FullscreenViewerProps) {
   const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
+
+  useScrollLock(isOpen);
 
   useEffect(() => {
     setMounted(true);

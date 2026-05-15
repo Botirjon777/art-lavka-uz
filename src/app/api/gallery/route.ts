@@ -2,18 +2,35 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Gallery from "@/models/Gallery";
 
-// Cache for 1 hour
-export const revalidate = 3600;
+// API uses search params for pagination, must be dynamic
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await dbConnect();
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "12");
+    const skip = (page - 1) * limit;
 
-    const gallery = await Gallery.find({}).sort({ createdAt: -1 }).lean();
+    const [gallery, total] = await Promise.all([
+      Gallery.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Gallery.countDocuments({}),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
 
     return NextResponse.json({
       success: true,
       data: gallery,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasMore,
+      },
     });
   } catch (error) {
     console.error("Error fetching gallery:", error);

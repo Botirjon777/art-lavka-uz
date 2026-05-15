@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Modal from "@/components/Modal";
 import { Product } from "@/types";
 import Image from "next/image";
-import { useGallery } from "../../hooks/useGallery";
+import { useGalleryPaginated } from "../../hooks/useGalleryPaginated";
 import { useTranslation } from "@/hooks/useTranslation";
 import ImageLightbox from "../../components/shared/ImageLightbox";
 
@@ -27,7 +27,13 @@ export default function GalleryModal({
   onSelectProduct,
 }: GalleryModalProps) {
   const { t } = useTranslation();
-  const { data: gallery = [], isLoading: loading } = useGallery({ enabled: isOpen });
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useGalleryPaginated({ enabled: isOpen });
   
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -37,10 +43,29 @@ export default function GalleryModal({
     setIsLightboxOpen(true);
   };
 
+  const allImages = data?.pages.flatMap((page) => page.data) || [];
+
+  // Intersection Observer for infinite scroll
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isFetchingNextPage) return;
+      if (observerRef.current) observerRef.current.disconnect();
+      if (!node) return;
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      });
+      observerRef.current.observe(node);
+    },
+    [isFetchingNextPage, hasNextPage, fetchNextPage]
+  );
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="w-[1500px] max-w-full min-h-[600px]">
-        {loading ? (
+      <div className="w-[1500px] max-w-full min-h-[600px] px-5 py-5">
+        {isLoading && allImages.length === 0 ? (
           <div className="flex items-center justify-center min-h-[500px]">
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin"></div>
@@ -51,32 +76,43 @@ export default function GalleryModal({
           <>
             <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">{t.gallery}</h2>
             {/* Gallery Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 modal-scrollbar overflow-y-auto max-h-[600px]">
-            {gallery.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-600">{t.noGalleryImages}</p>
-              </div>
-            ) : (
-              gallery.map((item, index) => (
-                <div key={item._id} className="group text-center">
-                  <div 
-                    className="relative aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in"
-                    onClick={() => handleImageClick(index)}
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      sizes="(max-width: 1200px) 25vw, 210px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <p className="text-[16px]/[22px] text-[#333333]">
-                    {item.name}
-                  </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 modal-scrollbar overflow-y-auto max-h-[650px] pb-10">
+              {allImages.length === 0 && !isLoading ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-600">{t.noGalleryImages}</p>
                 </div>
-              ))
-            )}
+              ) : (
+                allImages.map((item: GalleryImage, index: number) => (
+                  <div key={item._id} className="group text-center">
+                    <div 
+                      className="relative aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in"
+                      onClick={() => handleImageClick(index)}
+                    >
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        sizes="(max-width: 1200px) 25vw, 210px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                    <p className="text-[16px]/[22px] text-[#333333]">
+                      {item.name}
+                    </p>
+                  </div>
+                ))
+              )}
+              
+              {/* Infinite Scroll Sentinel */}
+              <div ref={loadMoreRef} className="col-span-full flex justify-center py-8">
+                {isFetchingNextPage && (
+                  <div className="w-8 h-8 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin" />
+                )}
+                {!hasNextPage && allImages.length > 0 && (
+                  <p className="text-xs text-gray-400">{t.allPrintsLoaded}</p>
+                )}
+              </div>
             </div>
           </>
         )}
@@ -85,7 +121,7 @@ export default function GalleryModal({
       <ImageLightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
-        images={gallery.map((item) => item.image)}
+        images={allImages.map((item: GalleryImage) => item.image)}
         initialIndex={lightboxIndex}
       />
     </Modal>

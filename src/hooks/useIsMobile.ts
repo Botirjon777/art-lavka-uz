@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
  * @param breakpoint - The breakpoint in pixels (default: 768px for md breakpoint)
  * @returns boolean indicating if the device is mobile
  */
-export function useIsMobile(breakpoint: number = 1024): boolean {
+export function useIsMobile(breakpoint: number = 1800): boolean {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {

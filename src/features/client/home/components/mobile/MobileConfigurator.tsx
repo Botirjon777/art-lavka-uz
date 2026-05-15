@@ -48,6 +48,7 @@ export default function MobileConfigurator({
     firstInStockSize || productSizes[0] || "",
   );
   const [quantity, setQuantity] = useState(1);
+  const [modelLoaded, setModelLoaded] = useState(false);
 
   // Reset selection when product changes
   useEffect(() => {
@@ -71,6 +72,11 @@ export default function MobileConfigurator({
       setQuantity(1);
     }
   }, [selectedProduct]);
+
+  // Reset model loaded state when product changes
+  useEffect(() => {
+    setModelLoaded(false);
+  }, [selectedProduct?.id]);
 
   const handleColorChange = (color: ProductColor) => {
     setSelectedColor(color);
@@ -130,7 +136,16 @@ export default function MobileConfigurator({
     <div className="flex flex-col bg-white min-h-screen">
       {/* T-Shirt Scene */}
       <div className="relative bg-image flex items-center justify-center py-4 min-h-[480px]">
-        <div className="w-full max-w-md h-[480px]">
+        {/* Skeleton shown while model loads */}
+        {!modelLoaded && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-image">
+            <div className="w-48 h-64 bg-white/40 rounded-2xl animate-pulse" />
+            <p className="text-xs text-[#8814B1]/60 font-medium tracking-widest uppercase animate-pulse">
+              {t.loadingShowcase}...
+            </p>
+          </div>
+        )}
+        <div className={`w-full max-w-md h-[480px] transition-opacity duration-500 ${modelLoaded ? "opacity-100" : "opacity-0"}`}>
           <TShirtScene
             key={selectedProduct.id}
             selectedProduct={selectedProduct.model}
@@ -147,6 +162,7 @@ export default function MobileConfigurator({
             onGalleryClick={onGalleryClick}
             modelScale={1.2}
             modelPosition={[0, -0.4, 0]}
+            onModelLoaded={() => setModelLoaded(true)}
           />
         </div>
       </div>

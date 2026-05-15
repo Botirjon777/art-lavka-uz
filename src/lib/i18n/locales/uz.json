@@ -193,5 +193,6 @@
   "messagePlaceholder": "Muammo yoki savolingizni tavsiflang...",
   "supportSuccess": "So'rov muvaffaqiyatli yuborildi!",
   "supportSuccessDesc": "Menejerimiz tez orada siz bilan bog'lanadi.",
-  "send": "Yuborish"
+  "send": "Yuborish",
+  "allPrintsLoaded": "Barcha printlar yuklandi"
 }

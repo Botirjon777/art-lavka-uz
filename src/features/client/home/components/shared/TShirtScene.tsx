@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment, Html } from "@react-three/drei";
 import { PrintDesign } from "@/types";
@@ -16,6 +16,16 @@ import MobileModal from "@/features/client/home/modals/mobile/MobileModal";
 import { FiX } from "react-icons/fi";
 import { useTranslation } from "@/hooks/useTranslation";
 
+// Thin wrapper: once mounted inside Suspense, the model is ready
+function TShirtModelLoader(props: React.ComponentProps<typeof TShirtModel> & { onModelLoaded?: () => void }) {
+  const { onModelLoaded, ...modelProps } = props;
+  useEffect(() => {
+    onModelLoaded?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return <TShirtModel {...modelProps} />;
+}
+
 interface TShirtSceneProps {
   selectedProduct?: string;
   productName?: string;
@@ -29,6 +39,7 @@ interface TShirtSceneProps {
   modelScale?: number;
   modelPosition?: [number, number, number];
   cameraPosition?: [number, number, number];
+  onModelLoaded?: () => void;
 }
 
 export default function TShirtScene({
@@ -44,6 +55,7 @@ export default function TShirtScene({
   modelScale = 1.4,
   modelPosition = [0, -1.1, 0],
   cameraPosition = [0, 0, 5],
+  onModelLoaded,
 }: TShirtSceneProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -85,12 +97,13 @@ export default function TShirtScene({
 
           <Environment files="/model/hdr/studio_small_01_1k.hdr" />
 
-          <TShirtModel
+          <TShirtModelLoader
             selectedProduct={selectedProduct}
             selectedPrint={selectedPrint}
             selectedColor={selectedColor}
             modelScale={modelScale}
             modelPosition={modelPosition}
+            onModelLoaded={onModelLoaded}
           />
 
           <OrbitControls

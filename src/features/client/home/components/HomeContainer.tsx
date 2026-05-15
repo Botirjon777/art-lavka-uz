@@ -27,9 +27,9 @@ import { usePrints } from "../hooks/usePrints";
 import { usePrintCategories } from "../hooks/usePrintCategories";
 import { useCartStore } from "@/stores/cartStore";
 import { useConfiguratorStore } from "@/stores/configuratorStore";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import SizeTableModal from "@/components/SizeTableModal";
 
-// Shared Types
 import {
   CartItem,
   Product,
@@ -42,6 +42,7 @@ import { fetchProducts } from "../api/products";
 export default function HomeContainer() {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
+  const isMobile = useIsMobile();
   const [activeModal, setActiveModal] = useState<
     "menu" | "cart" | "gallery" | "products" | "prints" | "sizes" | null
   >(null);
@@ -57,10 +58,10 @@ export default function HomeContainer() {
   // Use hooks for consolidated fetching
   const { data: settings } = useSettings();
   const { data: productsData, isLoading: productsLoading } = useProducts();
-  const { data: printsData = [], isLoading: printsLoading } = usePrints();
+  // Prints are lazy-loaded: desktop LeftSidebar fetches its own, mobile fetches on modal open
+  const { data: printsData = [], isLoading: printsLoading } = usePrints({ enabled: activeModal === "prints" });
   const { data: printCategories = [] } = usePrintCategories();
 
-  const [loading, setLoading] = useState(!productsData);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
@@ -82,7 +83,6 @@ export default function HomeContainer() {
   // Handle initial product selection when products are loaded
   useEffect(() => {
     if (productsData && productsData.length > 0) {
-      setLoading(false);
       const normalizedProducts = productsData.map((item: any) => ({
         ...item,
         id: item._id,
@@ -134,8 +134,6 @@ export default function HomeContainer() {
           }
         }
       });
-
-      setLoading(false);
     }
   }, [productsData, settings]);
 
@@ -243,40 +241,35 @@ export default function HomeContainer() {
       activeModal={activeModal}
       isCheckoutOpen={showCheckout}
     >
-      {loading || !_hasHydrated ? (
+      {!_hasHydrated || !productsData ? (
         <div className="flex items-center justify-center min-h-[600px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1] mx-auto mb-4"></div>
-            <p className="text-gray-600 font-bold uppercase tracking-widest text-xs mt-4">
-              {t.loadingShowcase}...
-            </p>
-          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1]" />
         </div>
       ) : !selectedProduct ? (
-        <div className="flex items-center justify-center min-h-[600px] animate-in fade-in duration-1000">
-          <div className="text-center px-4">
-            <div className="mb-6 flex justify-center">
-              <img
-                src="/art-lavka.png"
-                alt="Logo"
-                className="w-48 h-auto opacity-20 grayscale"
-              />
+          <div className="flex items-center justify-center min-h-[600px] animate-in fade-in duration-1000">
+            <div className="text-center px-4">
+              <div className="mb-6 flex justify-center">
+                <img
+                  src="/art-lavka.png"
+                  alt="Logo"
+                  className="w-48 h-auto opacity-20 grayscale"
+                />
+              </div>
+              <p className="text-gray-400 font-medium mb-6 uppercase tracking-widest text-sm">
+                {t.productsNotFound}
+              </p>
+              <button
+                onClick={() => fetchProducts()}
+                className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-all font-bold active:scale-95"
+              >
+                {t.reload}
+              </button>
             </div>
-            <p className="text-gray-400 font-medium mb-6 uppercase tracking-widest text-sm">
-              {t.productsNotFound}
-            </p>
-            <button
-              onClick={() => fetchProducts()}
-              className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-all font-bold active:scale-95"
-            >
-              {t.reload}
-            </button>
           </div>
-        </div>
-      ) : (
-        <>
-          {/* Desktop Layout */}
-          <div className="hidden lg:flex flex-col justify-center md:flex-row gap-[78px] animate-in fade-in duration-700">
+        ) : (
+          <>
+            {/* Desktop Layout */}
+            <div className="hidden lg:flex flex-col justify-center md:flex-row gap-[78px] animate-in fade-in duration-700">
             <LeftSidebar
               onGalleryClick={() => setActiveModal("gallery")}
               selectedPrint={selectedPrint}
@@ -320,59 +313,67 @@ export default function HomeContainer() {
         </>
       )}
 
-      {/* Shared Modals Collection */}
-      <MenuModal
-        isOpen={activeModal === "menu"}
-        onClose={() => setActiveModal(null)}
-      />
+      {/* Shared Modals Collection - render only the appropriate version */}
+      {isMobile ? (
+        <MobileMenuModal
+          isOpen={activeModal === "menu"}
+          onClose={() => setActiveModal(null)}
+        />
+      ) : (
+        <MenuModal
+          isOpen={activeModal === "menu"}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
 
-      <MobileMenuModal
-        isOpen={activeModal === "menu"}
-        onClose={() => setActiveModal(null)}
-      />
+      {isMobile ? (
+        <MobileGalleryModal
+          isOpen={activeModal === "gallery"}
+          onClose={() => setActiveModal(null)}
+          onSelectProduct={handleSelectProduct}
+        />
+      ) : (
+        <GalleryModal
+          isOpen={activeModal === "gallery"}
+          onClose={() => setActiveModal(null)}
+          onSelectProduct={handleSelectProduct}
+        />
+      )}
 
-      <GalleryModal
-        isOpen={activeModal === "gallery"}
-        onClose={() => setActiveModal(null)}
-        onSelectProduct={handleSelectProduct}
-      />
+      {/* Cart is desktop-only (mobile uses /cart route) */}
+      {!isMobile && (
+        <CartModal
+          isOpen={activeModal === "cart"}
+          onClose={() => setActiveModal(null)}
+          items={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onCheckout={handleCheckout}
+        />
+      )}
 
-      <MobileGalleryModal
-        isOpen={activeModal === "gallery"}
-        onClose={() => setActiveModal(null)}
-        onSelectProduct={handleSelectProduct}
-      />
+      {isMobile ? (
+        <MobileProductsModal
+          isOpen={activeModal === "products"}
+          onClose={() => setActiveModal(null)}
+          onSelectProduct={handleSelectProduct}
+        />
+      ) : (
+        <ProductsModal
+          isOpen={activeModal === "products"}
+          onClose={() => setActiveModal(null)}
+          onSelectProduct={handleSelectProduct}
+        />
+      )}
 
-      <CartModal
-        isOpen={activeModal === "cart"}
-        onClose={() => setActiveModal(null)}
-        items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onCheckout={handleCheckout}
-      />
-
-      <ProductsModal
-        isOpen={activeModal === "products"}
-        onClose={() => setActiveModal(null)}
-        onSelectProduct={handleSelectProduct}
-      />
-
-      <MobileProductsModal
-        isOpen={activeModal === "products"}
-        onClose={() => setActiveModal(null)}
-        onSelectProduct={handleSelectProduct}
-      />
-
-      <MobilePrintsModal
-        isOpen={activeModal === "prints"}
-        onClose={() => setActiveModal(null)}
-        onSelectPrint={handleSelectPrint}
-        selectedPrint={selectedPrint}
-        initialPrints={prints}
-        initialLoading={printsLoading}
-        printCategories={printCategories}
-      />
+      {isMobile && (
+        <MobilePrintsModal
+          isOpen={activeModal === "prints"}
+          onClose={() => setActiveModal(null)}
+          onSelectPrint={handleSelectPrint}
+          selectedPrint={selectedPrint}
+        />
+      )}
 
       <SizeTableModal
         isOpen={activeModal === "sizes"}
