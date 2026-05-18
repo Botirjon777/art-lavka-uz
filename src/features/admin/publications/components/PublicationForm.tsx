@@ -39,7 +39,7 @@ export default function PublicationForm({
     const newErrors: Record<string, string> = {};
     if (!title.trim()) newErrors.title = "Заголовок обязателен";
     if (!targetUrl.trim()) newErrors.targetUrl = "Целевая ссылка обязательна";
-    
+
     // Check if targetUrl is valid (at least starts with http or /)
     if (targetUrl && !targetUrl.startsWith("http") && !targetUrl.startsWith("/")) {
       newErrors.targetUrl = "Ссылка должна начинаться с http://, https:// или /";
@@ -146,11 +146,11 @@ export default function PublicationForm({
             />
 
             <div className="space-y-2">
-               <Input
+              <Input
                 label="Целевая ссылка (Target URL)"
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder="https://art-lavka.uz/products/..."
+                placeholder="https://www.art-lavka.uz/products/..."
                 error={errors.targetUrl}
                 required
               />
@@ -161,20 +161,18 @@ export default function PublicationForm({
           </div>
 
           <div className="bg-white rounded-[30px] p-8 shadow-sm border border-gray-100 flex justify-between items-center">
-             <div>
-               <h4 className="font-bold text-gray-800">Статус публикации</h4>
-               <p className="text-sm text-gray-500">Только активные публикации доступны для отслеживания и рассылок</p>
-             </div>
-             <div 
-               onClick={() => setIsActive(!isActive)}
-               className={`w-14 h-8 rounded-full p-1 cursor-pointer transition-all duration-300 ${
-                 isActive ? "bg-green-500" : "bg-gray-300"
-               }`}
-             >
-               <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 transform ${
-                 isActive ? "translate-x-6" : "translate-x-0"
-               }`} />
-             </div>
+            <div>
+              <h4 className="font-bold text-gray-800">Статус публикации</h4>
+              <p className="text-sm text-gray-500">Только активные публикации доступны для отслеживания и рассылок</p>
+            </div>
+            <div
+              onClick={() => setIsActive(!isActive)}
+              className={`w-14 h-8 rounded-full p-1 cursor-pointer transition-all duration-300 ${isActive ? "bg-green-500" : "bg-gray-300"
+                }`}
+            >
+              <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 transform ${isActive ? "translate-x-6" : "translate-x-0"
+                }`} />
+            </div>
           </div>
         </div>
 
@@ -183,20 +181,20 @@ export default function PublicationForm({
           {/* Image Upload */}
           <div className="bg-white rounded-[30px] p-8 shadow-sm border border-gray-100 space-y-4">
             <div className="flex items-center justify-between gap-2 mb-2">
-               <div className="flex items-center gap-2">
-                 <FiImage className="text-[#8814B1]" />
-                 <h4 className="font-bold text-gray-800">Обложка</h4>
-               </div>
-               <button
-                 type="button"
-                 onClick={() => setIsMediaPickerOpen(true)}
-                 className="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 bg-purple-50 px-2 py-1 rounded-lg transition-all"
-               >
-                 <FiTrendingUp className="w-3 h-3" />
-                 ИЗ ИСТОРИИ
-               </button>
+              <div className="flex items-center gap-2">
+                <FiImage className="text-[#8814B1]" />
+                <h4 className="font-bold text-gray-800">Обложка</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMediaPickerOpen(true)}
+                className="text-[10px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 bg-purple-50 px-2 py-1 rounded-lg transition-all"
+              >
+                <FiTrendingUp className="w-3 h-3" />
+                ИЗ ИСТОРИИ
+              </button>
             </div>
-            
+
             <div className="relative aspect-square bg-gray-50 rounded-[20px] overflow-hidden border-2 border-dashed border-gray-200 flex items-center justify-center group">
               {imageUrl ? (
                 <>
@@ -243,7 +241,7 @@ export default function PublicationForm({
 
           {/* Type Selection */}
           <div className="bg-white rounded-[30px] p-8 shadow-sm border border-gray-100">
-             <Dropdown
+            <Dropdown
               label="Тип публикации"
               value={type}
               onChange={(v) => setType(v as "news" | "promo" | "social")}
@@ -258,20 +256,20 @@ export default function PublicationForm({
           {/* Stats Summary (if editing) */}
           {isEditing && (
             <div className="bg-[#8814B1] rounded-[30px] p-8 text-white shadow-lg space-y-4">
-               <div className="flex items-center gap-2 mb-2">
-                 <FiTrendingUp className="text-purple-200" />
-                 <h4 className="font-bold">Текущая статистика</h4>
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-white/10 p-4 rounded-2xl">
-                    <p className="text-[10px] uppercase font-bold text-purple-200 mb-1">Просмотры</p>
-                    <p className="text-2xl font-bold">{initialData?.views.toLocaleString()}</p>
-                 </div>
-                 <div className="bg-white/10 p-4 rounded-2xl">
-                    <p className="text-[10px] uppercase font-bold text-purple-200 mb-1">Клики</p>
-                    <p className="text-2xl font-bold">{initialData?.clicks.toLocaleString()}</p>
-                 </div>
-               </div>
+              <div className="flex items-center gap-2 mb-2">
+                <FiTrendingUp className="text-purple-200" />
+                <h4 className="font-bold">Текущая статистика</h4>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/10 p-4 rounded-2xl">
+                  <p className="text-[10px] uppercase font-bold text-purple-200 mb-1">Просмотры</p>
+                  <p className="text-2xl font-bold">{initialData?.views.toLocaleString()}</p>
+                </div>
+                <div className="bg-white/10 p-4 rounded-2xl">
+                  <p className="text-[10px] uppercase font-bold text-purple-200 mb-1">Клики</p>
+                  <p className="text-2xl font-bold">{initialData?.clicks.toLocaleString()}</p>
+                </div>
+              </div>
             </div>
           )}
 

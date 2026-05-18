@@ -10,7 +10,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://art-lavka.uz"),
+  metadataBase: new URL("https://www.art-lavka.uz"),
   alternates: {
     canonical: "/",
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ART-LAVKA.UZ - Дизайнерские футболки в Узбекистане",
     description: "Эксклюзивные принты на качественных футболках. Доставка по всему Узбекистану.",
-    url: "https://art-lavka.uz",
+    url: "https://www.art-lavka.uz",
     siteName: "ART-LAVKA.UZ",
     images: [
       {

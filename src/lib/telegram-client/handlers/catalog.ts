@@ -29,9 +29,8 @@ export async function handleCatalog(bot: TelegramBot, chatId: number) {
     );
 
     for (const product of products as any) {
-      const caption = `👕 *${product.name}*\n💰 Цена: ${product.price.toLocaleString()} UZS\n\n${
-        product.description || ""
-      }`;
+      const caption = `👕 *${product.name}*\n💰 Цена: ${product.price.toLocaleString()} UZS\n\n${product.description || ""
+        }`;
 
       // Use the product image (Cloudinary or local)
       await bot.sendPhoto(chatId, product.image, {
@@ -42,7 +41,7 @@ export async function handleCatalog(bot: TelegramBot, chatId: number) {
             [
               {
                 text: "🔎 Посмотреть на сайте",
-                url: `https://art-lavka.uz/product/${product._id}`,
+                url: `https://www.art-lavka.uz/product/${product._id}`,
               },
             ],
           ],
@@ -52,7 +51,7 @@ export async function handleCatalog(bot: TelegramBot, chatId: number) {
 
     await bot.sendMessage(
       chatId,
-      "👉 Вы можете увидеть все товары на нашем сайте: https://art-lavka.uz",
+      "👉 Вы можете увидеть все товары на нашем сайте: https://www.art-lavka.uz",
       { reply_markup: mainMenu }
     );
   } catch (error) {
