@@ -8,17 +8,35 @@ export async function trackOrder(orderNumber: string, phone: string) {
   try {
     await dbConnect();
 
+    // Fast return if orderNumber is a support request
+    if (orderNumber.toUpperCase().startsWith("SUP-")) {
+      return {
+        success: false,
+        error: "Order not found. Please check your order number.",
+      };
+    }
+
     // Normalize the lookup phone number
     const normalizedPhone = normalizePhoneNumber(phone);
+    const digitsOnly = phone.replace(/\D/g, "");
+
+    // Build a flexible regex that allows optional non-digits between each digit
+    let localDigits = digitsOnly;
+    if (localDigits.startsWith("998") && localDigits.length === 12) {
+      localDigits = localDigits.substring(3);
+    }
+    const pattern = localDigits.split("").join("\\D*");
+    const flexibleRegex = new RegExp(pattern);
 
     // Find order by order number and customer phone
     // We search for exact match on normalized phone, 
-    // but also fallback to a regex match for digits to support legacy data
+    // fallback to digits-only regex, and fallback to flexible regex
     const order = await Order.findOne({
       orderNumber: orderNumber.toUpperCase(),
       $or: [
         { customerPhone: normalizedPhone },
-        { customerPhone: { $regex: phone.replace(/\D/g, "") } }
+        { customerPhone: { $regex: digitsOnly } },
+        { customerPhone: { $regex: flexibleRegex } }
       ]
     }).lean();
 
@@ -48,11 +66,21 @@ export async function getOrdersByPhone(phone: string) {
     const normalizedPhone = normalizePhoneNumber(phone);
     const digitsOnly = phone.replace(/\D/g, "");
 
-    // Find all orders for the given phone number
+    // Build a flexible regex that allows optional non-digits between each digit
+    let localDigits = digitsOnly;
+    if (localDigits.startsWith("998") && localDigits.length === 12) {
+      localDigits = localDigits.substring(3);
+    }
+    const pattern = localDigits.split("").join("\\D*");
+    const flexibleRegex = new RegExp(pattern);
+
+    // Find all orders for the given phone number, excluding support requests
     const orders = await Order.find({
+      orderNumber: { $not: /^SUP-/ },
       $or: [
         { customerPhone: normalizedPhone },
-        { customerPhone: { $regex: digitsOnly } }
+        { customerPhone: { $regex: digitsOnly } },
+        { customerPhone: { $regex: flexibleRegex } }
       ]
     })
       .select("orderNumber status totalAmount createdAt customerName")
@@ -72,6 +100,39 @@ export async function getOrdersByPhone(phone: string) {
     return {
       success: false,
       error: "An error occurred while fetching your orders.",
+    };
+  }
+}
+
+export async function getOrderByOrderNumber(orderNumber: string) {
+  try {
+    await dbConnect();
+
+    // Block support inquiries
+    if (orderNumber.toUpperCase().startsWith("SUP-")) {
+      return {
+        success: false,
+        error: "Order not found.",
+      };
+    }
+
+    const order = await Order.findOne({
+      orderNumber: orderNumber.toUpperCase()
+    }).lean();
+
+    if (!order) {
+      return {
+        success: false,
+        error: "Order not found.",
+      };
+    }
+
+    return { success: true, order: JSON.parse(JSON.stringify(order)) };
+  } catch (error: any) {
+    console.error("Error fetching order by number:", error);
+    return {
+      success: false,
+      error: "An error occurred while fetching the order.",
     };
   }
 }

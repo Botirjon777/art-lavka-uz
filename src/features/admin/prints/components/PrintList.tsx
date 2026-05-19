@@ -11,9 +11,36 @@ import { useRouter } from "next/navigation";
 import { Print, PrintCategory } from "@/types";
 import Loader from "@/components/Loader";
 
+function PrintItemImage({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="relative w-full h-full">
+      {!loaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+          <div className="w-8 h-8 rounded-full border-2 border-purple-100 border-t-purple-600 animate-spin" />
+        </div>
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        loading="lazy"
+        unoptimized
+        className={`object-cover group-hover:scale-110 transition-all duration-700 ease-out ${
+          loaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        }`}
+        onLoad={() => setLoaded(true)}
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+      />
+    </div>
+  );
+}
+
 export default function PrintList() {
   const { data: prints = [], isLoading: printsLoading } = useAdminPrints();
-  const { data: categories = [], isLoading: catsLoading } = useAdminPrintCategories();
+  const { data: categories = [], isLoading: catsLoading } =
+    useAdminPrintCategories();
   const deleteMutation = useDeletePrint();
   const [filter, setFilter] = useState<string>("all");
   const router = useRouter();
@@ -26,7 +53,9 @@ export default function PrintList() {
   };
 
   const filteredPrints =
-    filter === "all" ? prints : prints.filter((p: Print) => p.category === filter);
+    filter === "all"
+      ? prints
+      : prints.filter((p: Print) => p.category === filter);
 
   return (
     <div className="w-full">
@@ -100,20 +129,14 @@ export default function PrintList() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-5">
           {filteredPrints.map((print: Print) => (
             <div
               key={print._id}
-              className="bg-white p-5 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all group rounded-xl flex flex-col h-full"
+              className="bg-white p-2.5 md:p-5 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all group rounded-xl flex flex-col h-full"
             >
-              <div className="relative aspect-square bg-gray-50 rounded-[24px] overflow-hidden mb-5 border border-gray-100">
-                <Image
-                  src={print.frontImage}
-                  alt={print.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                />
+              <div className="relative aspect-square bg-gray-50 rounded-[24px] overflow-hidden mb-2.5 md:mb-5 border border-gray-100">
+                <PrintItemImage src={print.frontImage} alt={print.name} />
 
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex flex-col gap-2">
@@ -138,13 +161,20 @@ export default function PrintList() {
 
                 <div className="mt-auto pt-3 flex items-center justify-between border-t border-gray-50">
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#8814B1] px-2 py-1 bg-purple-50 rounded-md">
-                    {categories.find((c: PrintCategory) => c.slug === print.category)?.name ||
-                      print.category}
+                    {categories.find(
+                      (c: PrintCategory) => c.slug === print.category,
+                    )?.name || print.category}
                   </span>
                   <div className="flex -space-x-2">
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-200" title="Передняя часть" />
+                    <div
+                      className="w-6 h-6 rounded-full border-2 border-white bg-gray-200"
+                      title="Передняя часть"
+                    />
                     {print.backImage && (
-                      <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" title="Задняя часть" />
+                      <div
+                        className="w-6 h-6 rounded-full border-2 border-white bg-gray-300"
+                        title="Задняя часть"
+                      />
                     )}
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { trackOrder, getOrdersByPhone } from "../actions/trackOrder";
+import { useState, useEffect } from "react";
+import { trackOrder, getOrdersByPhone, getOrderByOrderNumber } from "../actions/trackOrder";
 import { Order } from "@/types";
 import Image from "next/image";
 import NextLink from "next/link";
@@ -25,7 +25,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { LOCATIONS } from "@/lib/i18n/locations";
 
-export default function TrackOrder() {
+export default function TrackOrder({ initialOrderNumber }: { initialOrderNumber?: string }) {
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
   const [orderNumber, setOrderNumber] = useState("");
@@ -37,6 +37,21 @@ export default function TrackOrder() {
   const [searchMode, setSearchMode] = useState<"order-number" | "phone-only">(
     "phone-only",
   );
+
+  useEffect(() => {
+    if (initialOrderNumber) {
+      setLoading(true);
+      setError("");
+      getOrderByOrderNumber(initialOrderNumber).then((result) => {
+        if (result.success && result.order) {
+          setOrder(result.order);
+        } else {
+          setError(result.error || "Order not found");
+        }
+        setLoading(false);
+      });
+    }
+  }, [initialOrderNumber]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +71,7 @@ export default function TrackOrder() {
 
       if (result.success && result.order) {
         setOrder(result.order);
+        window.history.pushState(null, "", `/track-order/${result.order.orderNumber}`);
       } else {
         setError(result.error || t.errorOrderNotFound);
       }
@@ -163,6 +179,7 @@ export default function TrackOrder() {
     if (result.success && result.order) {
       setOrder(result.order);
       setOrdersList([]);
+      window.history.pushState(null, "", `/track-order/${result.order.orderNumber}`);
     } else {
       setError(t.errorLoadOrderDetails);
     }
@@ -235,6 +252,7 @@ export default function TrackOrder() {
               onClick={() => {
                 setOrder(null);
                 setOrdersList([]);
+                window.history.pushState(null, "", "/track-order");
                 setSearchMode(
                   searchMode === "phone-only" ? "order-number" : "phone-only",
                 );
@@ -394,7 +412,10 @@ export default function TrackOrder() {
             {/* Header Control */}
             <div className="flex items-center justify-between">
               <button
-                onClick={() => setOrder(null)}
+                onClick={() => {
+                  setOrder(null);
+                  window.history.pushState(null, "", "/track-order");
+                }}
                 className="flex items-center gap-2 text-gray-400 font-bold hover:text-gray-900 transition-colors"
               >
                 <RiArrowLeftLine size={20} /> {t.backToMain}
@@ -423,11 +444,17 @@ export default function TrackOrder() {
                   </p>
                 </div>
               ) : (
-                <div className="relative pt-10 pb-4">
+                <div className="relative pt-12 pb-4">
+                  <style>{`
+                    @keyframes progress-shimmer {
+                      0% { background-position: 200% 0; }
+                      100% { background-position: -200% 0; }
+                    }
+                  `}</style>
                   {/* Global Progress Bar */}
-                  <div className="absolute top-[48px] left-0 right-0 h-1.5 bg-gray-50 rounded-full overflow-hidden">
+                  <div className="absolute top-[76px] -translate-y-1/2 left-7 right-7 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-linear-to-r from-[#8814B1] to-purple-400 transition-all duration-1000 ease-out"
+                      className="h-full transition-all duration-1000 ease-out"
                       style={{
                         width: `${
                           (getStatusSteps(order.status).filter(
@@ -436,6 +463,9 @@ export default function TrackOrder() {
                             4) *
                           100
                         }%`,
+                        animation: "progress-shimmer 2.5s linear infinite",
+                        backgroundImage: "linear-gradient(90deg, #8814B1 0%, #d946ef 50%, #8814B1 100%)",
+                        backgroundSize: "200% 100%",
                       }}
                     />
                   </div>
