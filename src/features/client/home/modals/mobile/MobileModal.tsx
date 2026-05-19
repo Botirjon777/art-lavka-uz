@@ -13,6 +13,7 @@ interface MobileModalProps {
   showCloseButton?: boolean;
   onBack?: () => void;
   rightAction?: ReactNode;
+  showFooter?: boolean;
 }
 
 export default function MobileModal({
@@ -23,6 +24,7 @@ export default function MobileModal({
   showCloseButton = true,
   onBack,
   rightAction,
+  showFooter = true,
 }: MobileModalProps) {
   useScrollLock(isOpen);
 
@@ -112,7 +114,7 @@ export default function MobileModal({
             <div className="flex-1 overflow-y-auto">{children}</div>
 
             {/* Footer */}
-            <MobileFooter />
+            {showFooter && <MobileFooter />}
           </motion.div>
         </div>
       )}
