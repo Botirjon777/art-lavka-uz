@@ -84,7 +84,7 @@ export async function createOrder(orderData: {
 export async function getOrders() {
   try {
     await dbConnect();
-    const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
+    const orders = await Order.find({ orderNumber: { $not: /^SUP-/ } }).sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(orders));
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -130,6 +130,32 @@ export async function updateOrderStatus(
     return { success: true, order: JSON.parse(JSON.stringify(order)) };
   } catch (error: any) {
     console.error("Error updating order:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getSupportRequests() {
+  try {
+    await dbConnect();
+    const supportRequests = await Order.find({ orderNumber: /^SUP-/ }).sort({ createdAt: -1 }).lean();
+    return JSON.parse(JSON.stringify(supportRequests));
+  } catch (error) {
+    console.error("Error fetching support requests:", error);
+    return [];
+  }
+}
+
+export async function deleteSupportRequest(id: string) {
+  try {
+    await dbConnect();
+    const order = await Order.findByIdAndDelete(id);
+    if (!order) {
+      return { success: false, error: "Support request not found" };
+    }
+    revalidatePath("/admin/support");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting support request:", error);
     return { success: false, error: error.message };
   }
 }

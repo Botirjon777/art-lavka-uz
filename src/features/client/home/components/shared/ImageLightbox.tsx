@@ -54,7 +54,7 @@ function LightboxImageItem({
         }`}
         priority={priority}
         loading={priority ? undefined : "lazy"}
-        sizes="100vw"
+        sizes="(max-width: 1024px) 90vw, 30vw"
         onLoad={() => setIsLoaded(true)}
       />
     </div>
@@ -175,22 +175,40 @@ export default function ImageLightbox({
             }}
             modules={[Navigation, Pagination]}
             className="w-full h-full"
-            spaceBetween={50}
+            spaceBetween={20}
             slidesPerView={1}
+            centeredSlides={true}
+            breakpoints={{
+              1024: {
+                slidesPerView: 3,
+                spaceBetween: 40,
+              },
+            }}
             grabCursor={true}
           >
-            {images.map((image, index) => (
-              <SwiperSlide
-                key={index}
-                className="flex items-center justify-center p-2.5"
-              >
-                <LightboxImageItem
-                  src={image}
-                  alt={`Gallery Image ${index + 1}`}
-                  priority={index === currentIndex}
-                />
-              </SwiperSlide>
-            ))}
+            {images.map((image, index) => {
+              const isActive = index === currentIndex;
+              return (
+                <SwiperSlide
+                  key={index}
+                  className="flex items-center justify-center p-2.5"
+                >
+                  <div
+                    className={`w-full h-full flex items-center justify-center transition-all duration-500 ${
+                      isActive
+                        ? "opacity-100 scale-100"
+                        : "opacity-20 scale-75 blur-[1px] pointer-events-none lg:opacity-45"
+                    }`}
+                  >
+                    <LightboxImageItem
+                      src={image}
+                      alt={`Gallery Image ${index + 1}`}
+                      priority={isActive}
+                    />
+                  </div>
+                </SwiperSlide>
+              );
+            })}
           </Swiper>
         </div>
       </div>

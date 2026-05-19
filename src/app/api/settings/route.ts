@@ -4,7 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import Settings, { ICategory, ISettings } from "@/models/Settings";
 import { BTS_PRICES, BTS_COURIER_FEES } from "@/lib/deliveryDataBTS";
 
-export const revalidate = 86400; // Cache for 24 hours
+export const revalidate = 7200; // Cache for 2 hours
 
 export async function GET() {
   try {

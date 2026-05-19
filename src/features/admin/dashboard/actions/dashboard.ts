@@ -42,7 +42,9 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
   try {
     await dbConnect();
 
-    const dateFilter: any = {};
+    const dateFilter: any = {
+      orderNumber: { $not: /^SUP-/ }
+    };
     if (startDate || endDate) {
       dateFilter.createdAt = {};
       if (startDate) dateFilter.createdAt.$gte = startDate;

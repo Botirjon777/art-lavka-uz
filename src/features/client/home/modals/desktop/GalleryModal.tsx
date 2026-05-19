@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Modal from "@/components/Modal";
 import { Product } from "@/types";
 import Image from "next/image";
-import { useGalleryPaginated } from "../../hooks/useGalleryPaginated";
 import { useTranslation } from "@/hooks/useTranslation";
 import ImageLightbox from "../../components/shared/ImageLightbox";
 
@@ -21,14 +21,27 @@ interface GalleryModalProps {
   onSelectProduct?: (product: Product) => void;
 }
 
+const fetchAllGallery = async (): Promise<GalleryImage[]> => {
+  const response = await fetch("/api/gallery?limit=1000");
+  const data = await response.json();
+  if (!data.success) {
+    throw new Error(data.message || "Failed to fetch gallery");
+  }
+  return data.data;
+};
+
 export default function GalleryModal({
   isOpen,
   onClose,
   onSelectProduct,
 }: GalleryModalProps) {
   const { t } = useTranslation();
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useGalleryPaginated({ enabled: isOpen });
+  const { data: allImages = [], isLoading } = useQuery({
+    queryKey: ["gallery-all"],
+    queryFn: fetchAllGallery,
+    enabled: isOpen,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+  });
 
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -37,25 +50,6 @@ export default function GalleryModal({
     setLightboxIndex(index);
     setIsLightboxOpen(true);
   };
-
-  const allImages = data?.pages.flatMap((page) => page.data) || [];
-
-  // Intersection Observer for infinite scroll
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isFetchingNextPage) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      if (!node) return;
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-      observerRef.current.observe(node);
-    },
-    [isFetchingNextPage, hasNextPage, fetchNextPage],
-  );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -100,19 +94,6 @@ export default function GalleryModal({
                   </div>
                 ))
               )}
-
-              {/* Infinite Scroll Sentinel */}
-              <div
-                ref={loadMoreRef}
-                className="col-span-full flex justify-center py-8"
-              >
-                {isFetchingNextPage && (
-                  <div className="w-8 h-8 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin" />
-                )}
-                {!hasNextPage && allImages.length > 0 && (
-                  <p className="text-xs text-gray-400">{t.allPrintsLoaded}</p>
-                )}
-              </div>
             </div>
           </>
         )}
@@ -123,8 +104,6 @@ export default function GalleryModal({
         onClose={() => setIsLightboxOpen(false)}
         images={allImages.map((item: GalleryImage) => item.image)}
         initialIndex={lightboxIndex}
-        hasNextPage={hasNextPage}
-        fetchNextPage={fetchNextPage}
       />
     </Modal>
   );

@@ -1,11 +1,38 @@
 "use client";
 
+import { useState } from "react";
 import { useAdminGallery, useDeleteGallery } from "../hooks/useGallery";
 import Link from "next/link";
 import Image from "next/image";
 import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
 import { GalleryImage } from "../types";
 import Loader from "@/components/Loader";
+
+function GalleryItemImage({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="relative w-full h-full">
+      {!loaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+          <div className="w-8 h-8 rounded-full border-2 border-purple-100 border-t-purple-600 animate-spin" />
+        </div>
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        loading="lazy"
+        unoptimized
+        className={`object-cover transition-all duration-500 ease-out ${
+          loaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        }`}
+        onLoad={() => setLoaded(true)}
+        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+      />
+    </div>
+  );
+}
 
 export default function GalleryList() {
   const { data: gallery = [], isLoading: loading } = useAdminGallery();
@@ -49,20 +76,14 @@ export default function GalleryList() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
           {gallery.map((item: GalleryImage) => (
             <div
               key={item._id}
               className="bg-white rounded-[20px] p-4 shadow-sm hover:shadow-lg transition-all group border border-gray-100"
             >
               <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden mb-3">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                />
+                <GalleryItemImage src={item.image} alt={item.name} />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                   <Link
                     href={`/admin/gallery/${item._id}/edit`}

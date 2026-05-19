@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Print from "@/models/Print";
 
-// Mark as dynamic route since we use searchParams
 export const dynamic = "force-dynamic";
-// Cache for 1 hour
-export const revalidate = 3600;
+export const revalidate = 7200;
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,17 +35,24 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(total / limit);
     const hasMore = page < totalPages;
 
-    return NextResponse.json({
-      success: true,
-      data: prints,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasMore,
+    return NextResponse.json(
+      {
+        success: true,
+        data: prints,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore,
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=7200, stale-while-revalidate=14400",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching prints:", error);
     return NextResponse.json(

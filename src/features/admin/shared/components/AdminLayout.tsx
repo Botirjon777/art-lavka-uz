@@ -15,6 +15,7 @@ import {
   FiTrendingUp,
   FiTag,
   FiTruck,
+  FiMessageSquare,
 } from "react-icons/fi";
 import Loader from "@/components/Loader";
 
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: "Панель управления", href: "/admin", icon: FiHome },
     { name: "Продукты", href: "/admin/products", icon: FiShoppingBag },
     { name: "Заказы", href: "/admin/orders", icon: FiShoppingCart },
+    { name: "Поддержка", href: "/admin/support", icon: FiMessageSquare },
     {
       name: "Категории принтов",
       href: "/admin/prints/categories",
