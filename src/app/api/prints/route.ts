@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Print from "@/models/Print";
 
-// Cache for 2 hours
+export const dynamic = "force-dynamic";
 export const revalidate = 7200;
 
 export async function GET(request: NextRequest) {
@@ -35,17 +35,24 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(total / limit);
     const hasMore = page < totalPages;
 
-    return NextResponse.json({
-      success: true,
-      data: prints,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasMore,
+    return NextResponse.json(
+      {
+        success: true,
+        data: prints,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore,
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=7200, stale-while-revalidate=14400",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching prints:", error);
     return NextResponse.json(

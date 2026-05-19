@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Gallery from "@/models/Gallery";
 
-// Cache for 2 hours
+export const dynamic = "force-dynamic";
 export const revalidate = 7200;
 
 export async function GET(request: Request) {
@@ -21,17 +21,24 @@ export async function GET(request: Request) {
     const totalPages = Math.ceil(total / limit);
     const hasMore = page < totalPages;
 
-    return NextResponse.json({
-      success: true,
-      data: gallery,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasMore,
+    return NextResponse.json(
+      {
+        success: true,
+        data: gallery,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore,
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=7200, stale-while-revalidate=14400",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching gallery:", error);
     return NextResponse.json(
