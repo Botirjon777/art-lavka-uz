@@ -39,7 +39,7 @@ export async function GET(request: Request) {
         success: false,
         error: "Failed to fetch gallery",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -27,14 +27,9 @@ export default function GalleryModal({
   onSelectProduct,
 }: GalleryModalProps) {
   const { t } = useTranslation();
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useGalleryPaginated({ enabled: isOpen });
-  
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useGalleryPaginated({ enabled: isOpen });
+
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
@@ -59,7 +54,7 @@ export default function GalleryModal({
       });
       observerRef.current.observe(node);
     },
-    [isFetchingNextPage, hasNextPage, fetchNextPage]
+    [isFetchingNextPage, hasNextPage, fetchNextPage],
   );
 
   return (
@@ -74,9 +69,11 @@ export default function GalleryModal({
           </div>
         ) : (
           <>
-            <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">{t.gallery}</h2>
+            <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5">
+              {t.gallery}
+            </h2>
             {/* Gallery Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 modal-scrollbar overflow-y-auto max-h-[650px] pb-10">
+            <div className="grid grid-cols-5 gap-5 modal-scrollbar overflow-y-auto max-h-[650px] pb-10">
               {allImages.length === 0 && !isLoading ? (
                 <div className="col-span-full text-center py-12">
                   <p className="text-gray-600">{t.noGalleryImages}</p>
@@ -84,7 +81,7 @@ export default function GalleryModal({
               ) : (
                 allImages.map((item: GalleryImage, index: number) => (
                   <div key={item._id} className="group text-center">
-                    <div 
+                    <div
                       className="relative aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in"
                       onClick={() => handleImageClick(index)}
                     >
@@ -103,9 +100,12 @@ export default function GalleryModal({
                   </div>
                 ))
               )}
-              
+
               {/* Infinite Scroll Sentinel */}
-              <div ref={loadMoreRef} className="col-span-full flex justify-center py-8">
+              <div
+                ref={loadMoreRef}
+                className="col-span-full flex justify-center py-8"
+              >
                 {isFetchingNextPage && (
                   <div className="w-8 h-8 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin" />
                 )}
@@ -123,6 +123,8 @@ export default function GalleryModal({
         onClose={() => setIsLightboxOpen(false)}
         images={allImages.map((item: GalleryImage) => item.image)}
         initialIndex={lightboxIndex}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
       />
     </Modal>
   );

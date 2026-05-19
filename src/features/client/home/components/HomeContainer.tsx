@@ -46,7 +46,14 @@ export default function HomeContainer() {
   const [activeModal, setActiveModal] = useState<
     "menu" | "cart" | "gallery" | "products" | "prints" | "sizes" | null
   >(null);
-  const { cartItems, addItem, removeItem, updateQuantity, clearCart, totalAmount: calculateTotal } = useCartStore();
+  const {
+    cartItems,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    totalAmount: calculateTotal,
+  } = useCartStore();
   const {
     selectedProduct,
     selectedPrint,
@@ -54,12 +61,14 @@ export default function HomeContainer() {
     setSelectedPrint,
     _hasHydrated,
   } = useConfiguratorStore();
-  
+
   // Use hooks for consolidated fetching
   const { data: settings } = useSettings();
   const { data: productsData, isLoading: productsLoading } = useProducts();
   // Prints are lazy-loaded: desktop LeftSidebar fetches its own, mobile fetches on modal open
-  const { data: printsData = [], isLoading: printsLoading } = usePrints({ enabled: activeModal === "prints" });
+  const { data: printsData = [], isLoading: printsLoading } = usePrints({
+    enabled: activeModal === "prints",
+  });
   const { data: printCategories = [] } = usePrintCategories();
 
   const [showCheckout, setShowCheckout] = useState(false);
@@ -246,30 +255,30 @@ export default function HomeContainer() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1]" />
         </div>
       ) : !selectedProduct ? (
-          <div className="flex items-center justify-center min-h-[600px] animate-in fade-in duration-1000">
-            <div className="text-center px-4">
-              <div className="mb-6 flex justify-center">
-                <img
-                  src="/art-lavka.png"
-                  alt="Logo"
-                  className="w-48 h-auto opacity-20 grayscale"
-                />
-              </div>
-              <p className="text-gray-400 font-medium mb-6 uppercase tracking-widest text-sm">
-                {t.productsNotFound}
-              </p>
-              <button
-                onClick={() => fetchProducts()}
-                className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-all font-bold active:scale-95"
-              >
-                {t.reload}
-              </button>
+        <div className="flex items-center justify-center min-h-[600px] animate-in fade-in duration-1000">
+          <div className="text-center px-4">
+            <div className="mb-6 flex justify-center">
+              <img
+                src="/art-lavka.png"
+                alt="Logo"
+                className="w-48 h-auto opacity-20 grayscale"
+              />
             </div>
+            <p className="text-gray-400 font-medium mb-6 uppercase tracking-widest text-sm">
+              {t.productsNotFound}
+            </p>
+            <button
+              onClick={() => fetchProducts()}
+              className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-all font-bold active:scale-95"
+            >
+              {t.reload}
+            </button>
           </div>
-        ) : (
-          <>
-            {/* Desktop Layout */}
-            <div className="hidden lg:flex flex-col justify-center md:flex-row gap-[78px] animate-in fade-in duration-700">
+        </div>
+      ) : (
+        <>
+          {/* Desktop Layout */}
+          <div className="hidden lg:flex flex-col justify-center md:flex-row gap-[78px] animate-in fade-in duration-700">
             <LeftSidebar
               onGalleryClick={() => setActiveModal("gallery")}
               selectedPrint={selectedPrint}

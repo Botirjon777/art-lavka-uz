@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { PrintDesign, PrintCategory } from "@/types";
 import { SidebarPrintSkeleton } from "@/components/LoadingSkeleton";
@@ -9,7 +9,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
-import { usePrints } from "../../hooks/usePrints";
+import { usePrintsPaginated } from "../../hooks/usePrintsPaginated";
 import { usePrintCategories } from "../../hooks/usePrintCategories";
 
 interface LeftSidebarProps {
@@ -32,8 +32,19 @@ export default function LeftSidebar({
   const { t } = useTranslation();
   const { lang } = useLanguageStore();
 
-  const { data: printsData = [], isLoading: printsLoading } = usePrints();
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const { data: categoriesData = [] } = usePrintCategories();
+  const {
+    data: printsData,
+    isLoading: printsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = usePrintsPaginated({
+    category: selectedCategory,
+  });
 
   const categories = [
     { id: "all", label: t.all },
@@ -42,11 +53,28 @@ export default function LeftSidebar({
       label: getTranslated(cat, lang),
     })),
   ];
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const prints = printsData.length > 0 ? printsData : initialPrints || [];
+  // Flatten all pages into a single list
+  const allPrints = printsData?.pages.flatMap((p) => p.prints) ?? [];
+  const prints = allPrints.length > 0 ? allPrints : initialPrints || [];
   const loading = printsLoading && prints.length === 0;
+
+  // Intersection Observer for infinite scroll
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isFetchingNextPage) return;
+      if (observerRef.current) observerRef.current.disconnect();
+      if (!node) return;
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      });
+      observerRef.current.observe(node);
+    },
+    [isFetchingNextPage, hasNextPage, fetchNextPage]
+  );
 
   const filteredPrints = prints.filter((p) => {
     const matchesCategory =
@@ -106,7 +134,10 @@ export default function LeftSidebar({
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => {
+                setSelectedCategory(cat.id);
+                setSearchQuery("");
+              }}
               className={`text-[16px]/[22px] cursor-pointer hover:text-[#8814B1] transition-colors ${
                 selectedCategory === cat.id
                   ? "border-b border-[#8814B1]"
@@ -131,7 +162,7 @@ export default function LeftSidebar({
 
         {/* Print Grid - Scrollable Container */}
         <div className="flex-1 overflow-y-auto pr-2 max-h-[400px]">
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
             {/* No Print Option */}
             <button
               onClick={() => onPrintSelect(null)}
@@ -151,7 +182,7 @@ export default function LeftSidebar({
             {loading ? (
               <SidebarPrintSkeleton count={8} />
             ) : (
-              filteredPrints.map((print) => (
+              filteredPrints.map((print, index) => (
                 <button
                   key={print.id || (print as any)._id}
                   onClick={() => onPrintSelect(print)}
@@ -169,12 +200,25 @@ export default function LeftSidebar({
                       fill
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 150px"
                       className="object-contain p-3"
+                      priority={index < 4}
                     />
                   </div>
                 </button>
               ))
             )}
           </div>
+
+          {/* Infinite Scroll Sentinel */}
+          {!searchQuery && (
+            <div ref={loadMoreRef} className="flex justify-center py-4">
+              {isFetchingNextPage && (
+                <div className="w-8 h-8 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin" />
+              )}
+              {!hasNextPage && allPrints.length > 0 && (
+                <p className="text-xs text-gray-400 text-center">{t.allPrintsLoaded ?? "Все принты загружены"}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

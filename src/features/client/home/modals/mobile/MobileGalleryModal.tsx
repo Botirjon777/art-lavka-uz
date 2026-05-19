@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import MobileModal from "./MobileModal";
 import { Product } from "@/types";
 import Image from "next/image";
-import { useGalleryPaginated } from "../../hooks/useGalleryPaginated";
 import { useTranslation } from "@/hooks/useTranslation";
 import ImageLightbox from "../../components/shared/ImageLightbox";
 
@@ -21,19 +21,70 @@ interface MobileGalleryModalProps {
   onSelectProduct?: (product: Product) => void;
 }
 
+const fetchAllGallery = async (): Promise<GalleryImage[]> => {
+  const response = await fetch("/api/gallery?limit=1000");
+  const data = await response.json();
+  if (!data.success) {
+    throw new Error(data.message || "Failed to fetch gallery");
+  }
+  return data.data;
+};
+
+function GalleryImageItem({
+  item,
+  index,
+  onImageClick,
+}: {
+  item: GalleryImage;
+  index: number;
+  onImageClick: (index: number) => void;
+}) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <div className="group text-center">
+      <div
+        className="relative w-full aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex items-center justify-center"
+        onClick={() => onImageClick(index)}
+      >
+        {/* Loading Spinner */}
+        {!isLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+            <div className="w-8 h-8 border-3 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin" />
+          </div>
+        )}
+        <Image
+          src={item.image}
+          alt={item.name}
+          fill
+          sizes="(max-width: 768px) 50vw, 250px"
+          className={`object-cover group-active:scale-95 transition-all duration-300 ${
+            isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
+          loading="lazy"
+          onLoad={() => setIsLoaded(true)}
+        />
+      </div>
+      <p className="text-sm text-[#333333] line-clamp-2">
+        {item.name}
+      </p>
+    </div>
+  );
+}
+
 export default function MobileGalleryModal({
   isOpen,
   onClose,
   onSelectProduct,
 }: MobileGalleryModalProps) {
   const { t } = useTranslation();
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useGalleryPaginated({ enabled: isOpen });
+
+  const { data: allImages = [], isLoading } = useQuery({
+    queryKey: ["gallery-all"],
+    queryFn: fetchAllGallery,
+    enabled: isOpen,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+  });
 
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -43,27 +94,13 @@ export default function MobileGalleryModal({
     setIsLightboxOpen(true);
   };
 
-  const allImages = data?.pages.flatMap((page) => page.data) || [];
-
-  // Intersection Observer for infinite scroll
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isFetchingNextPage) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      if (!node) return;
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-      observerRef.current.observe(node);
-    },
-    [isFetchingNextPage, hasNextPage, fetchNextPage]
-  );
-
   return (
-    <MobileModal isOpen={isOpen} onClose={onClose} title={t.gallery}>
+    <MobileModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t.gallery}
+      showFooter={false}
+    >
       <div className="px-4 py-4">
         {/* Loading State */}
         {isLoading && allImages.length === 0 ? (
@@ -74,42 +111,20 @@ export default function MobileGalleryModal({
         ) : (
           <>
             {/* Gallery Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 pb-10">
               {allImages.length === 0 && !isLoading ? (
                 <div className="col-span-2 text-center py-12">
                   <p className="text-gray-600">{t.noGalleryImages}</p>
                 </div>
               ) : (
                 allImages.map((item: GalleryImage, index: number) => (
-                  <div key={item._id} className="group text-center">
-                    <div 
-                      className="relative w-full aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
-                      onClick={() => handleImageClick(index)}
-                    >
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 250px"
-                        className="object-cover group-active:scale-95 transition-transform duration-200"
-                        loading="lazy"
-                      />
-                    </div>
-                    <p className="text-sm text-[#333333] line-clamp-2">
-                      {item.name}
-                    </p>
-                  </div>
+                  <GalleryImageItem
+                    key={item._id}
+                    item={item}
+                    index={index}
+                    onImageClick={handleImageClick}
+                  />
                 ))
-              )}
-            </div>
-
-            {/* Infinite Scroll Sentinel */}
-            <div ref={loadMoreRef} className="flex justify-center py-8">
-              {isFetchingNextPage && (
-                <div className="w-8 h-8 border-4 border-[#8814B1]/20 border-t-[#8814B1] rounded-full animate-spin" />
-              )}
-              {!hasNextPage && allImages.length > 0 && (
-                <p className="text-xs text-gray-400">{t.allPrintsLoaded}</p>
               )}
             </div>
           </>
@@ -121,6 +136,8 @@ export default function MobileGalleryModal({
         onClose={() => setIsLightboxOpen(false)}
         images={allImages.map((item: GalleryImage) => item.image)}
         initialIndex={lightboxIndex}
+        hasNextPage={false}
+        fetchNextPage={() => {}}
       />
     </MobileModal>
   );
