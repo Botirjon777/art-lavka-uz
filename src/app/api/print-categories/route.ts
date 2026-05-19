@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPrintCategories } from "@/features/admin/prints/actions/categories";
 
-// Categories rarely change - cache for 1 hour
-export const revalidate = 3600;
+// Cache for 2 hours
+export const revalidate = 7200;
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
       { success: true, data: categories },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
+          "Cache-Control": "public, s-maxage=7200, stale-while-revalidate=14400",
         },
       }
     );

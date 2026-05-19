@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Office from "@/models/Office";
 
-export const revalidate = 86400; // Cache for 24 hours
+export const revalidate = 7200; // Cache for 2 hours
 
 export async function GET() {
   try {

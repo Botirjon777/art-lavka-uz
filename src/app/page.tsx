@@ -1,5 +1,7 @@
 import HomeContainer from "@/features/client/home/components/HomeContainer";
 
+export const revalidate = 7200; // Revalidate every 2 hours
+
 export default function Home() {
   const jsonLd = {
     "@context": "https://schema.org",

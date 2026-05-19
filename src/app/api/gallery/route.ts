@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Gallery from "@/models/Gallery";
 
-// API uses search params for pagination, must be dynamic
-export const dynamic = "force-dynamic";
+// Cache for 2 hours
+export const revalidate = 7200;
 
 export async function GET(request: Request) {
   try {

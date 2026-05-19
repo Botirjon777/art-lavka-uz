@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Print from "@/models/Print";
 
-// Mark as dynamic route since we use searchParams
-export const dynamic = "force-dynamic";
-// Cache for 1 hour
-export const revalidate = 3600;
+// Cache for 2 hours
+export const revalidate = 7200;
 
 export async function GET(request: NextRequest) {
   try {
