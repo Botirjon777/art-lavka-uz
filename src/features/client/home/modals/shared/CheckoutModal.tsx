@@ -29,6 +29,19 @@ interface CheckoutModalProps {
   onSuccess: (orderNumber: string) => void;
 }
 
+type CheckoutDeliveryMethod = "door" | "pickup";
+
+function isPromotionDeliveryMethodEligible(
+  selectedDeliveryMethods: CheckoutDeliveryMethod[] | undefined,
+  deliveryMethod: CheckoutDeliveryMethod,
+) {
+  return (
+    !selectedDeliveryMethods ||
+    selectedDeliveryMethods.length === 0 ||
+    selectedDeliveryMethods.includes(deliveryMethod)
+  );
+}
+
 export default function CheckoutModal({
   isOpen,
   onClose,
@@ -142,6 +155,10 @@ export default function CheckoutModal({
       !promo.selectedRegions ||
       promo.selectedRegions.length === 0 ||
       promo.selectedRegions.includes(region);
+    const isDeliveryMethodEligible = isPromotionDeliveryMethodEligible(
+      promo.selectedDeliveryMethods,
+      deliveryMethod,
+    );
 
     if (promo.type === "global") {
       const conditionMet =
@@ -152,7 +169,11 @@ export default function CheckoutModal({
           totalAmount >= promo.conditionValue);
 
       if (conditionMet) {
-        if (promo.discountType === "free_delivery" && isRegionEligible) {
+        if (
+          promo.discountType === "free_delivery" &&
+          isRegionEligible &&
+          isDeliveryMethodEligible
+        ) {
           const isFerganaRegion = region && region.includes("Ферган");
           const isFerganaCity =
             village &&
@@ -199,7 +220,8 @@ export default function CheckoutModal({
       if (
         hasTargetedProduct &&
         promo.discountType === "free_delivery" &&
-        isRegionEligible
+        isRegionEligible &&
+        isDeliveryMethodEligible
       ) {
         const isFerganaRegion = region && region.includes("Ферган");
         const isFerganaCity =

@@ -2,6 +2,7 @@ export interface SizeTableEntry {
   size: string;
   width: string;
   height: string;
+  image?: string;
 }
 
 export interface ProductInventory {
@@ -200,6 +201,7 @@ export interface Promotion {
   description?: string;
   translations?: Record<string, { name: string; description?: string }>;
   selectedRegions: string[];
+  selectedDeliveryMethods?: Array<"door" | "pickup">;
   createdAt: string;
   updatedAt: string;
 }

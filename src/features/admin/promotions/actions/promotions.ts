@@ -4,6 +4,26 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Promotion from "@/models/Promotion";
 
+function getPromotionPayload(formData: FormData) {
+  return {
+    name: formData.get("name") as string,
+    type: formData.get("type") as string,
+    conditionType: formData.get("conditionType") as string,
+    conditionValue: JSON.parse((formData.get("conditionValue") as string) || "null"),
+    discountType: formData.get("discountType") as string,
+    discountValue: parseFloat(formData.get("discountValue") as string) || 0,
+    isActive: formData.get("isActive") === "true",
+    startDate: new Date(formData.get("startDate") as string),
+    endDate: new Date(formData.get("endDate") as string),
+    description: formData.get("description") as string,
+    translations: JSON.parse((formData.get("translations") as string) || "{}"),
+    selectedRegions: JSON.parse((formData.get("selectedRegions") as string) || "[]"),
+    selectedDeliveryMethods: JSON.parse(
+      (formData.get("selectedDeliveryMethods") as string) || "[]",
+    ),
+  };
+}
+
 export async function getPromotions() {
   try {
     await dbConnect();
@@ -31,20 +51,7 @@ export async function createPromotion(formData: FormData) {
   try {
     await dbConnect();
 
-    const data = {
-      name: formData.get("name") as string,
-      type: formData.get("type") as string,
-      conditionType: formData.get("conditionType") as string,
-      conditionValue: JSON.parse((formData.get("conditionValue") as string) || "null"),
-      discountType: formData.get("discountType") as string,
-      discountValue: parseFloat(formData.get("discountValue") as string) || 0,
-      isActive: formData.get("isActive") === "true",
-      startDate: new Date(formData.get("startDate") as string),
-      endDate: new Date(formData.get("endDate") as string),
-      description: formData.get("description") as string,
-      translations: JSON.parse((formData.get("translations") as string) || "{}"),
-      selectedRegions: JSON.parse((formData.get("selectedRegions") as string) || "[]"),
-    };
+    const data = getPromotionPayload(formData);
 
     const promotion = await Promotion.create(data);
     revalidatePath("/admin/promotions");
@@ -59,20 +66,7 @@ export async function updatePromotion(id: string, formData: FormData) {
   try {
     await dbConnect();
 
-    const data = {
-      name: formData.get("name") as string,
-      type: formData.get("type") as string,
-      conditionType: formData.get("conditionType") as string,
-      conditionValue: JSON.parse((formData.get("conditionValue") as string) || "null"),
-      discountType: formData.get("discountType") as string,
-      discountValue: parseFloat(formData.get("discountValue") as string) || 0,
-      isActive: formData.get("isActive") === "true",
-      startDate: new Date(formData.get("startDate") as string),
-      endDate: new Date(formData.get("endDate") as string),
-      description: formData.get("description") as string,
-      translations: JSON.parse((formData.get("translations") as string) || "{}"),
-      selectedRegions: JSON.parse((formData.get("selectedRegions") as string) || "[]"),
-    };
+    const data = getPromotionPayload(formData);
 
     const promotion = await Promotion.findByIdAndUpdate(id, data, { new: true });
     revalidatePath("/admin/promotions");

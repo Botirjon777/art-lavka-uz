@@ -28,6 +28,7 @@ export interface SizeTableEntry {
   size: string;
   width: string;
   height: string;
+  image?: string;
 }
 
 export interface ProductTranslation {

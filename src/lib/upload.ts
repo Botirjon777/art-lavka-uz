@@ -49,6 +49,10 @@ export async function uploadToStorage(
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const compressedBuffer = await sharp(buffer)
+      .resize({ width: 1600, withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toBuffer();
 
     let previewBuffer: Buffer | null = null;
     if (withPreview) {
@@ -71,7 +75,7 @@ export async function uploadToStorage(
               if (error) reject(error);
               else resolve(result);
             }
-          ).end(buffer);
+          ).end(compressedBuffer);
         });
 
         const result = uploadResponse as any;
@@ -117,7 +121,7 @@ export async function uploadToStorage(
     }
     
     const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
+    await writeFile(filepath, compressedBuffer);
 
     let previewUrl = undefined;
     if (previewBuffer) {
