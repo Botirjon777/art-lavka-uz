@@ -130,6 +130,7 @@ export interface Order {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod?: PaymentMethod;
+  stockRestoredOnCancel?: boolean;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;

@@ -41,6 +41,7 @@ export const useUpdateOrderStatus = () => {
           });
         }
         queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+        queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
       } else {
         toast.error(result.error || "Не удалось обновить статус");
       }

@@ -51,16 +51,34 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
       if (endDate) dateFilter.createdAt.$lte = endDate;
     }
 
-    const orders = await Order.find(dateFilter).lean();
+    const orders = (await Order.find(dateFilter).lean()) as any[];
+    const revenueOrders = orders.filter((order: any) => order.status !== "cancelled");
+    const orderStatusCounts = orders.reduce(
+      (counts, order: any) => {
+        if (order.status === "cancelled") {
+          counts.cancelled += 1;
+          return counts;
+        }
+
+        if (order.status === "delivered") {
+          counts.completed += 1;
+          return counts;
+        }
+
+        counts.active += 1;
+        return counts;
+      },
+      { active: 0, completed: 0, cancelled: 0 },
+    );
 
     // Sales Overview
-    const totalRevenue = (orders as any[]).reduce(
+    const totalRevenue = revenueOrders.reduce(
       (sum: number, order: any) => sum + order.totalAmount,
       0
     );
-    const totalOrders = orders.length;
+    const totalOrders = revenueOrders.length;
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const totalItemsSold = (orders as any[]).reduce(
+    const totalItemsSold = revenueOrders.reduce(
       (sum: number, order: any) =>
         sum +
         order.items.reduce(
@@ -72,7 +90,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
 
     // Sales by Size
     const salesBySize: Record<string, number> = {};
-    (orders as any[]).forEach((order: any) => {
+    revenueOrders.forEach((order: any) => {
       order.items.forEach((item: any) => {
         const size = item.size || "Unknown";
         salesBySize[size] = (salesBySize[size] || 0) + item.quantity;
@@ -81,7 +99,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
 
     // Sales by Category
     const salesByCategory: Record<string, number> = {};
-    (orders as any[]).forEach((order: any) => {
+    revenueOrders.forEach((order: any) => {
       order.items.forEach((item: any) => {
         const category = item.product?.category || "Unknown";
         salesByCategory[category] =
@@ -94,7 +112,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
       string,
       { name: string; count: number; revenue: number }
     > = {};
-    (orders as any[]).forEach((order: any) => {
+    revenueOrders.forEach((order: any) => {
       order.items.forEach((item: any) => {
         if (item.print && item.print.name) {
           const printName = item.print.name;
@@ -129,7 +147,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
       "Friday",
       "Saturday",
     ];
-    (orders as any[]).forEach((order: any) => {
+    revenueOrders.forEach((order: any) => {
       const day = dayNames[new Date(order.createdAt).getDay()];
       salesByDay[day] += order.totalAmount;
     });
@@ -139,7 +157,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
     for (let i = 0; i < 24; i++) {
       salesByHour[i] = 0;
     }
-    (orders as any[]).forEach((order: any) => {
+    revenueOrders.forEach((order: any) => {
       const hour = new Date(order.createdAt).getHours();
       salesByHour[hour] += order.totalAmount;
     });
@@ -149,7 +167,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
     last30Days.setDate(last30Days.getDate() - 30);
     const salesTrend: Record<string, number> = {};
 
-    (orders as any[])
+    revenueOrders
       .filter((order: any) => new Date(order.createdAt) >= last30Days)
       .forEach((order: any) => {
         const date = new Date(order.createdAt).toISOString().split("T")[0];
@@ -183,7 +201,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
       salesByRegion[region] = { region, revenue: 0, orders: 0 };
     });
 
-    (orders as any[]).forEach((order: any) => {
+    revenueOrders.forEach((order: any) => {
       const region = order.region || "Unknown";
       if (!salesByRegion[region]) {
         salesByRegion[region] = { region, revenue: 0, orders: 0 };
@@ -199,6 +217,19 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
         averageOrderValue,
         totalItemsSold,
       },
+      orderStatusBreakdown: [
+        { status: "active", label: "Активные", count: orderStatusCounts.active },
+        {
+          status: "completed",
+          label: "Завершенные",
+          count: orderStatusCounts.completed,
+        },
+        {
+          status: "cancelled",
+          label: "Отмененные",
+          count: orderStatusCounts.cancelled,
+        },
+      ],
       salesBySize: Object.entries(salesBySize).map(([size, count]) => ({
         size,
         count,

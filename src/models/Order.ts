@@ -39,6 +39,7 @@ export interface IOrder {
     | "cancelled";
   paymentStatus: "pending" | "paid" | "failed";
   paymentMethod?: "cash" | "payme" | "click";
+  stockRestoredOnCancel?: boolean;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -134,6 +135,10 @@ const OrderSchema = new Schema<IOrder>(
     paymentMethod: {
       type: String,
       enum: ["cash", "payme", "click"],
+    },
+    stockRestoredOnCancel: {
+      type: Boolean,
+      default: false,
     },
     notes: {
       type: String,

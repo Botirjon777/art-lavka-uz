@@ -34,6 +34,11 @@ interface AnalyticsChartsProps {
     salesByDay: Array<{ day: string; revenue: number }>;
     salesByHour: Array<{ hour: number; revenue: number }>;
     salesByRegion: Array<{ region: string; revenue: number; orders: number }>;
+    orderStatusBreakdown: Array<{
+      status: string;
+      label: string;
+      count: number;
+    }>;
   };
 }
 
@@ -74,6 +79,35 @@ export default function AnalyticsCharts({ analytics }: AnalyticsChartsProps) {
             <YAxis />
             <Tooltip />
             <Bar dataKey="count" fill="#00C6F1" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Order Status Breakdown */}
+      <div className="bg-white rounded-[20px] p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">
+          Статусы заказов
+        </h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={analytics.orderStatusBreakdown}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+            <YAxis allowDecimals={false} />
+            <Tooltip
+              formatter={(value: any) => [value, "Заказов"]}
+              labelFormatter={(label) => label}
+            />
+            <Bar dataKey="count">
+              {analytics.orderStatusBreakdown.map((entry) => {
+                const color =
+                  entry.status === "cancelled"
+                    ? "#EF4444"
+                    : entry.status === "completed"
+                      ? "#10B981"
+                      : "#00C6F1";
+                return <Cell key={entry.status} fill={color} />;
+              })}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>

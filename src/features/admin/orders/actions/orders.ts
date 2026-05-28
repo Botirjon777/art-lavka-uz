@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
-import { validateStock, decrementStock } from "./validateStock";
+import { validateStock, decrementStock, incrementStock } from "./validateStock";
 
 // Generate unique order number
 function generateOrderNumber(): string {
@@ -74,6 +74,7 @@ export async function createOrder(orderData: {
     }
 
     revalidatePath("/admin/orders");
+    revalidatePath("/admin", "page");
     return { success: true, order: JSON.parse(JSON.stringify(order)) };
   } catch (error: any) {
     console.error("Error creating order:", error);
@@ -114,9 +115,52 @@ export async function updateOrderStatus(
   try {
     await dbConnect();
 
+    const existingOrder = await Order.findById(id);
+    if (!existingOrder) {
+      return { success: false, error: "Order not found" };
+    }
+
+    const itemsForStock = existingOrder.items.map((item: any) => ({
+      productId: item.product._id,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity,
+    }));
+
     const updateData: any = { status };
     if (paymentStatus) {
       updateData.paymentStatus = paymentStatus;
+    }
+
+    if (status === "cancelled" && !existingOrder.stockRestoredOnCancel) {
+      const stockRestore = await incrementStock(itemsForStock);
+      if (!stockRestore.success) {
+        return {
+          success: false,
+          error: stockRestore.error || "Failed to restore stock",
+        };
+      }
+      updateData.stockRestoredOnCancel = true;
+    }
+
+    if (existingOrder.status === "cancelled" && status !== "cancelled") {
+      const validation = await validateStock(itemsForStock);
+      if (!validation.success) {
+        return {
+          success: false,
+          error: "Some items are out of stock",
+          errors: validation.errors,
+        };
+      }
+
+      const stockUpdate = await decrementStock(itemsForStock);
+      if (!stockUpdate.success) {
+        return {
+          success: false,
+          error: stockUpdate.error || "Failed to reserve stock",
+        };
+      }
+      updateData.stockRestoredOnCancel = false;
     }
 
     const order = await Order.findByIdAndUpdate(id, updateData, { new: true });
@@ -125,8 +169,18 @@ export async function updateOrderStatus(
       return { success: false, error: "Order not found" };
     }
 
+    if (existingOrder.status !== "cancelled" && status === "cancelled") {
+      try {
+        const { sendOrderCancellationNotification } = await import("@/lib/telegram");
+        await sendOrderCancellationNotification(order);
+      } catch (error) {
+        console.error("Failed to send order cancellation notification:", error);
+      }
+    }
+
     revalidatePath("/admin/orders");
     revalidatePath(`/admin/orders/${id}`);
+    revalidatePath("/admin", "page");
     return { success: true, order: JSON.parse(JSON.stringify(order)) };
   } catch (error: any) {
     console.error("Error updating order:", error);
