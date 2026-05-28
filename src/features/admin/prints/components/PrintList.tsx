@@ -136,7 +136,7 @@ export default function PrintList() {
               className="bg-white p-2.5 md:p-5 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all group rounded-xl flex flex-col h-full"
             >
               <div className="relative aspect-square bg-gray-50 rounded-[24px] overflow-hidden mb-2.5 md:mb-5 border border-gray-100">
-                <PrintItemImage src={print.frontImage} alt={print.name} />
+                <PrintItemImage src={print.frontImagePreview || print.frontImage} alt={print.name} />
 
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex flex-col gap-2">

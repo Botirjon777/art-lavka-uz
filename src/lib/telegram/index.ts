@@ -182,4 +182,8 @@ export async function setupWebhook() {
 }
 
 export { bot };
-export { sendOrderNotification, sendSupportNotification } from "./notifications";
+export {
+  sendOrderNotification,
+  sendOrderCancellationNotification,
+  sendSupportNotification,
+} from "./notifications";

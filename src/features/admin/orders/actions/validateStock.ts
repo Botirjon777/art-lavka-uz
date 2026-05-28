@@ -125,3 +125,48 @@ export async function decrementStock(
     };
   }
 }
+
+export async function incrementStock(
+  items: Array<{
+    productId: string;
+    color: string;
+    size: string;
+    quantity: number;
+  }>
+) {
+  try {
+    await dbConnect();
+
+    for (const item of items) {
+      const product = await Product.findById(item.productId);
+      if (!product) continue;
+
+      const newColors = [...(product.colors || [])];
+      const colorIdx = newColors.findIndex((c: any) => c.name === item.color);
+      if (colorIdx === -1) continue;
+
+      if (!newColors[colorIdx].variants) continue;
+      const variantIdx = newColors[colorIdx].variants.findIndex(
+        (v: any) => v.size === item.size
+      );
+      if (variantIdx === -1) continue;
+
+      newColors[colorIdx].variants[variantIdx].stock =
+        (Number(newColors[colorIdx].variants[variantIdx].stock) || 0) +
+        item.quantity;
+
+      await Product.findByIdAndUpdate(item.productId, {
+        $set: { colors: newColors },
+        $inc: { stock: item.quantity },
+      });
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error incrementing stock:", error);
+    return {
+      success: false,
+      error: "Failed to restore stock",
+    };
+  }
+}

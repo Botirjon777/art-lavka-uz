@@ -122,6 +122,45 @@ export async function sendOrderNotification(order: any) {
   }
 }
 
+export async function sendOrderCancellationNotification(order: any) {
+  try {
+    await dbConnect();
+
+    const { default: bot } = await import("./bot");
+    const message = formatOrderCancellationNotification(order);
+    const groupId = process.env.TELEGRAM_ORDER_GROUP_ID;
+
+    if (groupId) {
+      try {
+        await bot.sendMessage(groupId, message, {
+          parse_mode: "HTML",
+        });
+      } catch (error) {
+        console.error(
+          `Failed to send cancellation notification to group ${groupId}:`,
+          error,
+        );
+      }
+    }
+
+    const sessions = await TelegramSession.find({ isAuthenticated: true });
+    for (const session of sessions) {
+      try {
+        await bot.sendMessage(session.chatId, message, {
+          parse_mode: "HTML",
+        });
+      } catch (error) {
+        console.error(
+          `Failed to send cancellation notification to admin chat ${session.chatId}:`,
+          error,
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Error sending order cancellation notification:", error);
+  }
+}
+
 export async function broadcastPromoNotification(product: any) {
   try {
     await dbConnect();
@@ -346,6 +385,23 @@ function formatOrderNotification(order: any): string {
   if (order.notes) {
     message += `\n📝 <b>Заметки:</b> <i>${escapeHTML(order.notes)}</i>`;
   }
+
+  return message;
+}
+
+function formatOrderCancellationNotification(order: any): string {
+  let message = `❌ <b>Заказ отменен</b>\n\n`;
+  message += `<b>Заказ #:</b> ${escapeHTML(order.orderNumber)}\n`;
+  message += `<b>Клиент:</b> ${escapeHTML(order.customerName)}\n`;
+  message += `<b>Телефон:</b> ${escapeHTML(order.customerPhone)}\n`;
+  message += `<b>Сумма:</b> ${order.totalAmount.toLocaleString()} UZS\n\n`;
+  message += `<b>Товары возвращены на склад:</b>\n`;
+
+  order.items.forEach((item: any, index: number) => {
+    message += `${index + 1}. ${escapeHTML(item.product.name)} - ${escapeHTML(
+      item.size,
+    )}, ${escapeHTML(item.color)}: +${item.quantity}\n`;
+  });
 
   return message;
 }

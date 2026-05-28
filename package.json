@@ -15,6 +15,7 @@
     "migrate:cloudinary": "tsx --env-file=.env scripts/migrate-to-cloudinary.ts",
     "optimize:prints": "tsx scripts/optimize-prints.ts",
     "migrate:prints-webp": "tsx --env-file=.env scripts/migrate-prints-to-webp.ts",
+    "repair:cancelled-stock": "tsx --env-file=.env scripts/restore-cancelled-order-stock.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
