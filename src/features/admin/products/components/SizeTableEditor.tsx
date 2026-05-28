@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { useState, useEffect, type ChangeEvent } from "react";
+import Image from "next/image";
+import { FiImage, FiPlus, FiTrash2, FiUpload } from "react-icons/fi";
 import { SizeTableEntry } from "../types";
 import { Button } from "@/components/ui";
 import toast from "react-hot-toast";
+import { uploadFileAction } from "../../shared/actions/upload";
 
 interface SizeTableEditorProps {
   data: SizeTableEntry[];
@@ -24,6 +26,7 @@ export default function SizeTableEditor({ data, onChange }: SizeTableEditorProps
   const [localData, setLocalData] = useState<SizeTableEntry[]>(
     data.length > 0 ? data : []
   );
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -43,6 +46,35 @@ export default function SizeTableEditor({ data, onChange }: SizeTableEditorProps
     const updated = [...localData, newRow];
     setLocalData(updated);
     onChange(updated);
+  };
+
+  const handleImageUpload = async (
+    index: number,
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingIndex(index);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "art-lavka/sizes");
+
+    try {
+      const result = await uploadFileAction(formData);
+      if (result.success && result.url) {
+        handleUpdateRow(index, "image", result.url);
+        toast.success("Изображение размера загружено");
+        return;
+      }
+
+      toast.error(result.error || "Не удалось загрузить изображение размера");
+    } catch {
+      toast.error("Не удалось загрузить изображение размера");
+    } finally {
+      setUploadingIndex(null);
+      event.target.value = "";
+    }
   };
 
   const handleRemoveRow = (index: number) => {
@@ -71,12 +103,20 @@ export default function SizeTableEditor({ data, onChange }: SizeTableEditorProps
       </div>
 
       <div className="overflow-hidden border border-gray-100 rounded-xl bg-gray-50/30">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full table-fixed text-left border-collapse">
+          <colgroup>
+            <col className="w-[18%]" />
+            <col className="w-[18%]" />
+            <col className="w-[18%]" />
+            <col className="w-[38%]" />
+            <col className="w-10" />
+          </colgroup>
           <thead>
             <tr className="bg-gray-50/50 border-b border-gray-100">
               <th className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Размер</th>
               <th className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Ширина</th>
               <th className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Высота</th>
+              <th className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Фото</th>
               <th className="px-4 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-10"></th>
             </tr>
           </thead>
@@ -111,6 +151,36 @@ export default function SizeTableEditor({ data, onChange }: SizeTableEditorProps
                   />
                 </td>
                 <td className="px-4 py-2">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="relative w-12 h-12 overflow-hidden rounded-lg border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0">
+                      {row.image ? (
+                        <Image
+                          src={row.image}
+                          alt={`Size ${row.size || index + 1}`}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <FiImage className="w-5 h-5 text-gray-300" />
+                      )}
+                    </div>
+                    <label className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-lg bg-purple-50 px-3 py-2 text-xs font-bold text-[#8814B1] cursor-pointer transition-colors hover:bg-purple-100">
+                      <FiUpload className="w-3.5 h-3.5" />
+                      <span className="truncate">
+                        {uploadingIndex === index ? "Загрузка..." : "Загрузить"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingIndex !== null}
+                        onChange={(event) => handleImageUpload(index, event)}
+                      />
+                    </label>
+                  </div>
+                </td>
+                <td className="px-4 py-2">
                   <button
                     type="button"
                     onClick={() => handleRemoveRow(index)}
@@ -123,7 +193,7 @@ export default function SizeTableEditor({ data, onChange }: SizeTableEditorProps
             ))}
             {localData.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-400 italic">
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-400 italic">
                   Таблица пуста. Добавьте размеры или используйте стандартные значения.
                 </td>
               </tr>

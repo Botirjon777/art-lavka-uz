@@ -13,6 +13,7 @@ export interface IPromotion {
   description?: string;
   translations?: Record<string, { name: string; description?: string }>;
   selectedRegions: string[];
+  selectedDeliveryMethods: Array<"door" | "pickup">;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +40,11 @@ const PromotionSchema = new Schema<IPromotion>(
     description: { type: String },
     translations: { type: Schema.Types.Mixed },
     selectedRegions: { type: [String], default: [] },
+    selectedDeliveryMethods: {
+      type: [String],
+      enum: ["door", "pickup"],
+      default: [],
+    },
   },
   { timestamps: true }
 );
