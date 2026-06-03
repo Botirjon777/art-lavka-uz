@@ -15,8 +15,6 @@ export async function handleClientMessage(msg: any) {
   const text = msg.text;
   const contact = msg.contact;
 
-  console.log(`🤖 [Telegram Client] Message from ${chatId}: ${text || "[Media/Contact]"}`);
-
   // 1. Handle Contact Sharing
   if (contact) {
     const subscribed = await isSubscribed(bot, msg.from.id);
@@ -177,7 +175,11 @@ export async function setupClientWebhook() {
 
   try {
     console.log(`🤖 [Telegram Client] Setting up webhook: ${webhookUrl}`);
-    await bot.setWebHook(webhookUrl);
+    const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
+    await bot.setWebHook(
+      webhookUrl,
+      secretToken ? ({ secret_token: secretToken } as any) : undefined
+    );
   } catch (error) {
     console.error("❌ [Telegram Client] Error setting webhook:", error);
   }

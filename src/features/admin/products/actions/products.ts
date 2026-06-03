@@ -4,9 +4,56 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { broadcastPromoNotification } from "@/lib/telegram/notifications";
+import { requireAdmin } from "@/lib/requireAdmin";
+
+// Derives stock, available sizes, and base prices from variant data, then
+// assembles the persisted product document from the submitted form fields.
+// Shared by createProduct and updateProduct.
+function buildProductData(formData: FormData) {
+  const colors = JSON.parse((formData.get("colors") as string) || "[]");
+
+  const availableSizesSet = new Set<string>();
+  let totalStock = 0;
+  let minOldPrice = Infinity;
+  let minPromoPrice = Infinity;
+
+  colors.forEach((color: any) => {
+    color.variants?.forEach((v: any) => {
+      totalStock += Number(v.stock) || 0;
+      if (v.stock > 0) availableSizesSet.add(v.size);
+      if (v.oldPrice && v.oldPrice < minOldPrice) minOldPrice = v.oldPrice;
+      if (v.promoPrice && v.promoPrice > 0 && v.promoPrice < minPromoPrice) {
+        minPromoPrice = v.promoPrice;
+      }
+    });
+  });
+
+  const finalOldPrice = minOldPrice === Infinity ? 0 : minOldPrice;
+  const finalPromoPrice = minPromoPrice === Infinity ? 0 : minPromoPrice;
+
+  return {
+    name: formData.get("name") as string,
+    description: formData.get("description") as string,
+    category: formData.get("category") as string,
+    image: formData.get("image") as string,
+    model: formData.get("model") as string,
+    colors,
+    sizes: Array.from(availableSizesSet),
+    stock: totalStock,
+    active: formData.get("active") === "true",
+    sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
+    oldPrice: finalOldPrice,
+    promoPrice: finalPromoPrice,
+    price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
+    weight: parseFloat(formData.get("weight") as string) || 0.5,
+    isDefault: formData.get("isDefault") === "true",
+    translations: JSON.parse((formData.get("translations") as string) || "{}"),
+  };
+}
 
 export async function getProducts() {
   try {
+    await requireAdmin();
     await dbConnect();
     const products = await Product.find({}).sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(products));
@@ -18,6 +65,7 @@ export async function getProducts() {
 
 export async function getProductById(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const product = await Product.findById(id).lean();
     if (!product) {
@@ -32,64 +80,14 @@ export async function getProductById(id: string) {
 
 export async function createProduct(formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
-    const colors = JSON.parse((formData.get("colors") as string) || "[]");
-
-    // Calculate total stock and derive available sizes from variants
-    const availableSizesSet = new Set<string>();
-    let totalStock = 0;
-    
-    colors.forEach((color: any) => {
-      if (color.variants) {
-        color.variants.forEach((v: any) => {
-          totalStock += Number(v.stock) || 0;
-          if (v.stock > 0) {
-            availableSizesSet.add(v.size);
-          }
-        });
-      }
-    });
-
-    // Logic: Automatically derive base prices from variants
-    let minOldPrice = Infinity;
-    let minPromoPrice = Infinity;
-
-    colors.forEach((color: any) => {
-      color.variants?.forEach((v: any) => {
-        if (v.oldPrice && v.oldPrice < minOldPrice) minOldPrice = v.oldPrice;
-        if (v.promoPrice && v.promoPrice > 0 && v.promoPrice < minPromoPrice) {
-          minPromoPrice = v.promoPrice;
-        }
-      });
-    });
-
-    const finalOldPrice = minOldPrice === Infinity ? 0 : minOldPrice;
-    const finalPromoPrice = minPromoPrice === Infinity ? 0 : minPromoPrice;
-
-    const productData = {
-      name: formData.get("name") as string,
-      description: formData.get("description") as string,
-      category: formData.get("category") as string,
-      image: formData.get("image") as string,
-      model: formData.get("model") as string,
-      colors: colors,
-      sizes: Array.from(availableSizesSet),
-      stock: totalStock,
-      active: formData.get("active") === "true",
-      sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
-      oldPrice: finalOldPrice,
-      promoPrice: finalPromoPrice,
-      price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
-      weight: parseFloat(formData.get("weight") as string) || 0.5,
-      isDefault: formData.get("isDefault") === "true",
-      translations: JSON.parse((formData.get("translations") as string) || "{}"),
-    };
+    const productData = buildProductData(formData);
 
     if (productData.isDefault) {
       await Product.updateMany({}, { isDefault: false });
     }
-
 
     const product = await Product.create(productData);
     
@@ -103,64 +101,14 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
-    const colors = JSON.parse((formData.get("colors") as string) || "[]");
-
-    // Calculate total stock and derive available sizes from variants
-    const availableSizesSet = new Set<string>();
-    let totalStock = 0;
-    
-    colors.forEach((color: any) => {
-      if (color.variants) {
-        color.variants.forEach((v: any) => {
-          totalStock += Number(v.stock) || 0;
-          if (v.stock > 0) {
-            availableSizesSet.add(v.size);
-          }
-        });
-      }
-    });
-
-    // Logic: Automatically derive base prices from variants
-    let minOldPrice = Infinity;
-    let minPromoPrice = Infinity;
-
-    colors.forEach((color: any) => {
-      color.variants?.forEach((v: any) => {
-        if (v.oldPrice && v.oldPrice < minOldPrice) minOldPrice = v.oldPrice;
-        if (v.promoPrice && v.promoPrice > 0 && v.promoPrice < minPromoPrice) {
-          minPromoPrice = v.promoPrice;
-        }
-      });
-    });
-
-    const finalOldPrice = minOldPrice === Infinity ? 0 : minOldPrice;
-    const finalPromoPrice = minPromoPrice === Infinity ? 0 : minPromoPrice;
-
-    const productData = {
-      name: formData.get("name") as string,
-      description: formData.get("description") as string,
-      category: formData.get("category") as string,
-      image: formData.get("image") as string,
-      model: formData.get("model") as string,
-      colors: colors,
-      sizes: Array.from(availableSizesSet),
-      stock: totalStock,
-      active: formData.get("active") === "true",
-      sizeTable: JSON.parse((formData.get("sizeTable") as string) || "[]"),
-      oldPrice: finalOldPrice,
-      promoPrice: finalPromoPrice,
-      price: finalPromoPrice > 0 ? finalPromoPrice : finalOldPrice,
-      weight: parseFloat(formData.get("weight") as string) || 0.5,
-      isDefault: formData.get("isDefault") === "true",
-      translations: JSON.parse((formData.get("translations") as string) || "{}"),
-    };
+    const productData = buildProductData(formData);
 
     if (productData.isDefault) {
       await Product.updateMany({ _id: { $ne: id } }, { isDefault: false });
     }
-
 
     const product = await Product.findByIdAndUpdate(id, productData, {
       new: true,
@@ -180,6 +128,7 @@ export async function updateProduct(id: string, formData: FormData) {
 
 export async function broadcastProductPromo(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const product = await Product.findById(id);
     
@@ -228,6 +177,7 @@ export async function broadcastProductPromo(id: string) {
 
 export async function deleteProduct(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     await Product.findByIdAndDelete(id);
     revalidatePath("/admin/products", "page");

@@ -1,5 +1,6 @@
-"use server";
-
+// NOTE: intentionally NOT a "use server" module. These stock helpers mutate
+// inventory and must only be callable from other server code (createOrder /
+// updateOrderStatus), never exposed as standalone server-action endpoints.
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 

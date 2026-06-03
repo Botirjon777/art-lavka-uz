@@ -49,6 +49,9 @@ const PromotionSchema = new Schema<IPromotion>(
   { timestamps: true }
 );
 
+// Active-promotion lookups filter by isActive within a start/end date window.
+PromotionSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
+
 if (process.env.NODE_ENV === "development") {
   delete (mongoose.models as any).Promotion;
 }

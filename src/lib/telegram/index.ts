@@ -24,8 +24,6 @@ export async function handleIncomingMessage(msg: any) {
 
   if (!text) return;
 
-  console.log(`🤖 [Telegram] Message from ${chatId}: ${text}`);
-
   // Handle commands
   if (text === "/start") {
     await handleStart(bot, chatId);
@@ -170,7 +168,11 @@ export async function setupWebhook() {
 
   try {
     console.log(`🤖 [Telegram] Setting up webhook: ${webhookUrl}`);
-    const result = await bot.setWebHook(webhookUrl);
+    const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
+    const result = await bot.setWebHook(
+      webhookUrl,
+      secretToken ? ({ secret_token: secretToken } as any) : undefined
+    );
     if (result) {
       console.log("✅ [Telegram] Webhook registered successfully");
     } else {

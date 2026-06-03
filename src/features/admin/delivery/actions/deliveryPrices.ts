@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Settings from "@/models/Settings";
 import { BTS_PRICES, BTS_COURIER_FEES } from "@/lib/deliveryDataBTS";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export const getDeliverySettings = unstable_cache(
   async () => {
@@ -29,6 +30,7 @@ export const getDeliverySettings = unstable_cache(
 
 export async function updateDeliverySettings(data: { deliveryPrices: any, courierFees: any }) {
   try {
+    await requireAdmin();
     await dbConnect();
     const settings = await Settings.findOne();
     if (!settings) {

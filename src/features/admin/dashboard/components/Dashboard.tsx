@@ -1,12 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useAdminDashboardData } from "../hooks/useDashboard";
 import StatsCards from "./StatsCards";
 import LowStockAlert from "./LowStockAlert";
 import SalesOverview from "./SalesOverview";
-import AnalyticsCharts from "./AnalyticsCharts";
 import QuickActions from "./QuickActions";
 import Loader from "@/components/Loader";
+
+// Charts pull in recharts (large). Defer until the dashboard renders.
+const AnalyticsCharts = dynamic(() => import("./AnalyticsCharts"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center py-12">
+      <Loader />
+    </div>
+  ),
+});
 
 export default function Dashboard() {
   const { data, isLoading: loading } = useAdminDashboardData();

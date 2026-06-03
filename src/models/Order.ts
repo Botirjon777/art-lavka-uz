@@ -149,6 +149,11 @@ const OrderSchema = new Schema<IOrder>(
   }
 );
 
+// Indexes for hot query paths: phone lookups (order tracking) and recency sort.
+// orderNumber already has a unique index via the schema definition above.
+OrderSchema.index({ customerPhone: 1 });
+OrderSchema.index({ createdAt: -1 });
+
 if (process.env.NODE_ENV === "development") {
   delete (mongoose.models as any).Order;
 }

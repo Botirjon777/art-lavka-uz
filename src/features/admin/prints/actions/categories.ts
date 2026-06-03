@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import PrintCategory from "@/models/PrintCategory";
 import Print from "@/models/Print";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 // Transliteration helper for Cyrillic (Uzbek/Russian)
 const translit = (str: string) => {
@@ -29,6 +30,8 @@ const slugify = (name: string) => {
   return slug;
 };
 
+// Public catalog data — consumed by the storefront via /api/print-categories.
+// Mutations below remain admin-guarded.
 export async function getPrintCategories() {
   try {
     await dbConnect();
@@ -55,6 +58,7 @@ export async function getPrintCategories() {
 
 export async function createPrintCategory(formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
     const name = formData.get("name") as string;
     const manualSlug = formData.get("slug") as string;
@@ -76,6 +80,7 @@ export async function createPrintCategory(formData: FormData) {
 
 export async function updatePrintCategory(id: string, formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
     const name = formData.get("name") as string;
     const manualSlug = formData.get("slug") as string;
@@ -112,6 +117,7 @@ export async function updatePrintCategory(id: string, formData: FormData) {
 
 export async function deletePrintCategory(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     await PrintCategory.findByIdAndDelete(id);
     revalidatePath("/admin/prints");

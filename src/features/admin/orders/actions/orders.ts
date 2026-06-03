@@ -4,10 +4,13 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
 import { validateStock, decrementStock, incrementStock } from "./validateStock";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { priceAndValidateOrder } from "@/lib/orderPricing";
+import { randomBytes } from "crypto";
 
-// Generate unique order number
+// Generate a hard-to-guess, collision-resistant order number.
 function generateOrderNumber(): string {
-  const random = Math.random().toString(36).substring(2, 9).toUpperCase();
+  const random = randomBytes(6).toString("hex").toUpperCase(); // 12 hex chars
   return `ORD-${random}`;
 }
 
@@ -45,26 +48,60 @@ export async function createOrder(orderData: {
       };
     }
 
-    // Step 2: Create the order
-    const orderNumber = generateOrderNumber();
-
-    const order = await Order.create({
-      ...orderData,
-      orderNumber,
-      status: "pending",
-      paymentStatus: "pending",
+    // Step 2: Recompute & validate all money fields from the database.
+    // Never trust client-supplied prices, totals, or delivery cost.
+    const priced = await priceAndValidateOrder({
+      items: orderData.items,
+      clientTotalAmount: orderData.totalAmount,
+      clientDeliveryPrice: orderData.deliveryPrice,
     });
 
-    // Step 3: Decrement stock for all items
+    if (!priced.valid) {
+      return {
+        success: false,
+        error: "Не удалось проверить стоимость заказа. Обновите страницу и попробуйте снова.",
+      };
+    }
+
+    // Step 3: Create the order with server-authoritative pricing.
+    // Retry on the rare order-number collision (unique index on orderNumber).
+    let order;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        order = await Order.create({
+          ...orderData,
+          items: priced.items,
+          deliveryPrice: priced.deliveryPrice,
+          totalAmount: priced.totalAmount,
+          orderNumber: generateOrderNumber(),
+          status: "pending",
+          paymentStatus: "pending",
+        });
+        break;
+      } catch (err: any) {
+        if (err?.code === 11000 && attempt < 4) continue; // duplicate key — retry
+        throw err;
+      }
+    }
+
+    if (!order) {
+      return { success: false, error: "Failed to create order" };
+    }
+
+    // Step 4: Decrement stock. If this fails, roll back the order so we never
+    // leave a paid-for order without reserved stock.
     const stockUpdate = await decrementStock(itemsToValidate);
 
     if (!stockUpdate.success) {
-      // If stock update fails, we should ideally rollback the order
-      // For now, log the error
-      console.error("Failed to update stock after order creation");
+      console.error("Failed to update stock after order creation — rolling back order");
+      await Order.findByIdAndDelete(order._id);
+      return {
+        success: false,
+        error: "Не удалось зарезервировать товар. Попробуйте снова.",
+      };
     }
 
-    // Step 4: Send Telegram notification to admins
+    // Step 5: Send Telegram notification to admins
     try {
       const { sendOrderNotification } = await import("@/lib/telegram");
       await sendOrderNotification(order);
@@ -84,6 +121,7 @@ export async function createOrder(orderData: {
 
 export async function getOrders() {
   try {
+    await requireAdmin();
     await dbConnect();
     const orders = await Order.find({ orderNumber: { $not: /^SUP-/ } }).sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(orders));
@@ -95,6 +133,7 @@ export async function getOrders() {
 
 export async function getOrderById(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const order = await Order.findById(id).lean();
     if (!order) {
@@ -113,6 +152,7 @@ export async function updateOrderStatus(
   paymentStatus?: string
 ) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const existingOrder = await Order.findById(id);
@@ -190,6 +230,7 @@ export async function updateOrderStatus(
 
 export async function getSupportRequests() {
   try {
+    await requireAdmin();
     await dbConnect();
     const supportRequests = await Order.find({ orderNumber: /^SUP-/ }).sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(supportRequests));
@@ -201,6 +242,7 @@ export async function getSupportRequests() {
 
 export async function deleteSupportRequest(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const order = await Order.findByIdAndDelete(id);
     if (!order) {

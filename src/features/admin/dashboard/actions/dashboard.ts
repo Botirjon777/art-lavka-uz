@@ -5,12 +5,14 @@ import Product from "@/models/Product";
 import Print from "@/models/Print";
 import Gallery from "@/models/Gallery";
 import Order from "@/models/Order";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 /**
  * Fetches general statistics for the admin dashboard.
  */
 export async function getAdminStats() {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const [productCount, printCount, galleryCount] = await Promise.all([
@@ -40,6 +42,7 @@ export async function getAdminStats() {
  */
 export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const dateFilter: any = {
@@ -274,6 +277,7 @@ export async function getSalesAnalytics(startDate?: Date, endDate?: Date) {
  */
 export async function getLowStockProducts(threshold: number = 5) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const products = await Product.find({ active: true }).lean();

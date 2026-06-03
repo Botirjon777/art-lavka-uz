@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadToStorage } from "@/lib/upload";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAdmin();
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const withPreview = formData.get("withPreview") === "true";

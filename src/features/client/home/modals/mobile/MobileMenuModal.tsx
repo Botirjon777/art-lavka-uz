@@ -116,7 +116,7 @@ export default function MobileMenuModal({
                                   {["uzcard", "humo", "pay-me"].map((pm) => (
                                     <div key={pm} className="flex-1 h-14 bg-gray-50 rounded-lg flex items-center justify-center p-2">
                                       <Image
-                                        src={`/payment-method/${pm}.png`}
+                                        src={`/payment-method/${pm}.webp`}
                                         alt={pm}
                                         width={60}
                                         height={30}

@@ -5,6 +5,7 @@ import Product from "@/models/Product";
 import Print from "@/models/Print";
 import Gallery from "@/models/Gallery";
 import Publication from "@/models/Publication";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export interface MediaItem {
   url: string;
@@ -18,6 +19,7 @@ export interface MediaItem {
  */
 export async function getMediaHistory(): Promise<{ success: boolean; data?: MediaItem[]; error?: string }> {
   try {
+    await requireAdmin();
     await dbConnect();
 
     // Fetch from all major sources

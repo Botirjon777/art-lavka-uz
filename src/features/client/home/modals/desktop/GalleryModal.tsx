@@ -6,7 +6,13 @@ import Modal from "@/components/Modal";
 import { Product } from "@/types";
 import Image from "next/image";
 import { useTranslation } from "@/hooks/useTranslation";
-import ImageLightbox from "../../components/shared/ImageLightbox";
+import dynamic from "next/dynamic";
+
+// Lightbox depends on swiper; load it only when the gallery is opened.
+const ImageLightbox = dynamic(
+  () => import("../../components/shared/ImageLightbox"),
+  { ssr: false }
+);
 
 interface GalleryImage {
   _id: string;

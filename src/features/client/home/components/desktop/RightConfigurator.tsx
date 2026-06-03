@@ -1,9 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
-import TShirtScene from "../shared/TShirtScene";
+import Loader from "@/components/Loader";
 import { useTranslation } from "@/hooks/useTranslation";
+
+// The 3D scene pulls in three.js / react-three-fiber (a large bundle).
+// Load it lazily on the client so it never blocks first paint.
+const TShirtScene = dynamic(() => import("../shared/TShirtScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
+});
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
 

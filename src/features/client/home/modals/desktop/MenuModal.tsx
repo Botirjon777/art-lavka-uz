@@ -44,7 +44,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
             <div className="flex items-center gap-5">
               <div className="h-25 w-full bg-[#efefef] rounded-xl flex items-center justify-center">
                 <Image
-                  src="/payment-method/uzcard.png"
+                  src="/payment-method/uzcard.webp"
                   alt="UZCARD"
                   width={110}
                   height={64}
@@ -52,7 +52,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
               </div>
               <div className="h-25 w-full bg-[#efefef] rounded-xl flex items-center justify-center">
                 <Image
-                  src="/payment-method/humo.png"
+                  src="/payment-method/humo.webp"
                   alt="HUMO"
                   width={100}
                   height={30}
@@ -60,7 +60,7 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
               </div>
               <div className="h-25 w-full bg-[#efefef] rounded-xl flex items-center justify-center">
                 <Image
-                  src="/payment-method/pay-me.png"
+                  src="/payment-method/pay-me.webp"
                   alt="PAYME"
                   width={99}
                   height={28}

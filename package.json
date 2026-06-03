@@ -13,6 +13,7 @@
     "seed:all": "npm run seed:products && npm run seed:prints && npm run seed:gallery",
     "upload:images": "tsx --env-file=.env scripts/upload-images.ts",
     "migrate:cloudinary": "tsx --env-file=.env scripts/migrate-to-cloudinary.ts",
+    "compress:assets": "tsx scripts/compress-public-assets.ts",
     "optimize:prints": "tsx scripts/optimize-prints.ts",
     "migrate:prints-webp": "tsx --env-file=.env scripts/migrate-prints-to-webp.ts",
     "repair:cancelled-stock": "tsx --env-file=.env scripts/restore-cancelled-order-stock.ts",

@@ -3,9 +3,11 @@
 import dbConnect from "@/lib/mongodb";
 import Publication from "@/models/Publication";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export async function getPublications() {
   try {
+    await requireAdmin();
     await dbConnect();
     const publications = await Publication.find({}).sort({ createdAt: -1 });
     return { success: true, data: JSON.parse(JSON.stringify(publications)) };
@@ -17,6 +19,7 @@ export async function getPublications() {
 
 export async function getPublicationById(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const publication = await Publication.findById(id);
     if (!publication) return { success: false, error: "Publication not found" };
@@ -29,6 +32,7 @@ export async function getPublicationById(id: string) {
 
 export async function createPublication(formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
     
     const publicationData = {
@@ -52,6 +56,7 @@ export async function createPublication(formData: FormData) {
 
 export async function updatePublication(id: string, formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
     
     const publicationData = {
@@ -79,6 +84,7 @@ export async function updatePublication(id: string, formData: FormData) {
 
 export async function deletePublication(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     await Publication.findByIdAndDelete(id);
     revalidatePath("/admin/publications");
@@ -102,6 +108,7 @@ export async function incrementPublicationView(id: string) {
 
 export async function broadcastPublicationToTelegram(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const publication = await Publication.findById(id);
     
