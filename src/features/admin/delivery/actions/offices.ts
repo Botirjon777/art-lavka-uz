@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Office from "@/models/Office";
 import btsOfficesJson from "@/lib/btsOffices.json";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export const getOffices = unstable_cache(
   async (region?: string) => {
@@ -23,6 +24,7 @@ export const getOffices = unstable_cache(
 
 export async function createOffice(formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
     const data = {
       region: formData.get("region") as string,
@@ -44,6 +46,7 @@ export async function createOffice(formData: FormData) {
 
 export async function updateOffice(id: string, formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
     const data = {
       region: formData.get("region") as string,
@@ -65,6 +68,7 @@ export async function updateOffice(id: string, formData: FormData) {
 
 export async function deleteOffice(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     await Office.findByIdAndDelete(id);
     revalidateTag("offices", "default");
@@ -78,6 +82,7 @@ export async function deleteOffice(id: string) {
 
 export async function importFromDefaults() {
   try {
+    await requireAdmin();
     await dbConnect();
     
     // Check if we already have offices to avoid duplicates
@@ -106,6 +111,7 @@ export async function importFromDefaults() {
 
 export async function toggleOfficeStatus(id: string, isActive: boolean) {
   try {
+    await requireAdmin();
     await dbConnect();
     await Office.findByIdAndUpdate(id, { isActive });
     revalidateTag("offices", "default");

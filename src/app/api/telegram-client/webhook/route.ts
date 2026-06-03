@@ -8,15 +8,19 @@ import {
 
 export async function POST(req: NextRequest) {
   try {
+    // Verify the request actually came from Telegram (when a secret is set).
+    const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (secret) {
+      const token = req.headers.get("x-telegram-bot-api-secret-token");
+      if (token !== secret) {
+        return NextResponse.json({ ok: false }, { status: 401 });
+      }
+    }
+
     // Ensure handlers are registered
     initializeClientBot();
 
     const body = await req.json();
-
-    console.log(
-      "🤖 [Telegram Client Webhook] Received update:",
-      JSON.stringify(body, null, 2)
-    );
 
     if (body.message) {
       await handleClientMessage(body.message);
@@ -39,8 +43,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (secret && req.nextUrl.searchParams.get("secret") !== secret) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
+
     initializeClientBot();
 
     if (process.env.NODE_ENV === "production") {

@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Print from "@/models/Print";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export async function getPrints() {
   try {
+    await requireAdmin();
     await dbConnect();
     const prints = await Print.find({}).sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(prints));
@@ -17,6 +19,7 @@ export async function getPrints() {
 
 export async function getPrintById(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const print = await Print.findById(id).lean();
     if (!print) {
@@ -31,6 +34,7 @@ export async function getPrintById(id: string) {
 
 export async function createPrint(formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const printData: any = {
@@ -59,6 +63,7 @@ export async function createPrint(formData: FormData) {
 
 export async function updatePrint(id: string, formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const printData: any = {
@@ -92,6 +97,7 @@ export async function updatePrint(id: string, formData: FormData) {
 
 export async function deletePrint(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     await Print.findByIdAndDelete(id);
     revalidatePath("/admin/prints");

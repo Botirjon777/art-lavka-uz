@@ -1,9 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
-import TShirtScene from "../shared/TShirtScene";
+import Loader from "@/components/Loader";
 import { MobileFooter } from "./MobileFooter";
+
+// Lazy-load the heavy three.js scene so it doesn't block initial render.
+const TShirtScene = dynamic(() => import("../shared/TShirtScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <Loader />
+    </div>
+  ),
+});
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";

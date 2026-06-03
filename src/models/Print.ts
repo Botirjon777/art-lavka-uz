@@ -54,6 +54,9 @@ const PrintSchema = new Schema<IPrint>(
   }
 );
 
+// Storefront paginates active prints, optionally filtered by category, by recency.
+PrintSchema.index({ active: 1, category: 1, createdAt: -1 });
+
 const Print =
   (mongoose.models.Print as Model<IPrint>) ||
   mongoose.model<IPrint>("Print", PrintSchema);

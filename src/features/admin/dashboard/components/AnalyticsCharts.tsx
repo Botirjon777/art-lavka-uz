@@ -94,7 +94,7 @@ export default function AnalyticsCharts({ analytics }: AnalyticsChartsProps) {
             <XAxis dataKey="label" tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} />
             <Tooltip
-              formatter={(value: any) => [value, "Заказов"]}
+              formatter={(value) => [value, "Заказов"]}
               labelFormatter={(label) => label}
             />
             <Bar dataKey="count">
@@ -217,9 +217,9 @@ export default function AnalyticsCharts({ analytics }: AnalyticsChartsProps) {
             />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
-              formatter={(value: any, name: string | undefined) => {
+              formatter={(value, name) => {
                 if (name === "revenue")
-                  return [value.toLocaleString() + " UZS", "Выручка"];
+                  return [`${Number(value).toLocaleString()} UZS`, "Выручка"];
                 if (name === "orders") return [value, "Заказов"];
                 return [value, name || ""];
               }}

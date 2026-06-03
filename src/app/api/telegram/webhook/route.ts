@@ -11,15 +11,19 @@ import {
  */
 export async function POST(req: NextRequest) {
   try {
+    // Verify the request actually came from Telegram (when a secret is set).
+    const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (secret) {
+      const token = req.headers.get("x-telegram-bot-api-secret-token");
+      if (token !== secret) {
+        return NextResponse.json({ ok: false }, { status: 401 });
+      }
+    }
+
     // Ensure handlers are registered (for bot state stability)
     initializeTelegramBot();
 
     const body = await req.json();
-
-    console.log(
-      "🤖 [Telegram Webhook] Received update:",
-      JSON.stringify(body, null, 2)
-    );
 
     // Manually route the update and AWAIT it.
     // This is CRITICAL for Vercel/Serverless functions to ensure
@@ -49,8 +53,15 @@ export async function POST(req: NextRequest) {
 /**
  * Debugging endpoint to check bot status and webhook configuration.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    // Gate this diagnostic endpoint: when a secret is configured it must be
+    // supplied as ?secret=... to view bot/env details or trigger setup.
+    const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (secret && req.nextUrl.searchParams.get("secret") !== secret) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
+
     // Ensure handles are registered and webhook is set
     initializeTelegramBot();
     let setupResult = "skipped";

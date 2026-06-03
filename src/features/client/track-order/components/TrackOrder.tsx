@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { trackOrder, getOrdersByPhone, getOrderByOrderNumber } from "../actions/trackOrder";
+import { trackOrder, getOrdersByPhone } from "../actions/trackOrder";
 import { Order } from "@/types";
 import Image from "next/image";
 import NextLink from "next/link";
@@ -39,17 +39,12 @@ export default function TrackOrder({ initialOrderNumber }: { initialOrderNumber?
   );
 
   useEffect(() => {
+    // Deep links (/track-order/ORD-...) pre-fill the order number but still
+    // require the customer to enter their phone — we never expose order PII
+    // from the order number alone.
     if (initialOrderNumber) {
-      setLoading(true);
-      setError("");
-      getOrderByOrderNumber(initialOrderNumber).then((result) => {
-        if (result.success && result.order) {
-          setOrder(result.order);
-        } else {
-          setError(result.error || "Order not found");
-        }
-        setLoading(false);
-      });
+      setOrderNumber(initialOrderNumber);
+      setSearchMode("order-number");
     }
   }, [initialOrderNumber]);
 

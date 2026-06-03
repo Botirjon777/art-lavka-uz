@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Print from "@/models/Print";
 
+// Responses vary by query string (pagination/category), so this route is
+// dynamic. CDN caching is handled by the Cache-Control header below; a
+// page-level `revalidate` would be ignored here and is intentionally omitted.
 export const dynamic = "force-dynamic";
-export const revalidate = 7200;
 
 export async function GET(request: NextRequest) {
   try {

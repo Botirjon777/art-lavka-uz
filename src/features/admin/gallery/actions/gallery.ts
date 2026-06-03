@@ -3,9 +3,11 @@
 import dbConnect from "@/lib/mongodb";
 import Gallery from "@/models/Gallery";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export async function getGalleries() {
   try {
+    await requireAdmin();
     await dbConnect();
     const galleries = await Gallery.find({}).sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(galleries));
@@ -17,6 +19,7 @@ export async function getGalleries() {
 
 export async function getGalleryById(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const gallery = await Gallery.findById(id).lean();
     if (!gallery) return null;
@@ -29,6 +32,7 @@ export async function getGalleryById(id: string) {
 
 export async function createGallery(formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const galleryData = {
@@ -51,6 +55,7 @@ export async function createGallery(formData: FormData) {
 
 export async function updateGallery(id: string, formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const galleryData = {
@@ -79,6 +84,7 @@ export async function updateGallery(id: string, formData: FormData) {
 
 export async function deleteGallery(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const result = await Gallery.findByIdAndDelete(id);
 

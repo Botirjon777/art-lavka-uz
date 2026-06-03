@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Promotion from "@/models/Promotion";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 function getPromotionPayload(formData: FormData) {
   return {
@@ -26,6 +27,7 @@ function getPromotionPayload(formData: FormData) {
 
 export async function getPromotions() {
   try {
+    await requireAdmin();
     await dbConnect();
     const promotions = await Promotion.find({}).sort({ createdAt: -1 }).lean();
     return { success: true, data: JSON.parse(JSON.stringify(promotions)) };
@@ -37,6 +39,7 @@ export async function getPromotions() {
 
 export async function getPromotionById(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     const promotion = await Promotion.findById(id).lean();
     if (!promotion) return { success: false, error: "Promotion not found" };
@@ -49,6 +52,7 @@ export async function getPromotionById(id: string) {
 
 export async function createPromotion(formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const data = getPromotionPayload(formData);
@@ -64,6 +68,7 @@ export async function createPromotion(formData: FormData) {
 
 export async function updatePromotion(id: string, formData: FormData) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const data = getPromotionPayload(formData);
@@ -79,6 +84,7 @@ export async function updatePromotion(id: string, formData: FormData) {
 
 export async function deletePromotion(id: string) {
   try {
+    await requireAdmin();
     await dbConnect();
     await Promotion.findByIdAndDelete(id);
     revalidatePath("/admin/promotions");
@@ -91,6 +97,7 @@ export async function deletePromotion(id: string) {
 
 export async function togglePromotionStatus(id: string, isActive: boolean) {
   try {
+    await requireAdmin();
     await dbConnect();
     await Promotion.findByIdAndUpdate(id, { isActive });
     revalidatePath("/admin/promotions");

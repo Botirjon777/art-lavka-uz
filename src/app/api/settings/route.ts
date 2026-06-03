@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Settings, { ICategory, ISettings } from "@/models/Settings";
 import { BTS_PRICES, BTS_COURIER_FEES } from "@/lib/deliveryDataBTS";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export const revalidate = 7200; // Cache for 2 hours
 
@@ -104,6 +105,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await requireAdmin();
     await dbConnect();
     const body = await request.json();
     

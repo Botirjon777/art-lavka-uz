@@ -161,6 +161,9 @@ const ProductSchema = new Schema<IProduct>(
   }
 );
 
+// Storefront lists active products sorted by recency.
+ProductSchema.index({ active: 1, createdAt: -1 });
+
 // Force reload of model in development to pick up schema changes
 if (process.env.NODE_ENV === "development") {
   delete mongoose.models.Product;
