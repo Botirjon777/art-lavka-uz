@@ -221,6 +221,34 @@ export default function MobileConfigurator({
         <div className="h-[480px]" />
       </div>
 
+      {/* Print / gallery entry points — only shown while static image is visible.
+          Once a print is selected these buttons live inside the 3D scene overlay. */}
+      {!show3D && (
+        <div className="flex gap-2.5 px-5 pt-4">
+          <button
+            onClick={onPrintClick}
+            className="flex-1 py-3 bg-[#00C6F1] rounded-xl text-[13px] font-bold text-[#0f2031] active:scale-95 transition-transform shadow-sm"
+          >
+            {t.btnSelectPrint}
+          </button>
+          {onProductClick ? (
+            <button
+              onClick={onProductClick}
+              className="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-[13px] text-[#333333] active:scale-95 transition-transform shadow-sm"
+            >
+              {t.btnSelectProduct}
+            </button>
+          ) : (
+            <button
+              onClick={onGalleryClick}
+              className="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-[13px] text-[#333333] active:scale-95 transition-transform shadow-sm"
+            >
+              {t.viewGallery}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Configurator Options */}
       <div className="p-5 space-y-5">
         {/* Color Selection */}
@@ -295,7 +323,7 @@ export default function MobileConfigurator({
                   }
                   className={`py-[5px] text-[13px]/[16px] rounded-[5px] shadow-sm transition-all relative border min-h-[32px] flex items-center justify-center ${
                     isActive && !isOutOfStock
-                      ? "bg-[#00C6F1] text-white border-[#00C6F1]"
+                      ? "bg-[#00C6F1] text-[#0f2031] border-[#00C6F1]"
                       : isOutOfStock
                         ? `bg-gray-100 text-[#9F9F9F] opacity-60 ${isActive ? "border-[#00C6F1] border-2" : "border-gray-100"}`
                         : "bg-white text-[#333333] border-transparent active:scale-95"
@@ -324,6 +352,7 @@ export default function MobileConfigurator({
             </p>
             <div className="flex items-center gap-4">
               <button
+                aria-label={t.decreaseQty}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1}
                 className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
@@ -338,6 +367,7 @@ export default function MobileConfigurator({
               </span>
 
               <button
+                aria-label={t.increaseQty}
                 onClick={() => setQuantity(Math.min(sizeStock, quantity + 1))}
                 disabled={quantity >= sizeStock}
                 className="w-10 h-10 flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-300 text-white rounded-full transition-colors"
@@ -373,7 +403,7 @@ export default function MobileConfigurator({
             className={`w-full py-[15px] rounded-xl text-[13px]/[16px] transition-colors ${
               isOutOfStock
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#00C6F1] hover:bg-[#00C6F1]/90 text-white active:scale-95"
+                : "bg-[#00C6F1] hover:bg-[#00C6F1]/90 text-[#0f2031] font-semibold active:scale-95"
             }`}
           >
             {isOutOfStock ? t.outOfStock : t.buyOneClick}

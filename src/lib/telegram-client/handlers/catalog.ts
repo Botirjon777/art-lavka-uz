@@ -41,7 +41,7 @@ export async function handleCatalog(bot: TelegramBot, chatId: number) {
             [
               {
                 text: "🔎 Посмотреть на сайте",
-                url: `https://www.art-lavka.uz/product/${product._id}`,
+                url: `https://artlavka.uz/product/${product._id}`,
               },
             ],
           ],
@@ -51,7 +51,7 @@ export async function handleCatalog(bot: TelegramBot, chatId: number) {
 
     await bot.sendMessage(
       chatId,
-      "👉 Вы можете увидеть все товары на нашем сайте: https://www.art-lavka.uz",
+      "👉 Вы можете увидеть все товары на нашем сайте: https://artlavka.uz",
       { reply_markup: mainMenu }
     );
   } catch (error) {

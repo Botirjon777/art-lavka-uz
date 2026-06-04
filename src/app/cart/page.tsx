@@ -102,6 +102,7 @@ export default function CartPage() {
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1">
                         <button
+                          aria-label={t.decreaseQty}
                           onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                           className="w-8 h-8 flex items-center justify-center bg-white text-[#8814B1] rounded-md shadow-sm border border-gray-100"
                         >
@@ -119,6 +120,7 @@ export default function CartPage() {
                               updateQuantity(item.id, item.quantity + 1);
                             }
                           }}
+                          aria-label={t.increaseQty}
                           className="w-8 h-8 flex items-center justify-center bg-[#8814B1] text-white rounded-md shadow-sm"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

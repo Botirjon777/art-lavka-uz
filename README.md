@@ -2,7 +2,7 @@
 
 E-commerce platform for exclusive designer t-shirts in Uzbekistan, built with Next.js 16, MongoDB, and a real-time Telegram integration.
 
-**Live:** [art-lavka.uz](https://art-lavka.uz) · [artlavka.uz](https://artlavka.uz)
+**Live:** [artlavka.uz](https://artlavka.uz) (canonical) — [art-lavka.uz](https://art-lavka.uz) permanently redirects here
 
 ---
 
@@ -286,7 +286,7 @@ MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/<dbname>?appNa
 # node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 NEXTAUTH_SECRET=your-strong-random-secret-here
 
-# Full URL of your site (http://localhost:3000 in dev, https://art-lavka.uz in prod)
+# Full URL of your site (http://localhost:3000 in dev, https://artlavka.uz in prod)
 NEXTAUTH_URL=http://localhost:3000
 
 # ─── Cloudinary ──────────────────────────────────────────────────────────────
@@ -303,7 +303,7 @@ TELEGRAM_ADMIN_BOT_TOKEN=1234567890:AABBccDDeeFFggHHiiJJkkLL
 
 # Public HTTPS URL where Telegram will POST updates
 # Leave empty in development (no webhook needed locally)
-TELEGRAM_WEBHOOK_URL=https://art-lavka.uz/api/telegram/webhook
+TELEGRAM_WEBHOOK_URL=https://artlavka.uz/api/telegram/webhook
 
 # Group chat ID that receives new order notifications (negative number)
 TELEGRAM_ORDER_GROUP_ID=-1001234567890
@@ -315,7 +315,7 @@ TELEGRAM_PROMO_CHANNEL_ID=-1001234567890
 # Bot token from @BotFather (separate bot from the admin one)
 TELEGRAM_CLIENT_BOT_TOKEN=0987654321:ZZYYxxWWvvUUttSSrrQQppOO
 
-TELEGRAM_CLIENT_WEBHOOK_URL=https://art-lavka.uz/api/telegram-client/webhook
+TELEGRAM_CLIENT_WEBHOOK_URL=https://artlavka.uz/api/telegram-client/webhook
 
 # Telegram channel username (without @) used for subscription verification
 CHANNEL_USERNAME=artlavkauz
@@ -325,8 +325,8 @@ CHANNEL_USERNAME=artlavkauz
 # Generate with:
 # node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
 # After setting, re-register webhooks by visiting (once after deployment):
-#   GET https://art-lavka.uz/api/telegram/webhook?secret=<this-value>
-#   GET https://art-lavka.uz/api/telegram-client/webhook?secret=<this-value>
+#   GET https://artlavka.uz/api/telegram/webhook?secret=<this-value>
+#   GET https://artlavka.uz/api/telegram-client/webhook?secret=<this-value>
 TELEGRAM_WEBHOOK_SECRET=your-random-hex-secret
 
 # ─── Optional ────────────────────────────────────────────────────────────────
@@ -416,8 +416,8 @@ The project uses two separate Telegram bots.
 #    and TELEGRAM_WEBHOOK_SECRET in your production environment.
 
 # 3. Register the webhooks by visiting each URL once:
-GET https://art-lavka.uz/api/telegram/webhook?secret=<TELEGRAM_WEBHOOK_SECRET>
-GET https://art-lavka.uz/api/telegram-client/webhook?secret=<TELEGRAM_WEBHOOK_SECRET>
+GET https://artlavka.uz/api/telegram/webhook?secret=<TELEGRAM_WEBHOOK_SECRET>
+GET https://artlavka.uz/api/telegram-client/webhook?secret=<TELEGRAM_WEBHOOK_SECRET>
 ```
 
 Telegram will then POST every update to your endpoints, and the app will verify the `X-Telegram-Bot-Api-Secret-Token` header before processing.
@@ -455,17 +455,29 @@ For user-uploaded images (products, prints, gallery), the upload pipeline in `sr
 
 The project is deployed on **Vercel**.
 
+### Domains
+
+| Domain | Role |
+|---|---|
+| `artlavka.uz` | **Canonical** — all metadata, sitemap, and robots point here |
+| `art-lavka.uz` | 301 → `artlavka.uz` |
+| `www.art-lavka.uz` | 301 → `artlavka.uz` |
+| `www.artlavka.uz` | 301 → `artlavka.uz` |
+
+The redirects are host-based and defined in `next.config.ts` (`redirects()`). For them to work, **all four domains must be attached to the Vercel project** (`Settings → Domains`) so requests for the legacy domains reach the app at all. In Vercel, set `artlavka.uz` as the primary domain and leave the others as "Redirect to" or plain aliases — either way the app-level redirect catches them.
+
 ### Steps
 
 1. Connect the GitHub repository to a Vercel project.
-2. Add all environment variables in `Settings → Environment Variables` (Production environment).
-3. Deploy — Vercel auto-detects Next.js.
-4. After the first successful deployment, register the Telegram webhooks (see above).
+2. Attach all domains (see table above) and set `artlavka.uz` as primary.
+3. Add all environment variables in `Settings → Environment Variables` (Production environment).
+4. Deploy — Vercel auto-detects Next.js.
+5. After the first successful deployment, register the Telegram webhooks (see above).
 
 ### Post-deployment checklist
 
 - [ ] `NEXTAUTH_SECRET` is a strong unique value (not shared with dev)
-- [ ] `NEXTAUTH_URL` is set to `https://art-lavka.uz`
+- [ ] `NEXTAUTH_URL` is set to `https://artlavka.uz`
 - [ ] `USE_CLOUDINARY=true`
 - [ ] Both Telegram webhooks registered via the GET endpoints
 - [ ] Admin password changed from the default `admin123`

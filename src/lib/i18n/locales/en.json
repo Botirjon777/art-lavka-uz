@@ -196,5 +196,7 @@
   "send": "Send",
   "allPrintsLoaded": "All prints loaded",
   "sizeDetails": "Details",
-  "noSizeData": "No size chart has been added for this product."
+  "noSizeData": "No size chart has been added for this product.",
+  "decreaseQty": "Decrease quantity",
+  "increaseQty": "Increase quantity"
 }

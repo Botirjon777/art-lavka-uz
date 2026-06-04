@@ -150,7 +150,7 @@ export default function PublicationForm({
                 label="Целевая ссылка (Target URL)"
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder="https://www.art-lavka.uz/products/..."
+                placeholder="https://artlavka.uz/products/..."
                 error={errors.targetUrl}
                 required
               />

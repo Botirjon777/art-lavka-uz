@@ -94,6 +94,7 @@ export default function CartModal({
                   {/* Quantity Controls */}
                   <div className="flex items-center">
                     <button
+                      aria-label={t.decreaseQty}
                       onClick={() =>
                         onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))
                       }
@@ -120,6 +121,7 @@ export default function CartModal({
                         const variant = color?.variants?.find(v => v.size === item.size);
                         return item.quantity >= (variant?.stock || 0);
                       })()}
+                      aria-label={t.increaseQty}
                       className="w-[35px] h-[35px] flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-full transition-colors"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
