@@ -194,5 +194,7 @@
   "supportSuccess": "So'rov muvaffaqiyatli yuborildi!",
   "supportSuccessDesc": "Menejerimiz tez orada siz bilan bog'lanadi.",
   "send": "Yuborish",
-  "allPrintsLoaded": "Barcha printlar yuklandi"
+  "allPrintsLoaded": "Barcha printlar yuklandi",
+  "sizeDetails": "Batafsil",
+  "noSizeData": "Bu mahsulot uchun o'lcham jadvali qo'shilmagan."
 }

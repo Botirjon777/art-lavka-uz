@@ -194,5 +194,7 @@
   "supportSuccess": "Request sent successfully!",
   "supportSuccessDesc": "Our manager will contact you shortly.",
   "send": "Send",
-  "allPrintsLoaded": "All prints loaded"
+  "allPrintsLoaded": "All prints loaded",
+  "sizeDetails": "Details",
+  "noSizeData": "No size chart has been added for this product."
 }
