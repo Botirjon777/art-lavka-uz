@@ -282,7 +282,7 @@ export default function RightConfigurator({
                         }
                         className={`py-2.5 px-3 text-[14px]/[17px] rounded-xl transition-all relative border min-h-[42px] flex items-center justify-center ${
                           isActive && !isOutOfStock
-                            ? "bg-[#00C6F1] text-white border-[#00C6F1]"
+                            ? "bg-[#00C6F1] text-[#0f2031] border-[#00C6F1]"
                             : isOutOfStock
                               ? `bg-gray-50 text-[#9F9F9F] opacity-60 ${isActive ? "border-[#00C6F1] border-2" : "border-gray-100"}`
                               : "bg-white text-[#333333] cursor-pointer hover:border-[#00C6F1] border-transparent"
@@ -307,6 +307,7 @@ export default function RightConfigurator({
                 <div className="flex items-center gap-[15px]">
                   <div className="flex items-center gap-[15px]">
                     <button
+                      aria-label={t.decreaseQty}
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
                       className="w-10 h-10 flex items-center cursor-pointer justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
@@ -340,6 +341,7 @@ export default function RightConfigurator({
                       onBlur={(e) => {
                         if (!e.target.value) setQuantity(1);
                       }}
+                      aria-label={t.quantity}
                       className="w-12 text-center text-[20px] font-medium text-[#333333] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
 
@@ -348,6 +350,7 @@ export default function RightConfigurator({
                         setQuantity(Math.min(sizeStock, quantity + 1))
                       }
                       disabled={quantity >= sizeStock}
+                      aria-label={t.increaseQty}
                       className="w-10 h-10 cursor-pointer flex items-center justify-center bg-[#8814B1] hover:bg-[#8814B1]/80 disabled:bg-gray-200 text-white rounded-full transition-colors shadow-md shrink-0"
                     >
                       <svg

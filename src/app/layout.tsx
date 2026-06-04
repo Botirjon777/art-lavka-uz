@@ -6,11 +6,12 @@ import QueryProvider from "@/providers/QueryProvider";
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.art-lavka.uz"),
+  metadataBase: new URL("https://artlavka.uz"),
   alternates: {
     canonical: "/",
   },
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ART-LAVKA.UZ - Дизайнерские футболки в Узбекистане",
     description: "Эксклюзивные принты на качественных футболках. Доставка по всему Узбекистану.",
-    url: "https://www.art-lavka.uz",
+    url: "https://artlavka.uz",
     siteName: "ART-LAVKA.UZ",
     images: [
       {
@@ -65,6 +66,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        {/* Preload the mobile LCP image so the browser fetches it before React hydrates */}
+        <link rel="preload" as="image" href="/white-t-shirt.webp" />
+        {/* Preconnect to Cloudinary so product image DNS+TLS resolves early */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+      </head>
       <body className={`${montserrat.variable} antialiased`}>
         <QueryProvider>{children}</QueryProvider>
       </body>

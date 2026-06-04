@@ -1,26 +1,29 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
 import toast from "react-hot-toast";
 
-// Feature Components (now local to home feature)
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
 import MainLayout from "./shared/MainLayout";
-import LeftSidebar from "./desktop/LeftSidebar";
 import RightConfigurator from "./desktop/RightConfigurator";
+
+// LeftSidebar runs two paginated API hooks and is never shown on mobile.
+// Lazy-loading it keeps it out of the critical mobile JS path entirely.
+const LeftSidebar = dynamic(() => import("./desktop/LeftSidebar"), {
+  ssr: false,
+  loading: () => (
+    <div className="hidden lg:flex flex-col w-[420px] shrink-0 gap-4 pt-4">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="h-24 rounded-2xl bg-white/30 animate-pulse" />
+      ))}
+    </div>
+  ),
+});
 import MobileConfigurator from "./mobile/MobileConfigurator";
-import MenuModal from "../modals/desktop/MenuModal";
-import MobileMenuModal from "../modals/mobile/MobileMenuModal";
-import GalleryModal from "../modals/desktop/GalleryModal";
-import MobileGalleryModal from "../modals/mobile/MobileGalleryModal";
-import CartModal from "../modals/desktop/CartModal";
-import ProductsModal from "../modals/desktop/ProductsModal";
-import MobileProductsModal from "../modals/mobile/MobileProductsModal";
-import MobilePrintsModal from "../modals/mobile/MobilePrintsModal";
-import CheckoutModal from "../modals/shared/CheckoutModal";
-import OrderSuccessModal from "../modals/shared/OrderSuccessModal";
 import { useSettings } from "../hooks/useSettings";
 import { useProducts } from "../hooks/useProducts";
 import { usePrints } from "../hooks/usePrints";
@@ -38,6 +41,19 @@ import {
   PrintCategory,
 } from "@/types";
 import { fetchProducts } from "../api/products";
+
+// All modals are loaded lazily — none are open on initial page load so their
+// JS should never be part of the critical-path bundle.
+const MenuModal         = dynamic(() => import("../modals/desktop/MenuModal"));
+const MobileMenuModal   = dynamic(() => import("../modals/mobile/MobileMenuModal"));
+const GalleryModal      = dynamic(() => import("../modals/desktop/GalleryModal"));
+const MobileGalleryModal= dynamic(() => import("../modals/mobile/MobileGalleryModal"));
+const CartModal         = dynamic(() => import("../modals/desktop/CartModal"));
+const ProductsModal     = dynamic(() => import("../modals/desktop/ProductsModal"));
+const MobileProductsModal=dynamic(() => import("../modals/mobile/MobileProductsModal"));
+const MobilePrintsModal = dynamic(() => import("../modals/mobile/MobilePrintsModal"));
+const CheckoutModal     = dynamic(() => import("../modals/shared/CheckoutModal"));
+const OrderSuccessModal = dynamic(() => import("../modals/shared/OrderSuccessModal"));
 
 export default function HomeContainer() {
   const { t } = useTranslation();
@@ -251,8 +267,59 @@ export default function HomeContainer() {
       isCheckoutOpen={showCheckout}
     >
       {!_hasHydrated || !productsData ? (
-        <div className="flex items-center justify-center min-h-[600px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8814B1]" />
+        // Show the t-shirt placeholder immediately so it becomes the LCP
+        // element — no dependency on the products API response.
+        <div className="flex items-center justify-center">
+          {/* Desktop skeleton */}
+          <div className="hidden lg:flex h-[calc(100vh-160px)] max-h-[886px] min-w-[964px] rounded-[30px] bg-image items-center justify-center relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px]">
+            <Image
+              src="/white-t-shirt.webp"
+              alt="T-shirt"
+              width={300}
+              height={380}
+              priority
+              className="object-contain drop-shadow-xl relative z-10"
+            />
+          </div>
+
+          {/* Mobile skeleton — mirrors MobileConfigurator's full layout so no
+              height shift occurs when real content replaces it (CLS fix). */}
+          <div className="lg:hidden flex flex-col bg-white w-full min-h-screen">
+            {/* Preview area */}
+            <div className="relative bg-image w-full flex items-center justify-center" style={{ minHeight: 480 }}>
+              <Image
+                src="/white-t-shirt.webp"
+                alt="T-shirt"
+                width={200}
+                height={260}
+                priority
+                className="object-contain drop-shadow-lg"
+              />
+              <div className="h-[480px]" />
+            </div>
+            {/* Print / gallery button row */}
+            <div className="flex gap-2.5 px-5 pt-4">
+              <div className="flex-1 h-11 rounded-xl bg-[#00C6F1]/15 animate-pulse" />
+              <div className="flex-1 h-11 rounded-xl bg-gray-100 animate-pulse" />
+            </div>
+            {/* Options skeleton (colour + size + action buttons) */}
+            <div className="px-5 pt-5 space-y-5 flex-1">
+              <div className="flex gap-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full bg-gray-100 animate-pulse" />
+                ))}
+              </div>
+              <div className="grid grid-cols-4 gap-2.5">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-8 rounded bg-gray-100 animate-pulse" />
+                ))}
+              </div>
+              <div className="flex gap-2.5 pt-2">
+                <div className="flex-1 h-12 rounded-xl bg-[#00C6F1]/15 animate-pulse" />
+                <div className="flex-1 h-12 rounded-xl bg-[#8814B1]/10 animate-pulse" />
+              </div>
+            </div>
+          </div>
         </div>
       ) : !selectedProduct ? (
         <div className="flex items-center justify-center min-h-[600px] animate-in fade-in duration-1000">

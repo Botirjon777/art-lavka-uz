@@ -125,9 +125,9 @@ export default function LeftSidebar({
 
       {/* Print Selection */}
       <div className="flex-1 flex flex-col">
-        <h3 className="text-[30px]/[37px] text-[#333333] mb-7.5 shrink-0">
+        <h2 className="text-[30px]/[37px] text-[#333333] mb-7.5 shrink-0">
           {t.selectPrint}
-        </h3>
+        </h2>
 
         {/* Category Tabs */}
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 shrink-0">

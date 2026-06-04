@@ -36,7 +36,7 @@ export default function MainLayout({
         hidden={isCheckoutOpen}
       />
 
-      <div className="min-h-screen bg-[#F5F5F5] pt-15 lg:pt-0 flex items-center justify-center">
+      <main className="min-h-screen bg-[#F5F5F5] pt-15 lg:pt-0 flex items-center justify-center">
         {/* Centered Container */}
         <div className="relative w-full max-w-[1600px]">
           {/* Menu Icon - Top Left of Container */}
@@ -96,29 +96,30 @@ export default function MainLayout({
           <div className="xl:py-20 relative">{children}</div>
         </div>
 
-        {/* Toast Notifications */}
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: "#8814B1",
-              color: "#fff",
-              padding: "12px",
-              borderRadius: "10px",
-              fontSize: "14px",
-              fontWeight: "600",
-              maxWidth: "90vw",
+      </main>
+
+      {/* Toast Notifications — outside <main> intentionally */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#8814B1",
+            color: "#fff",
+            padding: "12px",
+            borderRadius: "10px",
+            fontSize: "14px",
+            fontWeight: "600",
+            maxWidth: "90vw",
+          },
+          success: {
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#8814B1",
             },
-            success: {
-              iconTheme: {
-                primary: "#fff",
-                secondary: "#8814B1",
-              },
-            },
-          }}
-        />
-      </div>
+          },
+        }}
+      />
     </>
   );
 }

@@ -196,5 +196,7 @@
   "send": "Yuborish",
   "allPrintsLoaded": "Barcha printlar yuklandi",
   "sizeDetails": "Batafsil",
-  "noSizeData": "Bu mahsulot uchun o'lcham jadvali qo'shilmagan."
+  "noSizeData": "Bu mahsulot uchun o'lcham jadvali qo'shilmagan.",
+  "decreaseQty": "Miqdorni kamaytirish",
+  "increaseQty": "Miqdorni oshirish"
 }

@@ -7,8 +7,8 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "ClothingStore",
     "name": "ART-LAVKA.UZ",
-    "url": "https://www.art-lavka.uz",
-    "logo": "https://www.art-lavka.uz/art-lavka.png",
+    "url": "https://artlavka.uz",
+    "logo": "https://artlavka.uz/art-lavka.png",
     "description": "Интернет-магазин эксклюзивных дизайнерских футболок в Узбекистане.",
     "address": {
       "@type": "PostalAddress",
