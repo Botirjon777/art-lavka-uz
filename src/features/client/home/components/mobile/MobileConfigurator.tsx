@@ -2,19 +2,20 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
-import Loader from "@/components/Loader";
 import { MobileFooter } from "./MobileFooter";
 
-// Lazy-load the heavy three.js scene so it doesn't block initial render.
-const TShirtScene = dynamic(() => import("../shared/TShirtScene"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <Loader />
-    </div>
-  ),
-});
+const TShirtScene = dynamic(() => import("../shared/TShirtScene"), { ssr: false });
+
+function isDarkColor(hex: string): boolean {
+  const h = hex.replace("#", "");
+  if (h.length < 6) return false;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
+}
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
@@ -60,6 +61,24 @@ export default function MobileConfigurator({
   );
   const [quantity, setQuantity] = useState(1);
   const [modelLoaded, setModelLoaded] = useState(false);
+
+  const show3D = selectedPrint !== null;
+
+  const staticImage = isDarkColor(selectedColor.hex)
+    ? "/black-t-shirt.webp"
+    : "/white-t-shirt.webp";
+
+  useEffect(() => {
+    setModelLoaded(false);
+  }, [selectedProduct?.id]);
+
+  useEffect(() => {
+    if (selectedPrint && selectedProduct?.model) {
+      import("@react-three/drei")
+        .then(({ useGLTF }) => useGLTF.preload(selectedProduct.model))
+        .catch(() => {});
+    }
+  }, [selectedPrint?._id ?? selectedPrint?.id, selectedProduct?.model]);
 
   // Reset selection when product changes
   useEffect(() => {
@@ -145,37 +164,61 @@ export default function MobileConfigurator({
 
   return (
     <div className="flex flex-col bg-white min-h-screen">
-      {/* T-Shirt Scene */}
-      <div className="relative bg-image flex items-center justify-center py-4 min-h-[480px]">
-        {/* Skeleton shown while model loads */}
-        {!modelLoaded && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-image">
-            <div className="w-48 h-64 bg-white/40 rounded-2xl animate-pulse" />
-            <p className="text-xs text-[#8814B1]/60 font-medium tracking-widest uppercase animate-pulse">
-              {t.loadingShowcase}...
-            </p>
+      {/* Preview — static placeholder → 3D once a print is chosen */}
+      <div className="relative bg-image min-h-[480px]">
+
+        {/* Static t-shirt image: visible until 3D is ready */}
+        <div
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
+            show3D && modelLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
+        >
+          <Image
+            src={staticImage}
+            alt={getTranslated(selectedProduct, lang)}
+            width={200}
+            height={260}
+            priority
+            className="object-contain drop-shadow-lg"
+          />
+
+          {/* Spinner while 3D loads */}
+          {show3D && !modelLoaded && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/50 backdrop-blur-[2px]">
+              <div className="w-12 h-12 rounded-full border-4 border-[#8814B1]/20 border-t-[#8814B1] animate-spin" />
+              <p className="text-xs font-semibold text-[#8814B1]/70 uppercase tracking-widest">
+                {t.loadingShowcase}...
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* 3D scene — mounted when print selected, fades in after load */}
+        {show3D && (
+          <div
+            className={`absolute inset-0 h-[480px] transition-opacity duration-500 ${
+              modelLoaded ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <TShirtScene
+              key={selectedProduct.id}
+              selectedProduct={selectedProduct.model}
+              productName={getTranslated(selectedProduct, lang)}
+              productDescription={getTranslated(selectedProduct, lang, "description")}
+              selectedPrint={selectedPrint}
+              selectedColor={selectedColor.hex}
+              onProductClick={onProductClick}
+              onPrintClick={onPrintClick}
+              onGalleryClick={onGalleryClick}
+              modelScale={1.2}
+              modelPosition={[0, -0.4, 0]}
+              onModelLoaded={() => setModelLoaded(true)}
+            />
           </div>
         )}
-        <div className={`w-full max-w-md h-[480px] transition-opacity duration-500 ${modelLoaded ? "opacity-100" : "opacity-0"}`}>
-          <TShirtScene
-            key={selectedProduct.id}
-            selectedProduct={selectedProduct.model}
-            productName={getTranslated(selectedProduct, lang)}
-            productDescription={getTranslated(
-              selectedProduct,
-              lang,
-              "description",
-            )}
-            selectedPrint={selectedPrint}
-            selectedColor={selectedColor.hex}
-            onProductClick={onProductClick}
-            onPrintClick={onPrintClick}
-            onGalleryClick={onGalleryClick}
-            modelScale={1.2}
-            modelPosition={[0, -0.4, 0]}
-            onModelLoaded={() => setModelLoaded(true)}
-          />
-        </div>
+
+        {/* Spacer so the section keeps its height when absolute children are used */}
+        <div className="h-[480px]" />
       </div>
 
       {/* Configurator Options */}

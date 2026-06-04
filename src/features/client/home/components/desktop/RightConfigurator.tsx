@@ -2,20 +2,21 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { PrintDesign, ConfiguratorState, Product, ProductColor } from "@/types";
-import Loader from "@/components/Loader";
 import { useTranslation } from "@/hooks/useTranslation";
 
-// The 3D scene pulls in three.js / react-three-fiber (a large bundle).
-// Load it lazily on the client so it never blocks first paint.
-const TShirtScene = dynamic(() => import("../shared/TShirtScene"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <Loader />
-    </div>
-  ),
-});
+const TShirtScene = dynamic(() => import("../shared/TShirtScene"), { ssr: false });
+
+// Pick the right placeholder based on perceived colour brightness.
+function isDarkColor(hex: string): boolean {
+  const h = hex.replace("#", "");
+  if (h.length < 6) return false;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
+}
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
 
@@ -55,6 +56,30 @@ export default function RightConfigurator({
     firstInStockSize || productSizes[0] || "",
   );
   const [quantity, setQuantity] = useState(1);
+  const [modelLoaded, setModelLoaded] = useState(false);
+
+  // A print is selected → begin loading the 3D scene.
+  const show3D = selectedPrint !== null;
+
+  // Static t-shirt image shown before 3D loads (or when no print selected).
+  const staticImage = isDarkColor(selectedColor.hex)
+    ? "/black-t-shirt.webp"
+    : "/white-t-shirt.webp";
+
+  // Reset model-loaded flag when product changes (new GLB).
+  useEffect(() => {
+    setModelLoaded(false);
+  }, [selectedProduct?.id]);
+
+  // Preload the GLB as soon as a print is selected so the download starts
+  // before the Canvas mounts. Drei caches the result; subsequent loads are instant.
+  useEffect(() => {
+    if (selectedPrint && selectedProduct?.model) {
+      import("@react-three/drei")
+        .then(({ useGLTF }) => useGLTF.preload(selectedProduct.model))
+        .catch(() => {});
+    }
+  }, [selectedPrint?._id ?? selectedPrint?.id, selectedProduct?.model]);
 
   // Reset selection when product changes
   useEffect(() => {
@@ -135,21 +160,54 @@ export default function RightConfigurator({
       <div className="bg-image h-[calc(100vh-160px)] max-h-[886px] overflow-y-auto min-w-[964px] rounded-[30px] flex flex-col items-center justify-center p-12 relative before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[30px] before:pointer-events-none">
         <div className="w-full h-full relative z-10 flex flex-col">
           <div className="flex-1 flex flex-col md:flex-row gap-8">
-            {/* Left - T-shirt 3D Preview */}
-            <div className="flex-1 flex flex-col items-center justify-center min-w-[300px] md:min-w-[450px] self-stretch">
-              <TShirtScene
-                key={selectedProduct.id}
-                selectedProduct={selectedProduct.model}
-                productName={getTranslated(selectedProduct, lang)}
-                productDescription={getTranslated(
-                  selectedProduct,
-                  lang,
-                  "description",
+            {/* Left — placeholder image → 3D when print selected */}
+            <div className="flex-1 flex flex-col items-center justify-center min-w-[300px] md:min-w-[450px] self-stretch relative">
+
+              {/* Static t-shirt: visible when no print, or while 3D is loading */}
+              <div
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
+                  show3D && modelLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+              >
+                <Image
+                  src={staticImage}
+                  alt={getTranslated(selectedProduct, lang)}
+                  width={300}
+                  height={380}
+                  priority
+                  className="object-contain drop-shadow-xl"
+                />
+
+                {/* Spinner overlay while 3D model is downloading */}
+                {show3D && !modelLoaded && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/60 backdrop-blur-[2px] rounded-2xl">
+                    <div className="w-12 h-12 rounded-full border-4 border-[#8814B1]/20 border-t-[#8814B1] animate-spin" />
+                    <p className="text-xs font-semibold text-[#8814B1]/70 uppercase tracking-widest">
+                      {t.loadingShowcase}...
+                    </p>
+                  </div>
                 )}
-                selectedPrint={selectedPrint}
-                selectedColor={selectedColor.hex}
-                onProductClick={onProductClick}
-              />
+              </div>
+
+              {/* 3D scene — mounted as soon as a print is chosen, fades in when ready */}
+              {show3D && (
+                <div
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    modelLoaded ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <TShirtScene
+                    key={selectedProduct.id}
+                    selectedProduct={selectedProduct.model}
+                    productName={getTranslated(selectedProduct, lang)}
+                    productDescription={getTranslated(selectedProduct, lang, "description")}
+                    selectedPrint={selectedPrint}
+                    selectedColor={selectedColor.hex}
+                    onProductClick={onProductClick}
+                    onModelLoaded={() => setModelLoaded(true)}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Right - Configuration Options */}
