@@ -57,7 +57,7 @@ export async function createOrder(orderData: {
       clientDeliveryPrice: orderData.deliveryPrice,
       region: orderData.region,
       village: orderData.village,
-      deliveryMethod: orderData.deliveryMethod,
+      deliveryMethod: orderData.deliveryMethod as "door" | "pickup",
     });
 
     if (!priced.valid) {

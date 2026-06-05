@@ -13,7 +13,7 @@ import { normalizePhoneNumber, applyPhoneMask } from "@/lib/phoneUtils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguageStore } from "@/stores/languageStore";
 import { getTranslated } from "@/lib/i18n/utils";
-import { LOCATIONS } from "@/lib/i18n/locations";
+import { LOCATIONS, LocationTranslation } from "@/lib/i18n/locations";
 import { DeliveryBranch } from "@/lib/deliveryData";
 import { usePromotions } from "@/features/client/home/hooks/usePromotions";
 import { calculateBTSDelivery } from "@/lib/deliveryDataBTS";
@@ -111,9 +111,18 @@ export default function CheckoutModal({
   // Use translated regions from locale file for labels
   const uzbekistanRegions = t.regions as string[];
 
-  // Get available districts for selected region
+  // Translated label for Fergana city (used in the btsFergana disabled field)
+  const ferganaCityEntry = LOCATIONS["Ферганская область"]?.find((d) => d.ru === "г.Фергана");
+  const ferganaCityLabel = ferganaCityEntry
+    ? ferganaCityEntry[lang as keyof LocationTranslation]
+    : "г.Фергана";
+
+  // Get available districts for selected region.
+  // Exclude Fergana city when using cross-Uzbekistan BTS — it has its own carrier option.
   const availableDistricts = region
-    ? LOCATIONS[region as keyof typeof LOCATIONS] || []
+    ? (LOCATIONS[region as keyof typeof LOCATIONS] || []).filter(
+        (d) => !(carrier === "bts" && region === "Ферганская область" && d.ru === "г.Фергана")
+      )
     : [];
 
   // Filter BTS branches based on selected region and village (district)
@@ -499,7 +508,7 @@ export default function CheckoutModal({
                     </label>
                     <input
                       type="text"
-                      value="г.Фергана"
+                      value={ferganaCityLabel}
                       disabled
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 font-medium cursor-not-allowed"
                     />

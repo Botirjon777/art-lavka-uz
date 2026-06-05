@@ -2,19 +2,37 @@
 
 import { useState } from "react";
 import ZoneTable from "./ZoneTable";
+import RegionZoneEditor from "./RegionZoneEditor";
 import PriceTable from "./PriceTable";
 import OfficeManager from "./OfficeManager";
-import { FiMap, FiDollarSign, FiClock, FiMapPin } from "react-icons/fi";
+import { bustDeliveryCache } from "../actions/deliveryPrices";
+import { FiMap, FiDollarSign, FiClock, FiMapPin, FiRefreshCcw } from "react-icons/fi";
 
 export default function DeliveryDashboard() {
   const [activeTab, setActiveTab] = useState<"zones" | "prices" | "offices">("zones");
+  const [busting, setBusting] = useState(false);
 
   return (
     <div className="w-full">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Доставка</h1>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">Тарифы и пункты выдачи BTS</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-gray-800 tracking-tight">Доставка</h1>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">Тарифы и пункты выдачи BTS</p>
+          </div>
+          <button
+            title="Сбросить кэш и перезагрузить данные из БД"
+            onClick={async () => {
+              setBusting(true);
+              await bustDeliveryCache();
+              window.location.reload();
+            }}
+            disabled={busting}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 text-gray-400 hover:text-purple-600 hover:border-purple-200 transition-all disabled:opacity-40"
+          >
+            <FiRefreshCcw size={12} className={busting ? "animate-spin" : ""} />
+            Обновить кэш
+          </button>
         </div>
         
         <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100">
@@ -55,7 +73,8 @@ export default function DeliveryDashboard() {
       </div>
 
       <div className="transition-all duration-300">
-        <div className={activeTab === "zones" ? "block" : "hidden"}>
+        <div className={activeTab === "zones" ? "block space-y-6" : "hidden"}>
+          <RegionZoneEditor />
           <ZoneTable />
         </div>
         <div className={activeTab === "prices" ? "block" : "hidden"}>

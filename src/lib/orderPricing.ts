@@ -155,7 +155,7 @@ export async function priceAndValidateOrder(params: {
   // Fetch delivery settings from DB and recompute delivery price server-side
   const dbSettings = await Settings.findOne(
     {},
-    { deliveryPrices: 1, courierFees: 1, ferganaFreeDelivery: 1 }
+    { deliveryPrices: 1, courierFees: 1, ferganaFreeDelivery: 1, regionZones: 1 }
   ).lean();
   const computedDeliveryPrice = calculateBTSDelivery(
     region,
@@ -164,7 +164,8 @@ export async function priceAndValidateOrder(params: {
     deliveryMethod,
     (dbSettings as any)?.deliveryPrices,
     (dbSettings as any)?.courierFees,
-    (dbSettings as any)?.ferganaFreeDelivery ?? true
+    (dbSettings as any)?.ferganaFreeDelivery ?? true,
+    (dbSettings as any)?.regionZones
   );
 
   const deliveryPrice = freeDeliveryEligible ? 0 : computedDeliveryPrice;

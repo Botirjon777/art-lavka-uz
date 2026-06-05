@@ -102,6 +102,15 @@ export const REGION_TO_BTS_HUB: Record<string, number> = {
 // Shipping Origin is Fergana (Index 12)
 const ORIGIN_CITY_INDEX = 12;
 
+// Default region → zone mapping (computed from Fergana origin via BTS_ZONE_MATRIX).
+// Stored in DB so admins can update without a deploy.
+export const REGION_ZONES: Record<string, number> = Object.fromEntries(
+  Object.entries(REGION_TO_BTS_HUB).map(([region, hubIdx]) => [
+    region,
+    BTS_ZONE_MATRIX[ORIGIN_CITY_INDEX][hubIdx],
+  ])
+);
+
 /**
  * Calculates delivery price according to BTS Express tariffs
  * @param targetRegion - User selected region
@@ -118,7 +127,8 @@ export function calculateBTSDelivery(
   method: "door" | "pickup",
   customPrices?: Record<string, number[]>,
   customFees?: { upto10kg: number; upto20kg: number },
-  ferganaFreeDelivery?: boolean
+  ferganaFreeDelivery?: boolean,
+  customRegionZones?: Record<string, number>
 ): number {
   if (!targetRegion) return 30000; // default base
 
@@ -135,28 +145,24 @@ export function calculateBTSDelivery(
     return 0;
   }
 
-  // 2. Determine target city index
-  let targetIndex = REGION_TO_BTS_HUB[targetRegion] ?? 9;
+  // 2. Determine zone from DB-driven region map, fall back to computed matrix
+  const zones = customRegionZones || REGION_ZONES;
+  let zone = zones[targetRegion] ?? 1;
 
-  // Handle specific city hubs within regions (e.g. Kokand in Fergana)
+  // District-level overrides for cities that belong to a different BTS hub
+  // than their region's default hub (e.g. Kokand is hub 10, not Fergana hub 12)
   if (targetDistrict?.toLowerCase().includes("коканд") || targetDistrict?.toLowerCase().includes("qo'qon")) {
-    targetIndex = 10;
+    zone = BTS_ZONE_MATRIX[ORIGIN_CITY_INDEX][10]; // Kokand hub
   }
   if (targetDistrict?.toLowerCase().includes("ургенч") || targetDistrict?.toLowerCase().includes("urganch")) {
-    targetIndex = 1;
+    zone = BTS_ZONE_MATRIX[ORIGIN_CITY_INDEX][1]; // Urgench hub
   }
   if (targetDistrict?.toLowerCase().includes("самарканд") || targetDistrict?.toLowerCase().includes("samarqand")) {
-    targetIndex = 4;
+    zone = BTS_ZONE_MATRIX[ORIGIN_CITY_INDEX][4]; // Samarkand hub
   }
-  // ... can add more specific mappings if needed
-
-  // 2. Get Zone from Matrix
-  const zone = BTS_ZONE_MATRIX[ORIGIN_CITY_INDEX][targetIndex];
 
   // 3. Get Price from Table (normalize weight 1-20kg)
   const normalizedWeight = Math.max(1, Math.min(20, Math.ceil(weight)));
-  
-  // Use custom prices if available, otherwise use static BTS_PRICES
   const priceTable = customPrices || BTS_PRICES;
   const basePrice = priceTable[normalizedWeight][zone];
 
@@ -169,10 +175,9 @@ export function calculateBTSDelivery(
 
   let totalPrice = basePrice + courierFee;
 
-  // Final check: Zone 0 (local) should only be free for Fergana City
-  // If it's local region (zone 0) but NOT the city, it MUST be paid
+  // Zone 0 (Fergana Oblast) but NOT Fergana City — still charged, not free
   if (zone === 0 && !isFerganaCity) {
-    if (totalPrice === 0) totalPrice = 25000; // Force fee if somehow 0
+    if (totalPrice === 0) totalPrice = 25000;
   }
 
   return totalPrice;

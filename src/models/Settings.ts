@@ -28,6 +28,7 @@ export interface ISettings {
     upto20kg: number;
   };
   ferganaFreeDelivery?: boolean;
+  regionZones?: Record<string, number>;
 }
 
 const CategorySchema = new Schema<ICategory>({
@@ -65,6 +66,9 @@ const SettingsSchema = new Schema<ISettings>(
     ferganaFreeDelivery: {
       type: Boolean,
       default: true,
+    },
+    regionZones: {
+      type: Schema.Types.Mixed,
     },
   },
   {

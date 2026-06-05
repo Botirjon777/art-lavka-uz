@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/mongodb";
 import Settings, { ICategory, ISettings } from "@/models/Settings";
-import { BTS_PRICES, BTS_COURIER_FEES } from "@/lib/deliveryDataBTS";
+import { BTS_PRICES, BTS_COURIER_FEES, REGION_ZONES } from "@/lib/deliveryDataBTS";
 import { requireAdmin } from "@/lib/requireAdmin";
 
 export const revalidate = 7200; // Cache for 2 hours
@@ -36,6 +36,7 @@ export async function GET() {
         menu: defaultMenu,
         deliveryPrices: BTS_PRICES,
         courierFees: BTS_COURIER_FEES,
+        regionZones: REGION_ZONES,
       });
     } else {
       let updated = false;
@@ -89,6 +90,11 @@ export async function GET() {
 
       if ((settings as any).ferganaFreeDelivery === undefined) {
         (settings as any).ferganaFreeDelivery = true;
+        updated = true;
+      }
+
+      if (!(settings as any).regionZones) {
+        (settings as any).regionZones = REGION_ZONES;
         updated = true;
       }
 
