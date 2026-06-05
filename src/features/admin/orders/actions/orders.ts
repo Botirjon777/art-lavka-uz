@@ -120,7 +120,6 @@ export async function createOrder(orderData: {
     if (orderData.paymentMethod === "payme") {
       const { buildPaymeUrl } = await import("@/lib/payme");
       const paymeUrl = buildPaymeUrl(order.orderNumber, priced.totalAmount);
-      console.log("[Payme] checkout URL:", paymeUrl);
       return { success: true, order: serializedOrder, paymeUrl };
     }
 
