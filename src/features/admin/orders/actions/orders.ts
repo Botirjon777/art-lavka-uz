@@ -26,6 +26,7 @@ export async function createOrder(orderData: {
   items: any[];
   totalAmount: number;
   notes?: string;
+  paymentMethod?: "cash" | "payme" | "click";
 }) {
   try {
     await dbConnect();
@@ -76,6 +77,7 @@ export async function createOrder(orderData: {
           orderNumber: generateOrderNumber(),
           status: "pending",
           paymentStatus: "pending",
+          paymentMethod: orderData.paymentMethod || "cash",
         });
         break;
       } catch (err: any) {
@@ -112,7 +114,16 @@ export async function createOrder(orderData: {
 
     revalidatePath("/admin/orders");
     revalidatePath("/admin", "page");
-    return { success: true, order: JSON.parse(JSON.stringify(order)) };
+
+    const serializedOrder = JSON.parse(JSON.stringify(order));
+
+    if (orderData.paymentMethod === "payme") {
+      const { buildPaymeUrl } = await import("@/lib/payme");
+      const paymeUrl = buildPaymeUrl(order.orderNumber, priced.totalAmount);
+      return { success: true, order: serializedOrder, paymeUrl };
+    }
+
+    return { success: true, order: serializedOrder };
   } catch (error: any) {
     console.error("Error creating order:", error);
     return { success: false, error: error.message };

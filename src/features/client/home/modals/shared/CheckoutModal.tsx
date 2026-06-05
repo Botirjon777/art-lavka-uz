@@ -62,6 +62,7 @@ export default function CheckoutModal({
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "payme">("cash");
 
   // Offices State
   const [allOffices, setAllOffices] = useState<Office[]>([]);
@@ -340,14 +341,24 @@ export default function CheckoutModal({
         totalAmount: finalTotal,
         notes:
           notes || (telegramUsername ? `Telegram: ${telegramUsername}` : ""),
+        paymentMethod,
       });
 
       if (result.success && result.order) {
+        if (paymentMethod === "payme" && (result as any).paymeUrl) {
+          window.open((result as any).paymeUrl, "_blank", "noopener,noreferrer");
+        }
         toast.success(t.orderSuccess);
         onSuccess(result.order.orderNumber);
         onClose();
       } else {
-        toast.error(result.error || "Failed to create order");
+        const errors = (result as any).errors as string[] | undefined;
+        if (errors?.length) {
+          console.error("Stock validation errors:", errors);
+          errors.forEach((e) => toast.error(e, { duration: 6000 }));
+        } else {
+          toast.error(result.error || "Failed to create order");
+        }
       }
     } catch (error) {
       console.error("Error creating order:", error);
@@ -650,20 +661,65 @@ export default function CheckoutModal({
               </div>
             </div>
 
+            <div className="space-y-2">
+              <p className="text-[13px] font-medium text-[#333333]">{t.paymentMethod}</p>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("cash")}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-all text-[14px] font-bold ${
+                    paymentMethod === "cash"
+                      ? "border-[#8814B1] bg-purple-50 text-[#8814B1]"
+                      : "border-gray-200 text-gray-400 bg-white"
+                  }`}
+                >
+                  <input type="radio" readOnly checked={paymentMethod === "cash"} className="accent-[#8814B1] shrink-0" />
+                  <span>{t.paymentCash}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("payme")}
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border-2 transition-all text-[14px] font-bold ${
+                    paymentMethod === "payme"
+                      ? "border-[#00AAFF] bg-blue-50 text-[#00AAFF]"
+                      : "border-gray-200 text-gray-400 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input type="radio" readOnly checked={paymentMethod === "payme"} className="accent-[#00AAFF] shrink-0" />
+                    <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-4 w-auto" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded">Beta</span>
+                </button>
+              </div>
+              {paymentMethod === "payme" && (
+                <p className="text-[11px] text-blue-500 px-1">{t.paymentPaymeHint}</p>
+              )}
+            </div>
+
             <div className="flex gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-medium text-[14px]"
+                className="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-medium text-[14px] cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 {t.cancel}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2.5 bg-[#8814B1] text-white rounded-lg font-medium shadow-lg text-[14px]"
+                className={`flex-1 px-4 py-2.5 text-white rounded-lg font-medium shadow-lg text-[14px] flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer transition-all active:scale-[0.98] ${
+                  paymentMethod === "payme"
+                    ? "bg-[#00AAFF] hover:bg-[#0099EE]"
+                    : "bg-[#8814B1] hover:bg-[#7A11A0]"
+                }`}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? t.submitting : t.submit}
+                {isSubmitting ? t.submitting : paymentMethod === "payme" ? (
+                  <>
+                    <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-4 w-auto brightness-0 invert" />
+                    {t.submitPayme}
+                  </>
+                ) : t.submit}
               </button>
             </div>
           </form>
@@ -977,20 +1033,65 @@ export default function CheckoutModal({
             </div>
           </div>
 
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-gray-700">{t.paymentMethod}</p>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("cash")}
+                className={`flex-1 flex items-center gap-3 p-4 rounded-xl border-2 transition-all font-bold ${
+                  paymentMethod === "cash"
+                    ? "border-[#8814B1] bg-purple-50 text-[#8814B1]"
+                    : "border-gray-200 text-gray-400"
+                }`}
+              >
+                <input type="radio" readOnly checked={paymentMethod === "cash"} className="accent-[#8814B1]" />
+                <span>{t.paymentCash}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("payme")}
+                className={`flex-1 flex items-center justify-between gap-3 p-4 rounded-xl border-2 transition-all font-bold ${
+                  paymentMethod === "payme"
+                    ? "border-[#00AAFF] bg-blue-50 text-[#00AAFF]"
+                    : "border-gray-200 text-gray-400"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <input type="radio" readOnly checked={paymentMethod === "payme"} className="accent-[#00AAFF]" />
+                  <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-5 w-auto" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest bg-orange-100 text-orange-500 px-2 py-0.5 rounded">Beta</span>
+              </button>
+            </div>
+            {paymentMethod === "payme" && (
+              <p className="text-sm text-blue-500">{t.paymentPaymeHint}</p>
+            )}
+          </div>
+
           <div className="flex gap-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-14 border-2 border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50"
+              className="flex-1 h-14 border-2 border-gray-200 text-gray-600 rounded-xl font-bold cursor-pointer hover:bg-gray-50 transition-colors"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="flex-1 h-14 bg-[#8814B1] text-white rounded-xl font-bold shadow-lg shadow-purple-100 disabled:opacity-50"
+              className={`flex-1 h-14 text-white rounded-xl font-bold shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] ${
+                paymentMethod === "payme"
+                  ? "bg-[#00AAFF] shadow-blue-100 hover:bg-[#0099EE]"
+                  : "bg-[#8814B1] shadow-purple-100 hover:bg-[#7A11A0]"
+              }`}
               disabled={isSubmitting}
             >
-              {isSubmitting ? t.submitting : t.submit}
+              {isSubmitting ? t.submitting : paymentMethod === "payme" ? (
+                <>
+                  <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-5 w-auto brightness-0 invert" />
+                  {t.submitPayme}
+                </>
+              ) : t.submit}
             </button>
           </div>
         </form>
