@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
 import PaymeTransaction from "@/models/PaymeTransaction";
-import { verifyPaymeAuth, PaymeErrors, UZS_TO_TIINS } from "@/lib/payme";
+import { verifyPaymeAuth, PaymeErrors } from "@/lib/payme";
 
 function rpcError(id: number | null, code: number, message: string, data?: string) {
   return NextResponse.json({
@@ -64,8 +64,7 @@ async function handleCheckPerform(id: number, params: any) {
     return rpcError(id, PaymeErrors.ORDER_NOT_FOUND, "Order not found", "order");
   }
 
-  const expectedTiins = (order as any).totalAmount * UZS_TO_TIINS;
-  if (amount !== expectedTiins) {
+  if (amount !== (order as any).totalAmount) {
     return rpcError(id, PaymeErrors.INVALID_AMOUNT, "Incorrect amount", "amount");
   }
 
@@ -91,8 +90,7 @@ async function handleCreateTransaction(id: number, params: any) {
     return rpcError(id, PaymeErrors.ORDER_NOT_FOUND, "Order not found", "order");
   }
 
-  const expectedTiins = (order as any).totalAmount * UZS_TO_TIINS;
-  if (amount !== expectedTiins) {
+  if (amount !== (order as any).totalAmount) {
     return rpcError(id, PaymeErrors.INVALID_AMOUNT, "Incorrect amount", "amount");
   }
 
