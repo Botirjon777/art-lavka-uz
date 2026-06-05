@@ -348,6 +348,12 @@ function formatOrderNotification(order: any): string {
     failed: "Ошибка",
   };
 
+  const paymentMethodMap: Record<string, string> = {
+    cash: "Наличными",
+    payme: "PayMe",
+    click: "Click",
+  };
+
   let message = `🔔 <b>Получен новый заказ!</b>\n\n`;
   message += `<b>Заказ #:</b> ${escapeHTML(order.orderNumber)}\n`;
   message += `<b>Статус:</b> ${statusEmoji} ${
@@ -355,7 +361,11 @@ function formatOrderNotification(order: any): string {
   }\n`;
   message += `<b>Оплата:</b> ${paymentEmoji} ${
     paymentMap[order.paymentStatus] || escapeHTML(order.paymentStatus)
-  }\n\n`;
+  }`;
+  if (order.paymentMethod) {
+    message += ` (${paymentMethodMap[order.paymentMethod] || escapeHTML(order.paymentMethod)})`;
+  }
+  message += `\n\n`;
 
   message += `👤 <b>Клиент:</b>\n`;
   message += `Имя: ${escapeHTML(order.customerName)}\n`;
