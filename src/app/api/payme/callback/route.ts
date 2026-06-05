@@ -232,7 +232,7 @@ async function handleCheckTransaction(id: number, params: any) {
     cancel_time: tx.cancelTime,
     transaction: tx._id.toString(),
     state: tx.state,
-    reason: tx.reason,
+    reason: tx.reason ?? null,
   });
 }
 
@@ -255,7 +255,7 @@ async function handleGetStatement(id: number, params: any) {
       cancel_time: tx.cancelTime,
       transaction: tx._id.toString(),
       state: tx.state,
-      reason: tx.reason,
+      reason: tx.reason ?? null,
     })),
   });
 }
