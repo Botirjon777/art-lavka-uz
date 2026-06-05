@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   await dbConnect();
 
   switch (method) {
-    case "CheckPerform":
+    case "CheckPerformTransaction":
       return handleCheckPerform(id, params);
     case "CreateTransaction":
       return handleCreateTransaction(id, params);
