@@ -117,20 +117,21 @@ export function calculateBTSDelivery(
   weight: number,
   method: "door" | "pickup",
   customPrices?: Record<string, number[]>,
-  customFees?: { upto10kg: number; upto20kg: number }
+  customFees?: { upto10kg: number; upto20kg: number },
+  ferganaFreeDelivery?: boolean
 ): number {
   if (!targetRegion) return 30000; // default base
 
-  // 1. Handle Free Delivery for Fergana City
+  // 1. Handle Free Delivery for Fergana City (controlled by admin setting)
   const isFerganaRegion = targetRegion === "Ферганская область";
   const isFerganaCity = targetDistrict && (
-    targetDistrict.includes("г.Фергана") || 
+    targetDistrict.includes("г.Фергана") ||
     targetDistrict.includes("г. Фергана") ||
     targetDistrict.includes("sh. Farg'ona") ||
     targetDistrict.includes("Fergana city")
   );
 
-  if (isFerganaRegion && isFerganaCity) {
+  if (isFerganaRegion && isFerganaCity && ferganaFreeDelivery !== false) {
     return 0;
   }
 

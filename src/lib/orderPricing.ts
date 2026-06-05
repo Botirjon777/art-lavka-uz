@@ -5,6 +5,8 @@
 // authoritative database values so the client can never dictate prices.
 import Product from "@/models/Product";
 import Promotion from "@/models/Promotion";
+import Settings from "@/models/Settings";
+import { calculateBTSDelivery } from "@/lib/deliveryDataBTS";
 
 // Sanity cap for delivery price (client-supplied). Delivery being too LOW is
 // the only money-saving vector, and free-delivery promos are accounted for
@@ -64,8 +66,11 @@ export async function priceAndValidateOrder(params: {
   items: OrderItem[];
   clientTotalAmount: number;
   clientDeliveryPrice: number;
+  region: string;
+  village: string;
+  deliveryMethod: "door" | "pickup";
 }): Promise<PricedOrder> {
-  const { items, clientTotalAmount, clientDeliveryPrice } = params;
+  const { items, clientTotalAmount, region, village, deliveryMethod } = params;
 
   const ids = items.map((i) => i.product?._id).filter(Boolean);
   const products = await Product.find({ _id: { $in: ids } }).lean();
@@ -140,10 +145,29 @@ export async function priceAndValidateOrder(params: {
 
   maxProductDiscount = Math.min(maxProductDiscount, subtotal);
 
-  const deliveryPrice = Math.max(
-    0,
-    Math.min(Number(clientDeliveryPrice) || 0, MAX_DELIVERY_PRICE)
+  // Compute weight from products for server-side delivery calculation
+  const totalWeight = pricedItems.reduce((sum, item) => {
+    const product = productById.get(String(item.product?._id));
+    const weightKg = (product as any)?.weight ?? 0.5;
+    return sum + weightKg * item.quantity;
+  }, 0);
+
+  // Fetch delivery settings from DB and recompute delivery price server-side
+  const dbSettings = await Settings.findOne(
+    {},
+    { deliveryPrices: 1, courierFees: 1, ferganaFreeDelivery: 1 }
+  ).lean();
+  const computedDeliveryPrice = calculateBTSDelivery(
+    region,
+    village,
+    totalWeight,
+    deliveryMethod,
+    (dbSettings as any)?.deliveryPrices,
+    (dbSettings as any)?.courierFees,
+    (dbSettings as any)?.ferganaFreeDelivery ?? true
   );
+
+  const deliveryPrice = freeDeliveryEligible ? 0 : computedDeliveryPrice;
 
   // Minimum total the server is willing to accept.
   const minTotal =

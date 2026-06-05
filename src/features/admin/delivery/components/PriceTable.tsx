@@ -1,17 +1,19 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getDeliverySettings } from "../actions/deliveryPrices";
+import { getDeliverySettings, updateFerganaFreeDelivery } from "../actions/deliveryPrices";
 import PriceEditModal from "./PriceEditModal";
-import { FiEdit2, FiRefreshCcw } from "react-icons/fi";
+import { FiEdit2, FiRefreshCcw, FiMapPin } from "react-icons/fi";
 
 export default function PriceTable() {
-  const [data, setData] = useState<{ 
-    deliveryPrices: Record<string, number[]>, 
-    courierFees: { upto10kg: number; upto20kg: number } 
+  const [data, setData] = useState<{
+    deliveryPrices: Record<string, number[]>;
+    courierFees: { upto10kg: number; upto20kg: number };
+    ferganaFreeDelivery: boolean;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [togglingFergana, setTogglingFergana] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -19,7 +21,8 @@ export default function PriceTable() {
     if (result.success) {
       setData({
         deliveryPrices: result.deliveryPrices,
-        courierFees: result.courierFees
+        courierFees: result.courierFees,
+        ferganaFreeDelivery: result.ferganaFreeDelivery ?? true,
       });
     }
     setLoading(false);
@@ -106,6 +109,33 @@ export default function PriceTable() {
         <div className="text-purple-300 hidden lg:block">
            <FiRefreshCcw size={48} className="opacity-20" />
         </div>
+      </div>
+
+      <div className="mt-6 p-6 bg-emerald-50/50 rounded-[28px] border border-emerald-100/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
+            <FiMapPin size={18} />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest">Бесплатная доставка — г. Фергана</h4>
+            <p className="text-xs text-emerald-600 mt-0.5">Только город Фергана. Районы Ферганской области оплачиваются по тарифу.</p>
+          </div>
+        </div>
+        <button
+          onClick={async () => {
+            setTogglingFergana(true);
+            const next = !data.ferganaFreeDelivery;
+            const res = await updateFerganaFreeDelivery(next);
+            if (res.success) setData((d) => d ? { ...d, ferganaFreeDelivery: next } : d);
+            setTogglingFergana(false);
+          }}
+          disabled={togglingFergana}
+          className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:opacity-50 ${
+            data.ferganaFreeDelivery ? "bg-emerald-500" : "bg-gray-200"
+          }`}
+        >
+          <span className={`inline-block h-6 w-6 rounded-full bg-white shadow-md transform transition-transform ${data.ferganaFreeDelivery ? "translate-x-5" : "translate-x-0"}`} />
+        </button>
       </div>
 
       <PriceEditModal

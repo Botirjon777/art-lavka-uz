@@ -137,17 +137,11 @@ export default function CheckoutModal({
   );
   const { data: activePromotions = [] } = usePromotions({ enabled: isOpen });
 
-  let currentDeliveryPrice =
-    carrier === "btsFergana"
-      ? 0
-      : calculateBTSDelivery(
-          region,
-          village,
-          totalWeight,
-          deliveryMethod,
-          deliverySettings?.deliveryPrices,
-          deliverySettings?.courierFees,
-        );
+  const ferganaFreeDelivery = (settings as any)?.ferganaFreeDelivery ?? true;
+
+  let currentDeliveryPrice = carrier === "btsFergana"
+    ? calculateBTSDelivery("Ферганская область", "г.Фергана", totalWeight, "door", deliverySettings?.deliveryPrices, deliverySettings?.courierFees, ferganaFreeDelivery)
+    : calculateBTSDelivery(region, village, totalWeight, deliveryMethod, deliverySettings?.deliveryPrices, deliverySettings?.courierFees, ferganaFreeDelivery);
   let productsDiscount = 0;
 
   // Apply Promotions

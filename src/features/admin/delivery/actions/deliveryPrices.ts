@@ -10,14 +10,15 @@ export const getDeliverySettings = unstable_cache(
   async () => {
     try {
       await dbConnect();
-      const settings = await Settings.findOne({}, { deliveryPrices: 1, courierFees: 1 }).lean();
+      const settings = await Settings.findOne({}, { deliveryPrices: 1, courierFees: 1, ferganaFreeDelivery: 1 }).lean();
       if (!settings) {
-         return { success: false, error: "Settings not found" };
+        return { success: false, error: "Settings not found" };
       }
-      return { 
-        success: true, 
+      return {
+        success: true,
         deliveryPrices: JSON.parse(JSON.stringify(settings.deliveryPrices || BTS_PRICES)),
-        courierFees: JSON.parse(JSON.stringify(settings.courierFees || BTS_COURIER_FEES))
+        courierFees: JSON.parse(JSON.stringify(settings.courierFees || BTS_COURIER_FEES)),
+        ferganaFreeDelivery: (settings as any).ferganaFreeDelivery ?? true,
       };
     } catch (error: any) {
       console.error("Error fetching delivery settings:", error);
@@ -28,7 +29,7 @@ export const getDeliverySettings = unstable_cache(
   { revalidate: 86400, tags: ["delivery-settings"] }
 );
 
-export async function updateDeliverySettings(data: { deliveryPrices: any, courierFees: any }) {
+export async function updateDeliverySettings(data: { deliveryPrices: any; courierFees: any }) {
   try {
     await requireAdmin();
     await dbConnect();
@@ -39,10 +40,8 @@ export async function updateDeliverySettings(data: { deliveryPrices: any, courie
 
     settings.deliveryPrices = data.deliveryPrices;
     settings.courierFees = data.courierFees;
-    
-    // Explicitly mark as modified since deliveryPrices is Schema.Types.Mixed
-    settings.markModified('deliveryPrices');
-    settings.markModified('courierFees');
+    settings.markModified("deliveryPrices");
+    settings.markModified("courierFees");
 
     await settings.save();
     revalidateTag("delivery-settings", "default");
@@ -50,6 +49,25 @@ export async function updateDeliverySettings(data: { deliveryPrices: any, courie
     return { success: true };
   } catch (error: any) {
     console.error("Error updating delivery settings:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateFerganaFreeDelivery(value: boolean) {
+  try {
+    await requireAdmin();
+    await dbConnect();
+    const settings = await Settings.findOne();
+    if (!settings) {
+      return { success: false, error: "Settings not found" };
+    }
+    settings.ferganaFreeDelivery = value;
+    await settings.save();
+    revalidateTag("delivery-settings", "default");
+    revalidatePath("/admin/delivery", "page");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error updating ferganaFreeDelivery:", error);
     return { success: false, error: error.message };
   }
 }

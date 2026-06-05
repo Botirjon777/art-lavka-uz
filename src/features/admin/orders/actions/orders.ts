@@ -55,6 +55,9 @@ export async function createOrder(orderData: {
       items: orderData.items,
       clientTotalAmount: orderData.totalAmount,
       clientDeliveryPrice: orderData.deliveryPrice,
+      region: orderData.region,
+      village: orderData.village,
+      deliveryMethod: orderData.deliveryMethod,
     });
 
     if (!priced.valid) {

@@ -27,6 +27,7 @@ export interface ISettings {
     upto10kg: number;
     upto20kg: number;
   };
+  ferganaFreeDelivery?: boolean;
 }
 
 const CategorySchema = new Schema<ICategory>({
@@ -60,6 +61,10 @@ const SettingsSchema = new Schema<ISettings>(
     courierFees: {
       upto10kg: { type: Number },
       upto20kg: { type: Number },
+    },
+    ferganaFreeDelivery: {
+      type: Boolean,
+      default: true,
     },
   },
   {

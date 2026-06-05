@@ -87,6 +87,11 @@ export async function GET() {
         updated = true;
       }
 
+      if ((settings as any).ferganaFreeDelivery === undefined) {
+        (settings as any).ferganaFreeDelivery = true;
+        updated = true;
+      }
+
       if (updated) await settings.save();
     }
 
