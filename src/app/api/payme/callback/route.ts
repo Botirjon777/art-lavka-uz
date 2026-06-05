@@ -6,6 +6,7 @@ import { verifyPaymeAuth, PaymeErrors, UZS_TO_TIINS } from "@/lib/payme";
 
 function rpcError(id: number | null, code: number, message: string, data?: string) {
   return NextResponse.json({
+    jsonrpc: "2.0",
     id,
     error: {
       code,
@@ -16,7 +17,7 @@ function rpcError(id: number | null, code: number, message: string, data?: strin
 }
 
 function rpcResult(id: number | null, result: object) {
-  return NextResponse.json({ id, result });
+  return NextResponse.json({ jsonrpc: "2.0", id, result });
 }
 
 export async function POST(req: NextRequest) {
