@@ -17,6 +17,7 @@ import { LOCATIONS, LocationTranslation } from "@/lib/i18n/locations";
 import { DeliveryBranch } from "@/lib/deliveryData";
 import { usePromotions } from "@/features/client/home/hooks/usePromotions";
 import { calculateBTSDelivery } from "@/lib/deliveryDataBTS";
+import { evaluatePromotions } from "@/lib/promotions";
 import { Office } from "@/types";
 import { useOffices } from "@/features/client/home/hooks/useOffices";
 import { useSettings } from "@/features/client/home/hooks/useSettings";
@@ -27,19 +28,6 @@ interface CheckoutModalProps {
   items: CartItem[];
   totalAmount: number;
   onSuccess: (orderNumber: string) => void;
-}
-
-type CheckoutDeliveryMethod = "door" | "pickup";
-
-function isPromotionDeliveryMethodEligible(
-  selectedDeliveryMethods: CheckoutDeliveryMethod[] | undefined,
-  deliveryMethod: CheckoutDeliveryMethod,
-) {
-  return (
-    !selectedDeliveryMethods ||
-    selectedDeliveryMethods.length === 0 ||
-    selectedDeliveryMethods.includes(deliveryMethod)
-  );
 }
 
 export default function CheckoutModal({
@@ -148,100 +136,40 @@ export default function CheckoutModal({
 
   const ferganaFreeDelivery = (settings as any)?.ferganaFreeDelivery ?? true;
 
-  let currentDeliveryPrice = carrier === "btsFergana"
-    ? calculateBTSDelivery("Ферганская область", "г.Фергана", totalWeight, "door", deliverySettings?.deliveryPrices, deliverySettings?.courierFees, ferganaFreeDelivery)
-    : calculateBTSDelivery(region, village, totalWeight, deliveryMethod, deliverySettings?.deliveryPrices, deliverySettings?.courierFees, ferganaFreeDelivery);
-  let productsDiscount = 0;
+  // The region/village/method actually used for the order. The Fergana carrier
+  // is a fixed shortcut (Fergana city, door), so use those values — this also
+  // keeps the promo calculation aligned with what the server validates.
+  const effectiveRegion =
+    carrier === "btsFergana" ? "Ферганская область" : region;
+  const effectiveVillage = carrier === "btsFergana" ? "г.Фергана" : village;
+  const effectiveMethod: "door" | "pickup" =
+    carrier === "btsFergana" ? "door" : deliveryMethod;
 
-  // Apply Promotions
-  activePromotions.forEach((promo) => {
-    const isRegionEligible =
-      !promo.selectedRegions ||
-      promo.selectedRegions.length === 0 ||
-      promo.selectedRegions.includes(region);
-    const isDeliveryMethodEligible = isPromotionDeliveryMethodEligible(
-      promo.selectedDeliveryMethods,
-      deliveryMethod,
-    );
+  const baseDeliveryPrice = calculateBTSDelivery(
+    effectiveRegion,
+    effectiveVillage,
+    totalWeight,
+    effectiveMethod,
+    deliverySettings?.deliveryPrices,
+    deliverySettings?.courierFees,
+    ferganaFreeDelivery,
+  );
 
-    if (promo.type === "global") {
-      const conditionMet =
-        (promo.conditionType === "min_items" &&
-          items.reduce((sum, item) => sum + item.quantity, 0) >=
-            promo.conditionValue) ||
-        (promo.conditionType === "min_amount" &&
-          totalAmount >= promo.conditionValue);
-
-      if (conditionMet) {
-        if (
-          promo.discountType === "free_delivery" &&
-          isRegionEligible &&
-          isDeliveryMethodEligible
-        ) {
-          const isFerganaRegion = region && region.includes("Ферган");
-          const isFerganaCity =
-            village &&
-            (village.includes("г.Фергана") ||
-              village.includes("г. Фергана") ||
-              village.includes("Farg'ona sh") ||
-              village.includes("Fergana city"));
-
-          if (!isFerganaRegion || isFerganaCity) {
-            currentDeliveryPrice = 0;
-          }
-        } else if (promo.discountType === "percentage") {
-          productsDiscount += totalAmount * (promo.discountValue / 100);
-        } else if (promo.discountType === "fixed") {
-          productsDiscount += promo.discountValue;
-        }
-      }
-    } else if (
-      promo.type === "targeted" &&
-      promo.conditionType === "product_selected"
-    ) {
-      const targetedProducts = Array.isArray(promo.conditionValue)
-        ? promo.conditionValue
-        : [];
-      let hasTargetedProduct = false;
-
-      items.forEach((item) => {
-        const productId = (
-          item.product._id ||
-          item.product.id ||
-          ""
-        ).toString();
-        if (targetedProducts.includes(productId)) {
-          hasTargetedProduct = true;
-          if (promo.discountType === "percentage") {
-            productsDiscount +=
-              item.price * item.quantity * (promo.discountValue / 100);
-          } else if (promo.discountType === "fixed") {
-            productsDiscount += promo.discountValue * item.quantity;
-          }
-        }
-      });
-
-      if (
-        hasTargetedProduct &&
-        promo.discountType === "free_delivery" &&
-        isRegionEligible &&
-        isDeliveryMethodEligible
-      ) {
-        const isFerganaRegion = region && region.includes("Ферган");
-        const isFerganaCity =
-          village &&
-          (village.includes("г.Фергана") ||
-            village.includes("г. Фергана") ||
-            village.includes("Farg'ona sh") ||
-            village.includes("Fergana city"));
-
-        if (!isFerganaRegion || isFerganaCity) {
-          currentDeliveryPrice = 0;
-        }
-      }
-    }
+  const { productsDiscount, freeDelivery } = evaluatePromotions({
+    items: items.map((it) => ({
+      productId: (it.product._id || it.product.id || "").toString(),
+      price: it.price,
+      quantity: it.quantity,
+    })),
+    subtotal: totalAmount,
+    totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+    region: effectiveRegion,
+    village: effectiveVillage,
+    deliveryMethod: effectiveMethod,
+    promotions: activePromotions,
   });
 
+  const currentDeliveryPrice = freeDelivery ? 0 : baseDeliveryPrice;
   const finalTotal =
     Math.max(0, totalAmount - productsDiscount) + currentDeliveryPrice;
 
