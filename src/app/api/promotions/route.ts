@@ -2,15 +2,18 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Promotion from "@/models/Promotion";
 
-// Cache for 2 hours
-export const revalidate = 7200;
+// Always reflect the live DB. Promotions are date-windowed and edited from the
+// admin panel, so a stale cached response would show expired/missing promos and
+// cause customers to be charged delivery a promo should have waived. The client
+// (React Query) provides short-lived caching; the server stays authoritative.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     await dbConnect();
-    
+
     const now = new Date();
-    
+
     // Fetch active promotions within the date range
     const promotions = await Promotion.find({
       isActive: true,

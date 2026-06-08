@@ -12,7 +12,8 @@ export const usePromotions = (options = {}) => {
   return useQuery({
     queryKey: ["promotions"],
     queryFn: fetchPromotions,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60, // 1 minute — promos are time-sensitive & admin-edited
+    refetchOnWindowFocus: true,
     ...options
   });
 };
