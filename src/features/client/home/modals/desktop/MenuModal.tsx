@@ -60,10 +60,11 @@ export default function MenuModal({ isOpen, onClose }: MenuModalProps) {
               </div>
               <div className="h-25 w-full bg-[#efefef] rounded-xl flex items-center justify-center">
                 <Image
-                  src="/payment-method/pay-me.webp"
+                  src="/payme_color.png"
                   alt="PAYME"
-                  width={99}
+                  width={86}
                   height={28}
+                  className="object-contain"
                 />
               </div>
             </div>

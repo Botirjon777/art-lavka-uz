@@ -26,7 +26,7 @@ export async function createOrder(orderData: {
   items: any[];
   totalAmount: number;
   notes?: string;
-  paymentMethod?: "cash" | "payme" | "click";
+  paymentMethod?: "cash" | "payme" | "qr" | "click";
 }) {
   try {
     await dbConnect();
@@ -81,6 +81,11 @@ export async function createOrder(orderData: {
           status: "pending",
           paymentStatus: "pending",
           paymentMethod: orderData.paymentMethod || "cash",
+          // QR is a manual transfer the customer confirms with "I paid" — record
+          // that claimed time so admins can match it against the bank record.
+          ...(orderData.paymentMethod === "qr"
+            ? { paymentClaimedAt: new Date() }
+            : {}),
         });
         break;
       } catch (err: any) {

@@ -17,6 +17,13 @@ import Dropdown from "@/components/ui/Dropdown";
 import Loader from "@/components/Loader";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cash: "Оплатить позже",
+  payme: "PayMe",
+  qr: "QR-код",
+  click: "Click",
+};
+
 export default function OrderDetail() {
   const params = useParams();
   const { data: order, isLoading: loading } = useOrderById(params.id as string);
@@ -111,6 +118,19 @@ export default function OrderDetail() {
             >
               {order.paymentStatus === "paid" ? "Оплачено" : "Ожидание"}
             </p>
+            {order.paymentMethod && (
+              <p className="text-[11px] font-bold text-gray-400 mt-0.5">
+                {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
+              </p>
+            )}
+            {order.paymentMethod === "qr" && order.paymentClaimedAt && (
+              <p className="text-[11px] font-bold text-blue-500 mt-0.5">
+                «Я оплатил»:{" "}
+                {new Date(order.paymentClaimedAt).toLocaleString("ru-RU", {
+                  timeZone: "Asia/Tashkent",
+                })}
+              </p>
+            )}
           </div>
         </div>
       </div>

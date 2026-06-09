@@ -130,6 +130,8 @@ export interface Order {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod?: PaymentMethod;
+  /** When the customer pressed "I paid" for a QR payment (their claimed pay time). */
+  paymentClaimedAt?: Date | string;
   stockRestoredOnCancel?: boolean;
   notes?: string;
   createdAt: Date;
@@ -165,7 +167,7 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";
-export type PaymentMethod = "cash" | "payme" | "click";
+export type PaymentMethod = "cash" | "payme" | "qr" | "click";
 
 export interface Publication {
   _id: string;
