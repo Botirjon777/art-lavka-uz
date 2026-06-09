@@ -38,7 +38,8 @@ export interface IOrder {
     | "delivered"
     | "cancelled";
   paymentStatus: "pending" | "paid" | "failed";
-  paymentMethod?: "cash" | "payme" | "click";
+  paymentMethod?: "cash" | "payme" | "qr" | "click";
+  paymentClaimedAt?: Date;
   paymeTransactionId?: string;
   stockRestoredOnCancel?: boolean;
   notes?: string;
@@ -135,7 +136,10 @@ const OrderSchema = new Schema<IOrder>(
     },
     paymentMethod: {
       type: String,
-      enum: ["cash", "payme", "click"],
+      enum: ["cash", "payme", "qr", "click"],
+    },
+    paymentClaimedAt: {
+      type: Date,
     },
     paymeTransactionId: {
       type: String,

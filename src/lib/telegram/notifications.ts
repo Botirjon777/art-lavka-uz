@@ -349,8 +349,9 @@ function formatOrderNotification(order: any): string {
   };
 
   const paymentMethodMap: Record<string, string> = {
-    cash: "Наличными",
+    cash: "Оплатить позже",
     payme: "PayMe",
+    qr: "QR-код",
     click: "Click",
   };
 
@@ -365,7 +366,13 @@ function formatOrderNotification(order: any): string {
   if (order.paymentMethod) {
     message += ` (${paymentMethodMap[order.paymentMethod] || escapeHTML(order.paymentMethod)})`;
   }
-  message += `\n\n`;
+  message += `\n`;
+  if (order.paymentMethod === "qr" && order.paymentClaimedAt) {
+    message += `🕓 <b>Клиент нажал «Я оплатил»:</b> ${new Date(
+      order.paymentClaimedAt,
+    ).toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" })} (Ташкент)\n`;
+  }
+  message += `\n`;
 
   message += `👤 <b>Клиент:</b>\n`;
   message += `Имя: ${escapeHTML(order.customerName)}\n`;

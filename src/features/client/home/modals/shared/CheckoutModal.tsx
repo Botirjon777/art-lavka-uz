@@ -21,6 +21,10 @@ import { evaluatePromotions } from "@/lib/promotions";
 import { Office } from "@/types";
 import { useOffices } from "@/features/client/home/hooks/useOffices";
 import { useSettings } from "@/features/client/home/hooks/useSettings";
+import { FaQrcode } from "react-icons/fa";
+import QrPaymentModal from "./QrPaymentModal";
+
+type PaymentMethod = "cash" | "payme" | "qr";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -50,7 +54,8 @@ export default function CheckoutModal({
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "payme">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   // Offices State
   const [allOffices, setAllOffices] = useState<Office[]>([]);
@@ -92,6 +97,11 @@ export default function CheckoutModal({
       });
     }
   }, [settings]);
+
+  // Close the QR step whenever the checkout modal itself closes.
+  useEffect(() => {
+    if (!isOpen) setQrModalOpen(false);
+  }, [isOpen]);
 
   // Get regions list from locations data (Russian keys)
   const regionKeys = Object.keys(LOCATIONS);
@@ -222,12 +232,22 @@ export default function CheckoutModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       toast.error(t.errorFormFix);
       return;
     }
+    // QR is a manual transfer: show the QR step first; the order is created
+    // only when the customer confirms with "I paid" inside the modal.
+    if (paymentMethod === "qr") {
+      setQrModalOpen(true);
+      return;
+    }
+    placeOrder();
+  };
+
+  const placeOrder = async () => {
     setIsSubmitting(true);
 
     try {
@@ -280,6 +300,7 @@ export default function CheckoutModal({
           window.open((result as any).paymeUrl, "_blank", "noopener,noreferrer");
         }
         toast.success(t.orderSuccess);
+        setQrModalOpen(false);
         onSuccess(result.order.orderNumber);
         onClose();
       } else {
@@ -298,6 +319,19 @@ export default function CheckoutModal({
       setIsSubmitting(false);
     }
   };
+
+  // QR payment step (shown over the checkout form for both mobile & desktop).
+  const qrModalElement = (
+    <QrPaymentModal
+      isOpen={qrModalOpen}
+      onClose={() => setQrModalOpen(false)}
+      onPaid={placeOrder}
+      isSubmitting={isSubmitting}
+      amount={finalTotal}
+      currency={t.currency}
+      t={t}
+    />
+  );
 
   if (isMobile) {
     return (
@@ -610,17 +644,27 @@ export default function CheckoutModal({
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("payme")}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border-2 transition-all text-[14px] font-bold ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-all text-[14px] font-bold ${
                     paymentMethod === "payme"
                       ? "border-[#00AAFF] bg-blue-50 text-[#00AAFF]"
                       : "border-gray-200 text-gray-400 bg-white"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <input type="radio" readOnly checked={paymentMethod === "payme"} className="accent-[#00AAFF] shrink-0" />
-                    <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-4 w-auto" />
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded">Beta</span>
+                  <input type="radio" readOnly checked={paymentMethod === "payme"} className="accent-[#00AAFF] shrink-0" />
+                  <img src="/payme_color.png" alt="PayMe" className="h-4 w-auto" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("qr")}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-all text-[14px] font-bold ${
+                    paymentMethod === "qr"
+                      ? "border-[#059669] bg-emerald-50 text-[#059669]"
+                      : "border-gray-200 text-gray-400 bg-white"
+                  }`}
+                >
+                  <input type="radio" readOnly checked={paymentMethod === "qr"} className="accent-[#059669] shrink-0" />
+                  <FaQrcode size={18} />
+                  <span>{t.paymentQr}</span>
                 </button>
               </div>
               {paymentMethod === "payme" && (
@@ -641,20 +685,28 @@ export default function CheckoutModal({
                 className={`flex-1 px-4 py-2.5 text-white rounded-lg font-medium shadow-lg text-[14px] flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer transition-all active:scale-[0.98] ${
                   paymentMethod === "payme"
                     ? "bg-[#00AAFF] hover:bg-[#0099EE]"
-                    : "bg-[#8814B1] hover:bg-[#7A11A0]"
+                    : paymentMethod === "qr"
+                      ? "bg-[#059669] hover:bg-[#047857]"
+                      : "bg-[#8814B1] hover:bg-[#7A11A0]"
                 }`}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? t.submitting : paymentMethod === "payme" ? (
                   <>
-                    <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-4 w-auto brightness-0 invert" />
+                    <img src="/payme_color.png" alt="PayMe" className="h-4 w-auto" />
                     {t.submitPayme}
+                  </>
+                ) : paymentMethod === "qr" ? (
+                  <>
+                    <FaQrcode size={16} />
+                    {t.payByQr}
                   </>
                 ) : t.submit}
               </button>
             </div>
           </form>
         </div>
+        {qrModalElement}
       </MobileModal>
     );
   }
@@ -966,11 +1018,11 @@ export default function CheckoutModal({
 
           <div className="space-y-3">
             <p className="text-sm font-medium text-gray-700">{t.paymentMethod}</p>
-            <div className="flex gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setPaymentMethod("cash")}
-                className={`flex-1 flex items-center gap-3 p-4 rounded-xl border-2 transition-all font-bold ${
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all font-bold ${
                   paymentMethod === "cash"
                     ? "border-[#8814B1] bg-purple-50 text-[#8814B1]"
                     : "border-gray-200 text-gray-400"
@@ -982,17 +1034,27 @@ export default function CheckoutModal({
               <button
                 type="button"
                 onClick={() => setPaymentMethod("payme")}
-                className={`flex-1 flex items-center justify-between gap-3 p-4 rounded-xl border-2 transition-all font-bold ${
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all font-bold ${
                   paymentMethod === "payme"
                     ? "border-[#00AAFF] bg-blue-50 text-[#00AAFF]"
                     : "border-gray-200 text-gray-400"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <input type="radio" readOnly checked={paymentMethod === "payme"} className="accent-[#00AAFF]" />
-                  <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-5 w-auto" />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-widest bg-orange-100 text-orange-500 px-2 py-0.5 rounded">Beta</span>
+                <input type="radio" readOnly checked={paymentMethod === "payme"} className="accent-[#00AAFF]" />
+                <img src="/payme_color.png" alt="PayMe" className="h-5 w-auto" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("qr")}
+                className={`col-span-2 flex items-center gap-3 p-4 rounded-xl border-2 transition-all font-bold ${
+                  paymentMethod === "qr"
+                    ? "border-[#059669] bg-emerald-50 text-[#059669]"
+                    : "border-gray-200 text-gray-400"
+                }`}
+              >
+                <input type="radio" readOnly checked={paymentMethod === "qr"} className="accent-[#059669]" />
+                <FaQrcode size={18} />
+                <span>{t.paymentQr}</span>
               </button>
             </div>
             {paymentMethod === "payme" && (
@@ -1013,19 +1075,27 @@ export default function CheckoutModal({
               className={`flex-1 h-14 text-white rounded-xl font-bold shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98] ${
                 paymentMethod === "payme"
                   ? "bg-[#00AAFF] shadow-blue-100 hover:bg-[#0099EE]"
-                  : "bg-[#8814B1] shadow-purple-100 hover:bg-[#7A11A0]"
+                  : paymentMethod === "qr"
+                    ? "bg-[#059669] shadow-emerald-100 hover:bg-[#047857]"
+                    : "bg-[#8814B1] shadow-purple-100 hover:bg-[#7A11A0]"
               }`}
               disabled={isSubmitting}
             >
               {isSubmitting ? t.submitting : paymentMethod === "payme" ? (
                 <>
-                  <img src="/payment-method/pay-me.webp" alt="PayMe" className="h-5 w-auto brightness-0 invert" />
+                  <img src="/payme_color.png" alt="PayMe" className="h-5 w-auto" />
                   {t.submitPayme}
+                </>
+              ) : paymentMethod === "qr" ? (
+                <>
+                  <FaQrcode size={18} />
+                  {t.payByQr}
                 </>
               ) : t.submit}
             </button>
           </div>
         </form>
+        {qrModalElement}
       </div>
     </Modal>
   );

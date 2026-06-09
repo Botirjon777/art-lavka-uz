@@ -113,11 +113,15 @@ export default function MobileMenuModal({
                               <div className="space-y-4">
                                 <p>{getTranslated(menu, lang, "payment")}</p>
                                 <div className="flex items-center gap-2">
-                                  {["uzcard", "humo", "pay-me"].map((pm) => (
-                                    <div key={pm} className="flex-1 h-14 bg-gray-50 rounded-lg flex items-center justify-center p-2">
+                                  {[
+                                    { key: "uzcard", src: "/payment-method/uzcard.webp" },
+                                    { key: "humo", src: "/payment-method/humo.webp" },
+                                    { key: "payme", src: "/payme_color.png" },
+                                  ].map((pm) => (
+                                    <div key={pm.key} className="flex-1 h-14 bg-gray-50 rounded-lg flex items-center justify-center p-2">
                                       <Image
-                                        src={`/payment-method/${pm}.webp`}
-                                        alt={pm}
+                                        src={pm.src}
+                                        alt={pm.key}
                                         width={60}
                                         height={30}
                                         className="object-contain"
