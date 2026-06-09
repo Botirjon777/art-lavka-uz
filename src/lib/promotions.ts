@@ -56,32 +56,14 @@ function deliveryMethodEligible(
   return !methods || methods.length === 0 || methods.includes(method);
 }
 
-/**
- * Fergana carve-out: a free-delivery promo applies everywhere EXCEPT to
- * Fergana-region districts that are not Fergana city itself (the city is
- * served free by its own carrier; outlying districts always pay BTS tariff).
- */
-function passesFerganaRule(region: string, village: string): boolean {
-  const isFerganaRegion = !!region && region.includes("Ферган");
-  const isFerganaCity =
-    !!village &&
-    (village.includes("г.Фергана") ||
-      village.includes("г. Фергана") ||
-      village.includes("Farg'ona sh") ||
-      village.includes("Fergana city"));
-  return !isFerganaRegion || isFerganaCity;
-}
-
 function freeDeliveryAllowed(
   promo: PromoEvalPromotion,
   region: string,
-  village: string,
   deliveryMethod: "door" | "pickup",
 ): boolean {
   return (
     regionEligible(promo.selectedRegions, region) &&
-    deliveryMethodEligible(promo.selectedDeliveryMethods, deliveryMethod) &&
-    passesFerganaRule(region, village)
+    deliveryMethodEligible(promo.selectedDeliveryMethods, deliveryMethod)
   );
 }
 
@@ -96,7 +78,6 @@ export function evaluatePromotions(params: PromoEvalParams): PromoEvalResult {
     subtotal,
     totalQuantity,
     region,
-    village,
     deliveryMethod,
     promotions,
   } = params;
@@ -114,7 +95,7 @@ export function evaluatePromotions(params: PromoEvalParams): PromoEvalResult {
       if (!conditionMet) continue;
 
       if (promo.discountType === "free_delivery") {
-        if (freeDeliveryAllowed(promo, region, village, deliveryMethod)) {
+        if (freeDeliveryAllowed(promo, region, deliveryMethod)) {
           freeDelivery = true;
         }
       } else if (promo.discountType === "percentage") {
@@ -145,7 +126,7 @@ export function evaluatePromotions(params: PromoEvalParams): PromoEvalResult {
       if (
         hasTarget &&
         promo.discountType === "free_delivery" &&
-        freeDeliveryAllowed(promo, region, village, deliveryMethod)
+        freeDeliveryAllowed(promo, region, deliveryMethod)
       ) {
         freeDelivery = true;
       }
