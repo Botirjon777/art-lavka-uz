@@ -180,8 +180,19 @@ export default function CheckoutModal({
   });
 
   const currentDeliveryPrice = freeDelivery ? 0 : baseDeliveryPrice;
+
+  // The delivery price can only be computed once the address fields it depends
+  // on are filled. For the cross-Uzbekistan BTS carrier that means a region and
+  // district must be chosen; the Fergana carrier is a fixed shortcut so it is
+  // ready as soon as it is selected. Until then we hide the price instead of
+  // showing a misleading placeholder amount.
+  const deliveryReady =
+    carrier === "btsFergana" ||
+    (carrier === "bts" && !!region && !!village);
+
   const finalTotal =
-    Math.max(0, totalAmount - productsDiscount) + currentDeliveryPrice;
+    Math.max(0, totalAmount - productsDiscount) +
+    (deliveryReady ? currentDeliveryPrice : 0);
 
   const isMobile = useIsMobile();
 
@@ -606,18 +617,29 @@ export default function CheckoutModal({
                   {t.currency}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-[13px] text-gray-500">
-                <span>{t.delivery}:</span>
-                <span
-                  className={
-                    currentDeliveryPrice === 0 ? "text-[#059669] font-bold" : ""
-                  }
-                >
-                  {currentDeliveryPrice === 0
-                    ? t.free
-                    : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
-                </span>
-              </div>
+              {deliveryReady ? (
+                <div className="flex justify-between items-center text-[13px] text-gray-500">
+                  <span>{t.delivery}:</span>
+                  <span
+                    className={
+                      currentDeliveryPrice === 0
+                        ? "text-[#059669] font-bold"
+                        : ""
+                    }
+                  >
+                    {currentDeliveryPrice === 0
+                      ? t.free
+                      : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center gap-2 text-[13px] text-gray-500">
+                  <span>{t.delivery}:</span>
+                  <span className="text-right text-[12px] text-gray-400">
+                    {t.deliveryPriceHint}
+                  </span>
+                </div>
+              )}
               <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-[16px] font-bold text-[#8814B1]">
                 <span>{t.total}:</span>
                 <span>
@@ -998,16 +1020,25 @@ export default function CheckoutModal({
                 {(totalAmount - productsDiscount).toLocaleString()} {t.currency}
               </span>
             </div>
-            <div className="flex justify-between items-center text-gray-600">
-              <span>{t.delivery}:</span>
-              <span
-                className={`font-medium ${currentDeliveryPrice === 0 ? "text-[#059669]" : ""}`}
-              >
-                {currentDeliveryPrice === 0
-                  ? t.free
-                  : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
-              </span>
-            </div>
+            {deliveryReady ? (
+              <div className="flex justify-between items-center text-gray-600">
+                <span>{t.delivery}:</span>
+                <span
+                  className={`font-medium ${currentDeliveryPrice === 0 ? "text-[#059669]" : ""}`}
+                >
+                  {currentDeliveryPrice === 0
+                    ? t.free
+                    : `${currentDeliveryPrice.toLocaleString()} ${t.currency}`}
+                </span>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center gap-2 text-gray-600">
+                <span>{t.delivery}:</span>
+                <span className="text-right text-sm text-gray-400">
+                  {t.deliveryPriceHint}
+                </span>
+              </div>
+            )}
             <div className="pt-4 border-t border-gray-200 flex justify-between items-center text-xl font-bold text-[#8814B1]">
               <span>{t.total}:</span>
               <span>
