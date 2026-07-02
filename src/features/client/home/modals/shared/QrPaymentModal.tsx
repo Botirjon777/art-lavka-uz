@@ -141,8 +141,8 @@ export default function QrPaymentModal({
             </>
           ) : (
           <>
-            {/* Top bar: total on the left, provider toggles as a row on the right. */}
-            <div className="shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Top bar: provider toggles on the left, total on the right (desktop). */}
+            <div className="shrink-0 flex flex-col sm:flex-row-reverse sm:items-center sm:justify-between gap-3">
               {totalEl}
               <div className="flex flex-row justify-center gap-2">
               {QR_PROVIDERS.map((provider) => {
