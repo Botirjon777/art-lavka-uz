@@ -86,6 +86,8 @@
   "openInApp": "Ilovada ochish",
   "payByQr": "QR orqali to'lash",
   "iPaid": "To'ladim",
+  "confirm": "Tasdiqlash",
+  "back": "Orqaga",
   "qrPaidNote": "«To'ladim» tugmasini bosish orqali siz buyurtma summasini o'tkazganingizni tasdiqlaysiz. To'lovni tekshirib, buyurtmani tasdiqlaymiz.",
   "orderSuccess": "Buyurtma muvaffaqiyatli rasmiylashtidildi!",
   "orderSuccessDesc": "Bizni tanlaganingiz uchun rahmat! Tez orada siz bilan bog'lanamiz.",

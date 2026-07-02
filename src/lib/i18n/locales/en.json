@@ -86,6 +86,8 @@
   "openInApp": "Open in app",
   "payByQr": "Pay with QR",
   "iPaid": "I have paid",
+  "confirm": "Confirm",
+  "back": "Back",
   "qrPaidNote": "By tapping \"I have paid\" you confirm you transferred the order amount. We'll verify the payment and confirm your order.",
   "orderSuccess": "Order Placed Successfully!",
   "orderSuccessDesc": "Thank you for choosing us! We will contact you soon to confirm your order.",
