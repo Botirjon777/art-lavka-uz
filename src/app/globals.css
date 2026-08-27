@@ -4,6 +4,16 @@
   --breakpoint-lg: 1800px;
   --breakpoint-xl: 1920px;
   --breakpoint-2xl: 2560px;
+
+  /* v2 uses a conventional desktop breakpoint. `lg` is deliberately 1800px
+     for the v1 configurator, which needs a very wide viewport, so v2 cannot
+     reuse it — a 1440px laptop would otherwise get the mobile layout.
+
+     CAUTION: Tailwind emits the breakpoints declared here BEFORE the built-in
+     `sm`/`md`, so where both match (any viewport >= 1024px) `sm:`/`md:` win on
+     specificity order. Never set the same property with both `sm:`/`md:` and
+     `desk:` — pick one scale per property. */
+  --breakpoint-desk: 1024px;
 }
 
 :root {
